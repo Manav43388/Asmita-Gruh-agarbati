@@ -11,9 +11,11 @@ export default function Hero() {
         className="glass-panel"
         style={{ padding: '4rem', maxWidth: '800px' }}
       >
-        <h1>Asmita Group</h1>
-        <p>Experience the divine fragrance of our premium, hand-crafted agarbatti. Bringing peace, spirituality, and a calm aura to your everyday life.</p>
-        <button className="cta-button">Explore Products</button>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
+        <h1>Crafting<br/>Devotion</h1>
+        <p>Experience the pure, spiritual aura of Asmita Gruh Udhyog's premium, handcrafted agarbatti and dhoop.</p>
+        <button className="cta-button" onClick={() => document.getElementById('products').scrollIntoView({ behavior: 'smooth' })}>Explore Collection</button>
+      </motion.div>
       </motion.div>
     </section>
   );

@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Products from './components/Products';
 import Contact from './components/Contact';
+import Footer from './components/Footer';
 import './index.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Hero />
         <Products />
         <Contact />
+        <Footer />
       </div>
     </>
   );

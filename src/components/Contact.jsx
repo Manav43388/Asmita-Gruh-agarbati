@@ -33,7 +33,7 @@ export default function Contact() {
             <div className="info-icon"><MapPin /></div>
             <div className="info-text">
               <h4>Visit Us</h4>
-              <p>123 Fragrance Lane, Asmita Estate, India</p>
+              <p>Asmita Gruh Udhyog, Gujarat, India</p>
             </div>
           </div>
           
@@ -49,7 +49,7 @@ export default function Contact() {
             <div className="info-icon"><Mail /></div>
             <div className="info-text">
               <h4>Email Us</h4>
-              <p>contact@asmitagroup.com</p>
+              <p>contact@asmitagruhudhyog.com</p>
             </div>
           </div>
         </div>

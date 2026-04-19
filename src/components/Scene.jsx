@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Float, Stars, Sparkles, Html } from '@react-three/drei';
+import { OrbitControls, Float, Stars, Sparkles, Html, MeshDistortMaterial } from '@react-three/drei';
 
 function FloatingAgarbatti({ position, rotation }) {
   const meshRef = useRef();
@@ -34,11 +34,33 @@ function FloatingAgarbatti({ position, rotation }) {
   );
 }
 
+function DivineAura() {
+  const ref = useRef();
+  useFrame((state) => {
+    ref.current.rotation.x = state.clock.elapsedTime * 0.1;
+    ref.current.rotation.y = state.clock.elapsedTime * 0.15;
+  });
+  return (
+    <mesh ref={ref} position={[0, 0, -8]}>
+      <torusKnotGeometry args={[4, 0.4, 128, 32]} />
+      <MeshDistortMaterial
+        color="#d4af37"
+        emissive="#8b4513"
+        emissiveIntensity={2}
+        distort={0.4}
+        speed={1.5}
+        roughness={0.2}
+        metalness={1}
+      />
+    </mesh>
+  );
+}
+
 export default function Scene() {
   return (
     <div className="canvas-container">
       <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-        <color attach="background" args={['#050505']} />
+        <color attach="background" args={['#030303']} />
         
         {/* Lighting */}
         <ambientLight intensity={0.2} />
@@ -51,10 +73,13 @@ export default function Scene() {
         {/* Distant stars/dust (reduced to 500) */}
         <Stars radius={100} depth={50} count={500} factor={4} saturation={0} fade speed={1} />
 
+        {/* Divine Glowing Aura */}
+        <DivineAura />
+
         {/* Floating Agarbattis */}
-        <FloatingAgarbatti position={[-3, 0, 0]} rotation={[0, 0, 0.2]} />
-        <FloatingAgarbatti position={[3, 1, -2]} rotation={[0, 0, -0.4]} />
-        <FloatingAgarbatti position={[0, -2, -4]} rotation={[0, 0, 0.1]} />
+        <FloatingAgarbatti position={[-4, 0, -2]} rotation={[0, 0, 0.2]} />
+        <FloatingAgarbatti position={[4, 1, -3]} rotation={[0, 0, -0.4]} />
+        <FloatingAgarbatti position={[0, -3, -4]} rotation={[0, 0, 0.1]} />
 
         {/* Floating 3D Title using HTML to avoid SDF WebGL crashes */}
         <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.5} position={[0, 2.5, -5]}>
@@ -67,7 +92,7 @@ export default function Scene() {
               textShadow: '0px 0px 20px rgba(139, 69, 19, 0.8)',
               whiteSpace: 'nowrap'
             }}>
-              ASMITA GROUP
+              ASMITA GRUH UDHYOG
             </div>
           </Html>
         </Float>
