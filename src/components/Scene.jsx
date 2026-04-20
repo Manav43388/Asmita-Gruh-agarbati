@@ -86,7 +86,7 @@ export default function Scene() {
           <Html transform center>
             <div style={{
               fontFamily: "'Outfit', sans-serif",
-              fontSize: '4rem',
+              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
               fontWeight: '800',
               color: '#d4af37',
               textShadow: '0px 0px 20px rgba(139, 69, 19, 0.8)',
