@@ -5,15 +5,18 @@ import Hero from './components/Hero';
 import Products from './components/Products';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import CartDrawer from './components/CartDrawer';
+import CheckoutModal from './components/CheckoutModal';
+import { CartProvider } from './context/CartContext';
 import './index.css';
 
 function App() {
   return (
-    <>
+    <CartProvider>
       <Suspense fallback={null}>
         <Scene />
       </Suspense>
-      
+
       <div className="content-layer">
         <Navbar />
         <Hero />
@@ -21,7 +24,11 @@ function App() {
         <Contact />
         <Footer />
       </div>
-    </>
+
+      {/* Global overlays */}
+      <CartDrawer />
+      <CheckoutModal />
+    </CartProvider>
   );
 }
 

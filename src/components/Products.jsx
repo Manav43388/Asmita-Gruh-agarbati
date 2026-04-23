@@ -1,148 +1,155 @@
 import React, { useState } from 'react';
-import { Sparkle, Wind, Flower, Flame, Cloud, Droplet, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ShoppingCart, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useCart } from '../context/CartContext';
 
 const products = [
   {
     id: 1,
     title: 'Premium Agarbatti',
     desc: 'Hand-rolled natural incense sticks for daily prayers and meditation.',
-    image: '/agarbatti.png'
+    image: '/agarbatti.png',
+    price: 199,
+    unit: 'per box (50 sticks)',
+    tag: 'Bestseller',
   },
   {
     id: 2,
     title: 'Mystic Dhoop Cones',
     desc: 'Thick, earthy smoke perfect for deep relaxation and spiritual awakening.',
-    image: '/dhoop.png'
+    image: '/dhoop.png',
+    price: 149,
+    unit: 'per pack (20 cones)',
+    tag: 'Popular',
   },
   {
     id: 3,
     title: 'Sambrani Cups',
     desc: 'Traditional loban cups that emit purifying smoke to cleanse your space.',
-    image: '/sambrani.png'
+    image: '/sambrani.png',
+    price: 129,
+    unit: 'per pack (12 cups)',
+    tag: null,
   },
   {
     id: 4,
     title: 'Camphor (Kapur)',
     desc: 'Pure, smoke-free camphor for authentic temple-like aarti at home.',
-    image: '/camphor.png'
+    image: '/camphor.png',
+    price: 99,
+    unit: 'per tin (50g)',
+    tag: null,
   },
   {
     id: 5,
     title: 'Floral Essences',
     desc: 'Sweet and calming notes of jasmine, rose, and lavender incense.',
-    image: '/floral.png'
+    image: '/floral.png',
+    price: 249,
+    unit: 'per box (40 sticks)',
+    tag: 'New',
   },
   {
     id: 6,
     title: 'Natural Attar',
     desc: 'Alcohol-free, concentrated roll-on perfumes made from essential oils.',
-    image: '/attar.png'
-  }
+    image: '/attar.png',
+    price: 399,
+    unit: 'per bottle (10ml)',
+    tag: 'Premium',
+  },
 ];
 
 export default function Products() {
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const { addToCart, cartItems, setIsCartOpen } = useCart();
+  const [addedIds, setAddedIds] = useState({});
 
-  const handleCheckout = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData);
-    
-    const msg = `Hello! I would like to order:
-*${selectedProduct.title}*
-Quantity: ${data.quantity}
-Name: ${data.name}
-Phone: ${data.phone}
-Address: ${data.address}`;
-    
-    // Replace the phone number with the business actual WhatsApp number
-    const whatsappUrl = `https://wa.me/919999999999?text=${encodeURIComponent(msg)}`;
-    window.open(whatsappUrl, '_blank');
-    setSelectedProduct(null);
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    setAddedIds(p => ({ ...p, [product.id]: true }));
+    setTimeout(() => setAddedIds(p => ({ ...p, [product.id]: false })), 1500);
+  };
+
+  const getCartQty = (id) => {
+    const item = cartItems.find(i => i.id === id);
+    return item ? item.quantity : 0;
   };
 
   return (
     <section id="products" className="section">
-      <motion.h2 
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="products-header"
+      >
+        <h2 className="section-title">Our Products</h2>
+        <p className="section-subtitle">Crafted with devotion, delivered to your doorstep</p>
+      </motion.div>
+
+      <div className="products-grid">
+        {products.map((p, index) => {
+          const inCart = getCartQty(p.id);
+          const justAdded = addedIds[p.id];
+
+          return (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="product-card glass-panel"
+            >
+              {p.tag && <span className="product-tag">{p.tag}</span>}
+
+              <div className="product-image-container">
+                <img src={p.image} alt={p.title} className="product-image" />
+                {inCart > 0 && (
+                  <div className="in-cart-badge">
+                    <ShoppingCart size={12} /> {inCart} in cart
+                  </div>
+                )}
+              </div>
+
+              <div className="product-info">
+                <h3>{p.title}</h3>
+                <p>{p.desc}</p>
+              </div>
+
+              <div className="product-footer">
+                <div className="product-price-block">
+                  <span className="product-price">₹{p.price}</span>
+                  <span className="product-unit">{p.unit}</span>
+                </div>
+                <button
+                  className={`add-cart-btn ${justAdded ? 'added' : ''}`}
+                  onClick={() => handleAddToCart(p)}
+                  id={`add-to-cart-${p.id}`}
+                >
+                  {justAdded ? (
+                    <><Check size={16} /> Added!</>
+                  ) : (
+                    <><ShoppingCart size={16} /> Add to Cart</>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="section-title"
+        className="view-cart-banner"
       >
-        Our Products
-      </motion.h2>
-      
-      <div className="products-grid">
-        {products.map((p, index) => (
-          <motion.div 
-            key={p.id}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.2 }}
-            viewport={{ once: true }}
-            className="product-card glass-panel"
-          >
-            <div className="product-image-container">
-              <img src={p.image} alt={p.title} className="product-image" />
-            </div>
-            <h3>{p.title}</h3>
-            <p>{p.desc}</p>
-            <button 
-              onClick={() => setSelectedProduct(p)}
-              className="checkout-btn"
-              style={{ marginTop: 'auto', alignSelf: 'stretch' }}
-            >
-              Buy Now
-            </button>
-          </motion.div>
-        ))}
-      </div>
-
-      <AnimatePresence>
-        {selectedProduct && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="modal-overlay"
-            onClick={(e) => {
-              if (e.target.className.includes('modal-overlay')) setSelectedProduct(null);
-            }}
-          >
-            <motion.div 
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-              className="modal-content"
-            >
-              <button className="close-btn" onClick={() => setSelectedProduct(null)}>
-                <X size={24} />
-              </button>
-              <h3>Checkout</h3>
-              <p>Purchasing {selectedProduct.title}</p>
-              
-              <form onSubmit={handleCheckout}>
-                <div className="form-group">
-                  <input type="text" name="name" placeholder="Your Name" required />
-                </div>
-                <div className="form-group">
-                  <input type="tel" name="phone" placeholder="Your Phone Number" required />
-                </div>
-                <div className="form-group">
-                  <input type="number" name="quantity" placeholder="Quantity" min="1" defaultValue="1" required />
-                </div>
-                <div className="form-group">
-                  <textarea name="address" placeholder="Delivery Address" rows="3" required></textarea>
-                </div>
-                <button type="submit" className="submit-btn" style={{ marginTop: '1rem' }}>
-                  Place Order via WhatsApp
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <p>🛒 Free delivery on all orders across India</p>
+        <button className="view-cart-btn" onClick={() => setIsCartOpen(true)}>
+          View Cart &amp; Checkout
+        </button>
+      </motion.div>
     </section>
   );
 }
