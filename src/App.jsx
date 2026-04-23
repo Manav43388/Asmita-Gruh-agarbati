@@ -3,6 +3,7 @@ import Scene from './components/Scene';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Products from './components/Products';
+import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
@@ -21,6 +22,7 @@ function App() {
         <Navbar />
         <Hero />
         <Products />
+        <About />
         <Contact />
         <Footer />
       </div>

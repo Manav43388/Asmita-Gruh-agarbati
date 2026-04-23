@@ -12,6 +12,7 @@ const products = [
     price: 199,
     unit: 'per box (50 sticks)',
     tag: 'Bestseller',
+    category: 'Incense',
   },
   {
     id: 2,
@@ -21,6 +22,7 @@ const products = [
     price: 149,
     unit: 'per pack (20 cones)',
     tag: 'Popular',
+    category: 'Dhoop',
   },
   {
     id: 3,
@@ -30,6 +32,7 @@ const products = [
     price: 129,
     unit: 'per pack (12 cups)',
     tag: null,
+    category: 'Sambrani',
   },
   {
     id: 4,
@@ -39,6 +42,7 @@ const products = [
     price: 99,
     unit: 'per tin (50g)',
     tag: null,
+    category: 'Puja',
   },
   {
     id: 5,
@@ -48,6 +52,7 @@ const products = [
     price: 249,
     unit: 'per box (40 sticks)',
     tag: 'New',
+    category: 'Incense',
   },
   {
     id: 6,
@@ -57,12 +62,76 @@ const products = [
     price: 399,
     unit: 'per bottle (10ml)',
     tag: 'Premium',
+    category: 'Attar',
+  },
+  {
+    id: 7,
+    title: 'Charcoal Dhoop Sticks',
+    desc: 'Extra-long burning dhoop sticks infused with sandalwood and herbs.',
+    image: '/dhoop.png',
+    price: 179,
+    unit: 'per pack (30 sticks)',
+    tag: null,
+    category: 'Dhoop',
+  },
+  {
+    id: 8,
+    title: 'Chandan Agarbatti',
+    desc: 'Pure sandalwood incense for a cool, meditative, temple-like ambiance.',
+    image: '/agarbatti.png',
+    price: 229,
+    unit: 'per box (40 sticks)',
+    tag: 'Popular',
+    category: 'Incense',
+  },
+  {
+    id: 9,
+    title: 'Gulab Gulkand Attar',
+    desc: 'A romantic rose and gulkand blend — perfect for any occasion.',
+    image: '/attar.png',
+    price: 349,
+    unit: 'per bottle (10ml)',
+    tag: null,
+    category: 'Attar',
+  },
+  {
+    id: 10,
+    title: 'Havan Samagri',
+    desc: 'Premium mix of herbs, resins, and grains for yagna and havan rituals.',
+    image: '/sambrani.png',
+    price: 299,
+    unit: 'per bag (250g)',
+    tag: 'New',
+    category: 'Puja',
+  },
+  {
+    id: 11,
+    title: 'Rose Dhoop Cones',
+    desc: 'Delicate rose-scented cones for a floral, uplifting spiritual space.',
+    image: '/floral.png',
+    price: 139,
+    unit: 'per pack (25 cones)',
+    tag: null,
+    category: 'Dhoop',
+  },
+  {
+    id: 12,
+    title: 'Puja Gift Hamper',
+    desc: 'Curated puja set with agarbatti, dhoop, camphor & attar — a perfect gift.',
+    image: '/camphor.png',
+    price: 599,
+    unit: 'per hamper',
+    tag: 'Premium',
+    category: 'Puja',
   },
 ];
+
+const CATEGORIES = ['All', 'Incense', 'Dhoop', 'Sambrani', 'Attar', 'Puja'];
 
 export default function Products() {
   const { addToCart, cartItems, setIsCartOpen } = useCart();
   const [addedIds, setAddedIds] = useState({});
+  const [activeCategory, setActiveCategory] = useState('All');
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -74,6 +143,8 @@ export default function Products() {
     const item = cartItems.find(i => i.id === id);
     return item ? item.quantity : 0;
   };
+
+  const filtered = activeCategory === 'All' ? products : products.filter(p => p.category === activeCategory);
 
   return (
     <section id="products" className="section">
@@ -87,8 +158,26 @@ export default function Products() {
         <p className="section-subtitle">Crafted with devotion, delivered to your doorstep</p>
       </motion.div>
 
+      {/* Category Filter */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="category-filter"
+      >
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat}
+            className={`category-btn ${activeCategory === cat ? 'active' : ''}`}
+            onClick={() => setActiveCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </motion.div>
+
       <div className="products-grid">
-        {products.map((p, index) => {
+        {filtered.map((p, index) => {
           const inCart = getCartQty(p.id);
           const justAdded = addedIds[p.id];
 
@@ -97,7 +186,7 @@ export default function Products() {
               key={p.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.05 }}
               viewport={{ once: true }}
               className="product-card glass-panel"
             >

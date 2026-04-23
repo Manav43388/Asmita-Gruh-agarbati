@@ -1,23 +1,69 @@
 import React from 'react';
+import { MessageCircle, Phone, Mail, MapPin } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="footer section glass-panel" style={{ minHeight: 'auto', padding: '3rem 10%', marginTop: '4rem', borderRadius: '40px 40px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="nav-brand" style={{ marginBottom: '1rem' }}>Asmita Gruh Udhyog</div>
-      <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem' }}>
-        Aromatic excellence since inception. Experience the divine.
-      </p>
-      
-      <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
-        <a href="#home" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Home</a>
-        <a href="#products" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Products</a>
-        <a href="#contact" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Contact</a>
+    <footer className="footer-main glass-panel">
+      <div className="footer-grid">
+        {/* Brand */}
+        <div className="footer-brand-col">
+          <div className="nav-brand" style={{ marginBottom: '1rem' }}>Asmita Gruh Udhyog</div>
+          <p className="footer-tagline">
+            Aromatic excellence since inception.<br />Experience the divine in every breath.
+          </p>
+          <a
+            href="https://wa.me/919876543210"
+            target="_blank"
+            rel="noreferrer"
+            className="footer-whatsapp"
+          >
+            <MessageCircle size={18} />
+            Chat on WhatsApp
+          </a>
+        </div>
+
+        {/* Quick Links */}
+        <div className="footer-links-col">
+          <h4 className="footer-col-title">Quick Links</h4>
+          <ul className="footer-link-list">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#products">Products</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+
+        {/* Products */}
+        <div className="footer-links-col">
+          <h4 className="footer-col-title">Products</h4>
+          <ul className="footer-link-list">
+            <li><a href="#products">Agarbatti</a></li>
+            <li><a href="#products">Dhoop Cones</a></li>
+            <li><a href="#products">Sambrani Cups</a></li>
+            <li><a href="#products">Natural Attar</a></li>
+            <li><a href="#products">Puja Hampers</a></li>
+          </ul>
+        </div>
+
+        {/* Contact */}
+        <div className="footer-links-col">
+          <h4 className="footer-col-title">Contact</h4>
+          <ul className="footer-contact-list">
+            <li><MapPin size={15} /><span>Gujarat, India</span></li>
+            <li><Phone size={15} /><a href="tel:+919876543210">+91 98765 43210</a></li>
+            <li><Mail size={15} /><a href="mailto:contact@asmitagruhudhyog.com">contact@asmitagruhudhyog.com</a></li>
+          </ul>
+        </div>
       </div>
 
-      <div style={{ width: '100%', height: '1px', background: 'var(--glass-border)', marginBottom: '2rem' }}></div>
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>&copy; {currentYear} Asmita Gruh Udhyog. All rights reserved.</p>
+      <div className="footer-divider" />
+
+      <div className="footer-bottom">
+        <p>&copy; {currentYear} Asmita Gruh Udhyog. All rights reserved.</p>
+        <p className="footer-made">Made with ❤️ in Gujarat, India</p>
+      </div>
     </footer>
   );
 }
