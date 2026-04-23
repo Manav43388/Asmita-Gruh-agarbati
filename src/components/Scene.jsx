@@ -1,19 +1,20 @@
 import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Float, Stars, Sparkles, Html, MeshDistortMaterial } from '@react-three/drei';
+import { OrbitControls, Float, Stars, Sparkles, Html } from '@react-three/drei';
 
-function FloatingAgarbatti({ position, rotation }) {
+function FloatingAgarbatti({ position, rotation, scale = 1 }) {
   const meshRef = useRef();
 
   useFrame((state, delta) => {
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * 0.2;
+      meshRef.current.rotation.z += delta * 0.1;
     }
   });
 
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={2} position={position}>
-      <mesh ref={meshRef} rotation={rotation}>
+      <mesh ref={meshRef} rotation={rotation} scale={scale}>
         {/* Stick base (bamboo) */}
         <cylinderGeometry args={[0.02, 0.02, 3, 16]} />
         <meshStandardMaterial color="#8b4513" />
@@ -34,25 +35,30 @@ function FloatingAgarbatti({ position, rotation }) {
   );
 }
 
-function DivineAura() {
-  const ref = useRef();
-  useFrame((state) => {
-    ref.current.rotation.x = state.clock.elapsedTime * 0.1;
-    ref.current.rotation.y = state.clock.elapsedTime * 0.15;
+function FloatingDhoopCone({ position, rotation, scale = 1 }) {
+  const meshRef = useRef();
+  
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.3;
+      meshRef.current.rotation.x += delta * 0.2;
+    }
   });
+
   return (
-    <mesh ref={ref} position={[0, 0, -8]}>
-      <torusKnotGeometry args={[4, 0.4, 128, 32]} />
-      <MeshDistortMaterial
-        color="#d4af37"
-        emissive="#8b4513"
-        emissiveIntensity={2}
-        distort={0.4}
-        speed={1.5}
-        roughness={0.2}
-        metalness={1}
-      />
-    </mesh>
+    <Float speed={1.5} rotationIntensity={0.8} floatIntensity={1.5} position={position}>
+      <mesh ref={meshRef} rotation={rotation} scale={scale}>
+        {/* Dhoop Cone body */}
+        <coneGeometry args={[0.3, 1, 16]} />
+        <meshStandardMaterial color="#4a3b32" roughness={0.9} />
+        
+        {/* Glowing Tip */}
+        <mesh position={[0, 0.5, 0]}>
+          <sphereGeometry args={[0.06, 16, 16]} />
+          <meshStandardMaterial color="#ff4500" emissive="#ff4500" emissiveIntensity={2} />
+        </mesh>
+      </mesh>
+    </Float>
   );
 }
 
@@ -67,21 +73,30 @@ export default function Scene() {
         <directionalLight position={[10, 10, 5]} intensity={1} color="#d4af37" />
         <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8b4513" />
 
-        {/* Particles representing smoke/scent (reduced count to prevent GPU crash) */}
+        {/* Particles representing smoke/scent */}
         <Sparkles count={50} scale={12} size={2} speed={0.4} opacity={0.3} color="#d4af37" />
         
-        {/* Distant stars/dust (reduced to 500) */}
+        {/* Distant stars/dust */}
         <Stars radius={100} depth={50} count={500} factor={4} saturation={0} fade speed={1} />
 
-        {/* Divine Glowing Aura */}
-        <DivineAura />
+        {/* Small floating Agarbattis in the background */}
+        <FloatingAgarbatti position={[-6, 3, -8]} rotation={[0, 0, 0.5]} scale={0.6} />
+        <FloatingAgarbatti position={[5, 4, -10]} rotation={[0.2, 0, -0.6]} scale={0.7} />
+        <FloatingAgarbatti position={[-4, -4, -6]} rotation={[-0.2, 0, 0.8]} scale={0.5} />
+        <FloatingAgarbatti position={[6, -3, -9]} rotation={[0.4, 0, -0.4]} scale={0.8} />
 
-        {/* Floating Agarbattis */}
-        <FloatingAgarbatti position={[-4, 0, -2]} rotation={[0, 0, 0.2]} />
-        <FloatingAgarbatti position={[4, 1, -3]} rotation={[0, 0, -0.4]} />
-        <FloatingAgarbatti position={[0, -3, -4]} rotation={[0, 0, 0.1]} />
+        {/* Small floating Dhoop Cones in the background */}
+        <FloatingDhoopCone position={[-5, 0, -7]} rotation={[0.3, 0.2, 0]} scale={0.8} />
+        <FloatingDhoopCone position={[4, 1, -6]} rotation={[-0.4, -0.1, 0]} scale={0.9} />
+        <FloatingDhoopCone position={[2, 5, -8]} rotation={[0.2, 0.5, 0.1]} scale={0.6} />
+        <FloatingDhoopCone position={[-3, -5, -9]} rotation={[-0.3, 0.1, -0.2]} scale={0.7} />
 
-        {/* Floating 3D Title using HTML to avoid SDF WebGL crashes */}
+        {/* Larger Foreground Elements */}
+        <FloatingAgarbatti position={[-3, 0, -2]} rotation={[0, 0, 0.2]} scale={1.2} />
+        <FloatingAgarbatti position={[3, 1, -3]} rotation={[0, 0, -0.4]} scale={1.1} />
+        <FloatingDhoopCone position={[0, -2.5, -3]} rotation={[0.1, 0, 0.1]} scale={1.3} />
+
+        {/* Floating 3D Title */}
         <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.5} position={[0, 2.5, -5]}>
           <Html transform center>
             <div style={{
