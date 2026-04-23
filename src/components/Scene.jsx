@@ -20,7 +20,7 @@ function FloatingAgarbatti({ position, rotation, scale = 1 }) {
         <meshStandardMaterial color="#8b4513" roughness={0.7} />
         
         {/* Incense part */}
-        <mesh position={[0, -0.5, 0]}>
+        <mesh position={[0, 0.5, 0]}>
           <cylinderGeometry args={[0.08, 0.08, 2, 16]} />
           <meshStandardMaterial color="#4a4a4a" roughness={0.8} />
         </mesh>
