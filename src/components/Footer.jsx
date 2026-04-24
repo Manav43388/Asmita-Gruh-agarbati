@@ -53,7 +53,7 @@ export default function Footer() {
           <ul className="footer-contact-list">
             <li><MapPin size={15} /><span>Gujarat, India</span></li>
             <li><Phone size={15} /><a href="tel:+916352291433">+91 63522 91433</a></li>
-            <li><Mail size={15} /><a href="mailto:contact@asmitagruhudhyog.com">contact@asmitagruhudhyog.com</a></li>
+            <li><Mail size={15} /><a href="mailto:asmitagruhudhyog@gmail.com">asmitagruhudhyog@gmail.com</a></li>
           </ul>
         </div>
       </div>

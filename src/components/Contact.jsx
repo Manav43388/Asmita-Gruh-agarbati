@@ -148,8 +148,8 @@ export default function Contact() {
             <div className="info-icon"><Mail size={22} /></div>
             <div className="info-text">
               <h4>Email Us</h4>
-              <a href="mailto:contact@asmitagruhudhyog.com" className="info-link">
-                contact@asmitagruhudhyog.com
+              <a href="mailto:asmitagruhudhyog@gmail.com" className="info-link">
+                asmitagruhudhyog@gmail.com
               </a>
             </div>
           </div>
