@@ -2,6 +2,8 @@ import React, { Suspense } from 'react';
 import Scene from './components/Scene';
 import Navbar from './components/Navbar';
 import Products from './components/Products';
+import FAQ from './components/FAQ';
+import Reviews from './components/Reviews';
 import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
@@ -20,6 +22,8 @@ function App() {
       <div className="content-layer">
         <Navbar />
         <Products />
+        <FAQ />
+        <Reviews />
         <About />
         <Contact />
         <Footer />
