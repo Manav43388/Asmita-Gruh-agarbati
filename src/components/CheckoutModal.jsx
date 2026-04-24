@@ -44,7 +44,7 @@ export default function CheckoutModal() {
 
   const handlePlaceOrder = () => {
     const msg = buildWhatsAppMessage();
-    const url = `https://wa.me/919999999999?text=${encodeURIComponent(msg)}`;
+    const url = `https://wa.me/916352291433?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
     setStep(2);
   };
