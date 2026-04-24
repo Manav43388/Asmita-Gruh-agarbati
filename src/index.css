@@ -858,6 +858,74 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
 }
 
+/* ── Product card quantity stepper ── */
+.card-qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-qty-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  width: 32px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.card-qty-btn:hover {
+  background: rgba(212, 175, 55, 0.22);
+}
+
+.card-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.card-qty-count {
+  min-width: 28px;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  padding: 0 4px;
+}
+
+/* ── Solid gold Add to Cart button (card default state) ── */
+.add-cart-btn-solid {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.65rem 1.2rem;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50px;
+  color: var(--bg-darker);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.add-cart-btn-solid:hover {
+  background: #ecc244;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.35);
+}
+
 .view-cart-banner {
   margin-top: 3rem;
   display: flex;

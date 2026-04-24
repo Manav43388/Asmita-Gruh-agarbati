@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Check, Star } from 'lucide-react';
+import { ShoppingCart, Check, Star, Plus, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 
@@ -139,7 +139,7 @@ const products = [
 const CATEGORIES = ['All', 'Incense Sticks', 'Dhoop Sticks', 'Puja Items', 'Idol Cloth', 'Other Spiritual Products'];
 
 export default function Products() {
-  const { addToCart, cartItems, setIsCartOpen } = useCart();
+  const { addToCart, cartItems, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
   const [addedIds, setAddedIds] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
 
@@ -147,6 +147,13 @@ export default function Products() {
     addToCart(product);
     setAddedIds(p => ({ ...p, [product.id]: true }));
     setTimeout(() => setAddedIds(p => ({ ...p, [product.id]: false })), 1500);
+  };
+
+  const handleIncrease = (product) => addToCart(product);
+
+  const handleDecrease = (id, currentQty) => {
+    if (currentQty <= 1) removeFromCart(id);
+    else updateQuantity(id, currentQty - 1);
   };
 
   const getCartQty = (id) => {
@@ -261,17 +268,35 @@ export default function Products() {
                   <span className="product-price">₹{p.price}</span>
                   <span className="product-unit">{p.unit}</span>
                 </div>
-                <button
-                  className={`add-cart-btn ${justAdded ? 'added' : ''}`}
-                  onClick={() => handleAddToCart(p)}
-                  id={`add-to-cart-${p.id}`}
-                >
-                  {justAdded ? (
-                    <><Check size={16} /> Added!</>
-                  ) : (
-                    <><ShoppingCart size={16} /> Add to Cart</>
-                  )}
-                </button>
+
+                {inCart > 0 ? (
+                  <div className="card-qty-stepper" id={`qty-stepper-${p.id}`}>
+                    <button
+                      className="card-qty-btn"
+                      onClick={() => handleDecrease(p.id, inCart)}
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus size={15} />
+                    </button>
+                    <span className="card-qty-count">{inCart}</span>
+                    <button
+                      className="card-qty-btn"
+                      onClick={() => handleIncrease(p)}
+                      aria-label="Increase quantity"
+                    >
+                      <Plus size={15} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="add-cart-btn-solid"
+                    onClick={() => handleAddToCart(p)}
+                    id={`add-to-cart-${p.id}`}
+                  >
+                    <ShoppingCart size={16} />
+                    Add to Cart
+                  </button>
+                )}
               </div>
             </motion.div>
           );
