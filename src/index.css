@@ -853,6 +853,38 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.5;
 }
 
+/* ── Stock Indicator ── */
+.stock-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 0.6rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.stock-indicator.low {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.35);
+}
+
+.stock-indicator.critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  animation: stockPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes stockPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .product-footer {
   padding: 0.8rem 1.4rem 1.4rem;
   display: flex;

@@ -13,6 +13,7 @@ const products = [
     unit: 'per box (50 sticks)',
     tag: 'Bestseller',
     category: 'Incense Sticks',
+    stock: 5,
   },
   {
     id: 2,
@@ -23,6 +24,7 @@ const products = [
     unit: 'per pack (20 cones)',
     tag: 'Popular',
     category: 'Dhoop Sticks',
+    stock: 18,
   },
   {
     id: 3,
@@ -33,6 +35,7 @@ const products = [
     unit: 'per pack (12 cups)',
     tag: null,
     category: 'Other Spiritual Products',
+    stock: 3,
   },
   {
     id: 4,
@@ -43,6 +46,7 @@ const products = [
     unit: 'per tin (50g)',
     tag: null,
     category: 'Puja Items',
+    stock: 22,
   },
   {
     id: 5,
@@ -53,6 +57,7 @@ const products = [
     unit: 'per box (40 sticks)',
     tag: 'New',
     category: 'Incense Sticks',
+    stock: 7,
   },
   {
     id: 6,
@@ -63,6 +68,7 @@ const products = [
     unit: 'per bottle (10ml)',
     tag: 'Premium',
     category: 'Other Spiritual Products',
+    stock: 4,
   },
   {
     id: 7,
@@ -73,6 +79,7 @@ const products = [
     unit: 'per pack (30 sticks)',
     tag: null,
     category: 'Dhoop Sticks',
+    stock: 15,
   },
   {
     id: 8,
@@ -83,6 +90,7 @@ const products = [
     unit: 'per box (40 sticks)',
     tag: 'Popular',
     category: 'Incense Sticks',
+    stock: 6,
   },
   {
     id: 9,
@@ -93,6 +101,7 @@ const products = [
     unit: 'per bottle (10ml)',
     tag: null,
     category: 'Other Spiritual Products',
+    stock: 20,
   },
   {
     id: 10,
@@ -103,6 +112,7 @@ const products = [
     unit: 'per bag (250g)',
     tag: 'New',
     category: 'Puja Items',
+    stock: 9,
   },
   {
     id: 11,
@@ -113,6 +123,7 @@ const products = [
     unit: 'per pack (25 cones)',
     tag: null,
     category: 'Dhoop Sticks',
+    stock: 2,
   },
   {
     id: 12,
@@ -123,16 +134,18 @@ const products = [
     unit: 'per hamper',
     tag: 'Premium',
     category: 'Puja Items',
+    stock: 11,
   },
   {
     id: 13,
     title: 'Velvet Idol Cloth',
     desc: 'Premium velvet aasan and poshak for your deities.',
-    image: '/floral.png', // Using existing placeholder image
+    image: '/floral.png',
     price: 150,
     unit: 'per piece',
     tag: 'New',
     category: 'Idol Cloth',
+    stock: 8,
   }
 ];
 
@@ -232,6 +245,11 @@ export default function Products() {
               <div className="product-info">
                 <h3>{p.title}</h3>
                 <p>{p.desc}</p>
+                {p.stock <= 7 && (
+                  <div className={`stock-indicator ${p.stock <= 3 ? 'critical' : 'low'}`}>
+                    🔥 Only {p.stock} left!
+                  </div>
+                )}
               </div>
 
               <div className="product-footer">
