@@ -217,15 +217,17 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
         onClick={onClose}
       />
 
-      {/* Full modal sheet */}
-      <motion.div
-        className="pd-sheet"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 40 }}
-        transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-        onClick={e => e.stopPropagation()}
-      >
+      {/* Centering wrapper – never animated, just positions the sheet */}
+      <div className="pd-sheet-wrapper" onClick={onClose}>
+        {/* Full modal sheet */}
+        <motion.div
+          className="pd-sheet"
+          initial={{ opacity: 0, scale: 0.94, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.94, y: 20 }}
+          transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+          onClick={e => e.stopPropagation()}
+        >
         {/* Close */}
         <button className="pd-close" onClick={onClose} aria-label="Close">
           <X size={20} />
@@ -538,7 +540,8 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
             <div style={{ height: '1rem' }} />
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </AnimatePresence>,
     document.body
   );

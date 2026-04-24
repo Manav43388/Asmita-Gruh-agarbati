@@ -2737,23 +2737,30 @@ h6 {
   backdrop-filter: blur(6px);
 }
 
-/* Sheet */
-.pd-sheet {
+/* Centering wrapper – static, no animation */
+.pd-sheet-wrapper {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 94%;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Sheet – visual only, no positioning */
+.pd-sheet {
+  width: 100%;
   max-width: 600px;
   max-height: 92vh;
   background: #0d0d0d;
   border-radius: 24px;
-  z-index: 9999;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(212,175,55,0.18);
   box-shadow: 0 30px 80px rgba(0,0,0,0.9);
   overflow: hidden;
+  position: relative;
 }
 
 .pd-scroll {
@@ -3382,7 +3389,8 @@ h6 {
 
 /* ── Mobile tweaks ── */
 @media (max-width: 480px) {
-  .pd-sheet { width: 100%; max-width: 100%; max-height: 96vh; border-radius: 20px 20px 0 0; top: auto; bottom: 0; transform: translateX(-50%); }
+  .pd-sheet-wrapper { align-items: flex-end; padding: 0; }
+  .pd-sheet { width: 100%; max-width: 100%; max-height: 96vh; border-radius: 20px 20px 0 0; }
   .pd-main-img-wrap { height: 230px; }
   .pd-title { font-size: 1.3rem; }
   .pd-price { font-size: 1.8rem; }
