@@ -22,7 +22,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="navbar glass-panel" style={{ margin: '1rem 2rem', border: 'none' }}>
+      <nav className="navbar glass-panel" style={{ border: 'none' }}>
         <div className="nav-brand">Asmita Gruh Udhyog</div>
 
         {/* Desktop Links */}
