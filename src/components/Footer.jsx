@@ -14,7 +14,7 @@ export default function Footer() {
             Aromatic excellence since inception.<br />Experience the divine in every breath.
           </p>
           <a
-            href="https://wa.me/919876543210"
+            href="https://wa.me/916352291433"
             target="_blank"
             rel="noreferrer"
             className="footer-whatsapp"
@@ -52,7 +52,7 @@ export default function Footer() {
           <h4 className="footer-col-title">Contact</h4>
           <ul className="footer-contact-list">
             <li><MapPin size={15} /><span>Gujarat, India</span></li>
-            <li><Phone size={15} /><a href="tel:+919876543210">+91 98765 43210</a></li>
+            <li><Phone size={15} /><a href="tel:+916352291433">+91 63522 91433</a></li>
             <li><Mail size={15} /><a href="mailto:contact@asmitagruhudhyog.com">contact@asmitagruhudhyog.com</a></li>
           </ul>
         </div>
