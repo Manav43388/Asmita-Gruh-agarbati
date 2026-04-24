@@ -316,6 +316,7 @@ export default function Products() {
       {selectedProduct && (
         <ProductModal
           product={selectedProduct}
+          allProducts={products}
           onClose={() => setSelectedProduct(null)}
         />
       )}
