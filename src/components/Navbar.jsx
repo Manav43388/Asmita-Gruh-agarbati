@@ -24,6 +24,7 @@ export default function Navbar() {
     <>
       <nav className="navbar glass-panel" style={{ border: 'none' }}>
         <div className="nav-brand">
+          <img src="/logo.png" alt="Asmita Gruh Udhyog Logo" className="nav-logo-img" />
           <span className="brand-full">Asmita Gruh Udhyog</span>
           <span className="brand-short">Asmita</span>
         </div>

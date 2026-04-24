@@ -90,6 +90,19 @@ h1, h2, h3, h4, h5, h6 {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 60vw;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.nav-logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
 }
 
 /* Show full name on desktop, short on mobile */
@@ -2129,3 +2142,16 @@ h1, h2, h3, h4, h5, h6 {
   .footer-bottom { flex-direction: column; text-align: center; }
 }
 
+/* ── Footer Logo ── */
+.footer-logo-wrap {
+  margin-bottom: 1rem;
+}
+
+.footer-logo-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+}

@@ -9,7 +9,10 @@ export default function Footer() {
       <div className="footer-grid">
         {/* Brand */}
         <div className="footer-brand-col">
-          <div className="nav-brand" style={{ marginBottom: '1rem' }}>Asmita Gruh Udhyog</div>
+          <div className="footer-logo-wrap">
+            <img src="/logo.png" alt="Asmita Gruh Udhyog" className="footer-logo-img" />
+          </div>
+          <div className="nav-brand" style={{ marginBottom: '1rem', fontSize: '1.3rem' }}>Asmita Gruh Udhyog</div>
           <p className="footer-tagline">
             Aromatic excellence since inception.<br />Experience the divine in every breath.
           </p>
