@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Check } from 'lucide-react';
+import { ShoppingCart, Check, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 
@@ -12,7 +12,7 @@ const products = [
     price: 199,
     unit: 'per box (50 sticks)',
     tag: 'Bestseller',
-    category: 'Incense',
+    category: 'Incense Sticks',
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ const products = [
     price: 149,
     unit: 'per pack (20 cones)',
     tag: 'Popular',
-    category: 'Dhoop',
+    category: 'Dhoop Sticks',
   },
   {
     id: 3,
@@ -32,7 +32,7 @@ const products = [
     price: 129,
     unit: 'per pack (12 cups)',
     tag: null,
-    category: 'Sambrani',
+    category: 'Other Spiritual Products',
   },
   {
     id: 4,
@@ -42,7 +42,7 @@ const products = [
     price: 99,
     unit: 'per tin (50g)',
     tag: null,
-    category: 'Puja',
+    category: 'Puja Items',
   },
   {
     id: 5,
@@ -52,7 +52,7 @@ const products = [
     price: 249,
     unit: 'per box (40 sticks)',
     tag: 'New',
-    category: 'Incense',
+    category: 'Incense Sticks',
   },
   {
     id: 6,
@@ -62,7 +62,7 @@ const products = [
     price: 399,
     unit: 'per bottle (10ml)',
     tag: 'Premium',
-    category: 'Attar',
+    category: 'Other Spiritual Products',
   },
   {
     id: 7,
@@ -72,7 +72,7 @@ const products = [
     price: 179,
     unit: 'per pack (30 sticks)',
     tag: null,
-    category: 'Dhoop',
+    category: 'Dhoop Sticks',
   },
   {
     id: 8,
@@ -82,7 +82,7 @@ const products = [
     price: 229,
     unit: 'per box (40 sticks)',
     tag: 'Popular',
-    category: 'Incense',
+    category: 'Incense Sticks',
   },
   {
     id: 9,
@@ -92,7 +92,7 @@ const products = [
     price: 349,
     unit: 'per bottle (10ml)',
     tag: null,
-    category: 'Attar',
+    category: 'Other Spiritual Products',
   },
   {
     id: 10,
@@ -102,7 +102,7 @@ const products = [
     price: 299,
     unit: 'per bag (250g)',
     tag: 'New',
-    category: 'Puja',
+    category: 'Puja Items',
   },
   {
     id: 11,
@@ -112,7 +112,7 @@ const products = [
     price: 139,
     unit: 'per pack (25 cones)',
     tag: null,
-    category: 'Dhoop',
+    category: 'Dhoop Sticks',
   },
   {
     id: 12,
@@ -122,11 +122,21 @@ const products = [
     price: 599,
     unit: 'per hamper',
     tag: 'Premium',
-    category: 'Puja',
+    category: 'Puja Items',
   },
+  {
+    id: 13,
+    title: 'Velvet Idol Cloth',
+    desc: 'Premium velvet aasan and poshak for your deities.',
+    image: '/floral.png', // Using existing placeholder image
+    price: 150,
+    unit: 'per piece',
+    tag: 'New',
+    category: 'Idol Cloth',
+  }
 ];
 
-const CATEGORIES = ['All', 'Incense', 'Dhoop', 'Sambrani', 'Attar', 'Puja'];
+const CATEGORIES = ['All', 'Incense Sticks', 'Dhoop Sticks', 'Puja Items', 'Idol Cloth', 'Other Spiritual Products'];
 
 export default function Products() {
   const { addToCart, cartItems, setIsCartOpen } = useCart();
@@ -145,6 +155,7 @@ export default function Products() {
   };
 
   const filtered = activeCategory === 'All' ? products : products.filter(p => p.category === activeCategory);
+  const featuredProduct = products[0]; // Premium Agarbatti
 
   return (
     <section id="products" className="section">
@@ -154,21 +165,60 @@ export default function Products() {
         viewport={{ once: true }}
         className="products-header"
       >
-        <h2 className="section-title">Our Products</h2>
+        <h2 className="section-title">Our Collection</h2>
         <p className="section-subtitle">Crafted with devotion, delivered to your doorstep</p>
       </motion.div>
 
+      {/* Featured Product Section */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        className="featured-product-container glass-panel"
+      >
+        <div className="featured-badge">
+          <Star size={16} fill="currentColor" /> Best Selling Product
+        </div>
+        <div className="featured-content">
+          <div className="featured-image-wrapper">
+            <img src={featuredProduct.image} alt={featuredProduct.title} />
+          </div>
+          <div className="featured-details">
+            <h3>{featuredProduct.title}</h3>
+            <p className="featured-desc">{featuredProduct.desc}</p>
+            <div className="product-price-block">
+              <span className="product-price">₹{featuredProduct.price}</span>
+              <span className="product-unit">{featuredProduct.unit}</span>
+            </div>
+            <button
+              className={`add-cart-btn featured-btn ${addedIds[featuredProduct.id] ? 'added' : ''}`}
+              onClick={() => handleAddToCart(featuredProduct)}
+            >
+              {addedIds[featuredProduct.id] ? (
+                <><Check size={18} /> Added to Cart</>
+              ) : (
+                <><ShoppingCart size={18} /> Add to Cart</>
+              )}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Category Filter */}
+      <div className="category-section-title">
+        <h3>Browse by Category</h3>
+      </div>
+      
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="category-filter"
+        className="category-filter premium-filter"
       >
         {CATEGORIES.map(cat => (
           <button
             key={cat}
-            className={`category-btn ${activeCategory === cat ? 'active' : ''}`}
+            className={`category-btn premium-tab ${activeCategory === cat ? 'active' : ''}`}
             onClick={() => setActiveCategory(cat)}
           >
             {cat}

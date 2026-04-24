@@ -26,7 +26,7 @@ export default function Contact() {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
-    const whatsappNumber = '919876543210'; // Replace with actual number
+    const whatsappNumber = '916352291433'; // Replace with actual number
     const text = encodeURIComponent(
       `Hello Asmita Gruh Udhyog! 🙏\n\n*Name:* ${form.name}\n*Phone:* ${form.phone}\n\n*Message:*\n${form.message}`
     );
@@ -140,7 +140,7 @@ export default function Contact() {
             <div className="info-icon"><Phone size={22} /></div>
             <div className="info-text">
               <h4>Call / WhatsApp</h4>
-              <a href="tel:+919876543210" className="info-link">+91 98765 43210</a>
+              <a href="tel:+916352291433" className="info-link">+91 63522 91433</a>
             </div>
           </div>
 
@@ -164,7 +164,7 @@ export default function Contact() {
 
           {/* WhatsApp direct link */}
           <a
-            href="https://wa.me/919876543210"
+            href="https://wa.me/916352291433"
             target="_blank"
             rel="noreferrer"
             className="direct-whatsapp-btn"
