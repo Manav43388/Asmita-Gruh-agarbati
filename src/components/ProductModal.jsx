@@ -76,6 +76,8 @@ export default function ProductModal({ product, onClose }) {
     else updateQuantity(product.id, qty - 1);
   };
 
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 600;
+
   return ReactDOM.createPortal(
     <AnimatePresence>
       <motion.div
@@ -87,9 +89,9 @@ export default function ProductModal({ product, onClose }) {
       />
       <motion.div
         className="pmodal-sheet"
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
+        initial={{ y: '110%' }}
+        animate={{ y: isDesktop ? '-50%' : 0 }}
+        exit={{ y: '110%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         onClick={e => e.stopPropagation()}
       >
