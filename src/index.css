@@ -92,6 +92,10 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 60vw;
 }
 
+/* Show full name on desktop, short on mobile */
+.brand-full  { display: inline; }
+.brand-short { display: none; }
+
 .nav-links {
   display: flex;
   gap: 2rem;
@@ -170,12 +174,6 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: auto;
 }
 
-@media (max-width: 480px) {
-  .section {
-    padding: 4rem 5%;
-    min-height: auto;
-  }
-}
 
 .section-title {
   font-size: 3rem;
@@ -183,6 +181,7 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-light);
   text-align: center;
 }
+
 
 /* Products Section */
 .products-grid {
@@ -346,92 +345,155 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Responsive */
+/* ================================================
+   HAMBURGER BUTTON & MOBILE MENU
+   ================================================ */
+.hamburger-btn {
+  display: none;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+  background: rgba(212, 175, 55, 0.22);
+}
+
 @media (max-width: 968px) {
-  .hero h1 {
-    font-size: 3.5rem;
-  }
+  .hamburger-btn { display: flex; }
+}
+
+.mobile-menu {
+  position: sticky;
+  top: 70px;
+  z-index: 99;
+  margin: 0 1rem 0.5rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mobile-nav-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mobile-nav-link:hover {
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--primary-color);
+}
+
+/* ================================================
+   RESPONSIVE BREAKPOINTS
+   ================================================ */
+
+/* Tablet (≤968px) */
+@media (max-width: 968px) {
+  .hero h1 { font-size: 3.5rem; }
+  .hero { padding: 0 8%; }
+  .section { padding: 5rem 6%; }
   .contact-container {
     grid-template-columns: 1fr;
     padding: 2rem;
     gap: 2rem;
   }
   .navbar {
-    padding: 1.5rem 2rem;
+    padding: 1rem 1.5rem;
+    margin: 0.75rem 1.25rem;
   }
-  .nav-links {
-    display: none; /* In a real app we'd add a hamburger menu, keeping simple here */
-  }
+  .nav-links { display: none; }
 }
 
-/* ---- Phone (≤480px) ---- */
+/* Phone (≤480px) */
 @media (max-width: 480px) {
-  .hero h1 {
-    font-size: 2.4rem;
+  /* — Hero — */
+  .hero h1 { font-size: 2.2rem; }
+  .hero p  { font-size: 0.95rem; }
+  .hero    { padding: 0 5%; }
+
+  /* — Sections — */
+  .section         { padding: 3.5rem 4%; min-height: auto; }
+  .section-title   { font-size: 1.8rem; margin-bottom: 1.2rem; }
+  .section-subtitle{
+    font-size: 0.88rem;
+    margin-top: -0.8rem;
+    margin-bottom: 1.8rem;
   }
-  .hero p {
-    font-size: 1rem;
-  }
-  .hero {
-    padding: 0 6%;
-  }
+
+  /* — Navbar — */
   .nav-brand {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     letter-spacing: 0;
+    max-width: 55vw;
   }
+  .brand-full  { display: none; }
+  .brand-short { display: inline; }
   .navbar {
-    padding: 0.9rem 1rem;
-    margin: 0.5rem 0.75rem !important;
+    padding: 0.75rem 0.9rem;
+    margin: 0.5rem 0.6rem;
     border-radius: 12px;
   }
-  .section-title {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+  .nav-cart-btn,
+  .hamburger-btn {
+    width: 36px;
+    height: 36px;
   }
-  .section-subtitle {
-    font-size: 0.92rem;
-    margin-top: -1rem;
-    margin-bottom: 2rem;
-  }
+
+  /* — Contact container — */
   .contact-container {
-    padding: 1.2rem;
-    gap: 1.5rem;
-    border-radius: 14px;
+    padding: 1rem;
+    gap: 1.2rem;
+    border-radius: 12px;
   }
-  .contact-form-title h3 {
-    font-size: 1.1rem;
-  }
+  .contact-form-title h3  { font-size: 1rem; }
+  .contact-info-header h3 { font-size: 1rem; }
+  .contact-info-header p  { font-size: 0.82rem; }
+
+  /* — Form fields — */
+  .form-group         { margin-bottom: 1rem; }
+  .form-group label   { font-size: 0.75rem; }
   .form-group input,
-  .form-group textarea {
-    padding: 0.75rem;
-    font-size: 0.95rem;
+  .form-group textarea{
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
   }
   .whatsapp-btn {
-    padding: 0.85rem;
-    font-size: 0.95rem;
+    padding: 0.8rem;
+    font-size: 0.9rem;
   }
-  .info-item {
-    gap: 1rem;
-  }
-  .info-icon {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-  }
-  .info-text h4 {
-    font-size: 1rem;
-  }
+
+  /* — Contact info items — */
+  .info-item  { gap: 0.75rem; }
+  .info-icon  { width: 36px; height: 36px; flex-shrink: 0; }
+  .info-text h4 { font-size: 0.9rem; }
+  .info-text p,
+  .info-link  { font-size: 0.82rem; }
   .direct-whatsapp-btn {
+    width: 100%;
+    justify-content: center;
     font-size: 0.88rem;
-    padding: 0.7rem 1.1rem;
+    padding: 0.7rem 1rem;
   }
-  .nav-cart-btn {
-    width: 38px;
-    height: 38px;
-  }
-  .hamburger-btn {
-    width: 38px;
-    height: 38px;
+
+  /* — Mobile menu — */
+  .mobile-menu {
+    margin: 0 0.6rem 0.5rem;
+    top: 60px;
   }
 }
 

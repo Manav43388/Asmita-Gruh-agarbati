@@ -23,7 +23,10 @@ export default function Navbar() {
   return (
     <>
       <nav className="navbar glass-panel" style={{ border: 'none' }}>
-        <div className="nav-brand">Asmita Gruh Udhyog</div>
+        <div className="nav-brand">
+          <span className="brand-full">Asmita Gruh Udhyog</span>
+          <span className="brand-short">Asmita</span>
+        </div>
 
         {/* Desktop Links */}
         <ul className="nav-links desktop-nav">
