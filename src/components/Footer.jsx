@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, Phone, Mail, MapPin } from 'lucide-react';
+import { MessageCircle, Phone, Mail, MapPin, Instagram } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -54,6 +54,7 @@ export default function Footer() {
             <li><MapPin size={15} /><span>Gujarat, India</span></li>
             <li><Phone size={15} /><a href="tel:+916352291433">+91 63522 91433</a></li>
             <li><Mail size={15} /><a href="mailto:asmitagruhudhyog@gmail.com">asmitagruhudhyog@gmail.com</a></li>
+            <li><Instagram size={15} /><a href="https://www.instagram.com/asmita_ghruh_udhyog" target="_blank" rel="noreferrer">@asmita_ghruh_udhyog</a></li>
           </ul>
         </div>
       </div>

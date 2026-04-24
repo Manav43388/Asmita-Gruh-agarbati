@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, MessageCircle, Send, CheckCircle } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageCircle, Send, CheckCircle, Instagram } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Contact() {
@@ -150,6 +150,16 @@ export default function Contact() {
               <h4>Email Us</h4>
               <a href="mailto:asmitagruhudhyog@gmail.com" className="info-link">
                 asmitagruhudhyog@gmail.com
+              </a>
+            </div>
+          </div>
+
+          <div className="info-item">
+            <div className="info-icon"><Instagram size={22} /></div>
+            <div className="info-text">
+              <h4>Follow on Instagram</h4>
+              <a href="https://www.instagram.com/asmita_ghruh_udhyog" target="_blank" rel="noreferrer" className="info-link">
+                @asmita_ghruh_udhyog
               </a>
             </div>
           </div>
