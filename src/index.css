@@ -2729,7 +2729,7 @@ h6 {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
-  z-index: 1000;
+  z-index: 9998;
   backdrop-filter: blur(4px);
 }
 
@@ -2737,15 +2737,16 @@ h6 {
 .pmodal-sheet {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
   max-width: 560px;
+  margin: 0 auto;
   max-height: 90vh;
   background: #0f0f0f;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
-  z-index: 1001;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(212, 175, 55, 0.2);

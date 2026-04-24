@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, ShoppingCart, Plus, Minus, Star, Check, Package, Leaf, Flame } from 'lucide-react';
+import ReactDOM from 'react-dom';
+import { X, ShoppingCart, Plus, Minus, Star, Check, Leaf, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 
@@ -75,7 +76,7 @@ export default function ProductModal({ product, onClose }) {
     else updateQuantity(product.id, qty - 1);
   };
 
-  return (
+  return ReactDOM.createPortal(
     <AnimatePresence>
       <motion.div
         className="pmodal-backdrop"
@@ -201,6 +202,8 @@ export default function ProductModal({ product, onClose }) {
           </div>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
+
