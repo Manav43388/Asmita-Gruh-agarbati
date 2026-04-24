@@ -166,72 +166,43 @@ export default function Products() {
 
   return (
     <section id="products" className="section">
+      {/* Divine Category Browser */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="products-header"
+        className="divine-header"
       >
-        <h2 className="section-title">Our Collection</h2>
-        <p className="section-subtitle">Crafted with devotion, delivered to your doorstep</p>
+        <h2 className="divine-title">Fragrances For Divine Experiences</h2>
       </motion.div>
 
-      {/* Featured Product Section */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="featured-product-container glass-panel"
+        className="cat-circles-row"
       >
-        <div className="featured-badge">
-          <Star size={16} fill="currentColor" /> Best Selling Product
-        </div>
-        <div className="featured-content">
-          <div className="featured-image-wrapper">
-            <img src={featuredProduct.image} alt={featuredProduct.title} />
-          </div>
-          <div className="featured-details">
-            <h3>{featuredProduct.title}</h3>
-            <p className="featured-desc">{featuredProduct.desc}</p>
-            <div className="product-price-block">
-              <span className="product-price">₹{featuredProduct.price}</span>
-              <span className="product-unit">{featuredProduct.unit}</span>
-            </div>
-            <button
-              className={`add-cart-btn featured-btn ${addedIds[featuredProduct.id] ? 'added' : ''}`}
-              onClick={() => handleAddToCart(featuredProduct)}
-            >
-              {addedIds[featuredProduct.id] ? (
-                <><Check size={18} /> Added to Cart</>
-              ) : (
-                <><ShoppingCart size={18} /> Add to Cart</>
-              )}
-            </button>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Category Filter */}
-      <div className="category-section-title">
-        <h3>Browse by Category</h3>
-      </div>
-      
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="category-filter premium-filter"
-      >
-        {CATEGORIES.map(cat => (
+        {[
+          { label: 'All Products',   filter: 'All',                      image: '/agarbatti.png' },
+          { label: 'Incense Sticks', filter: 'Incense Sticks',           image: '/agarbatti.png' },
+          { label: 'Dhoop Sticks',   filter: 'Dhoop Sticks',             image: '/dhoop.png'     },
+          { label: 'Puja Items',     filter: 'Puja Items',               image: '/sambrani.png'  },
+          { label: 'Idol Cloth',     filter: 'Idol Cloth',               image: '/floral.png'    },
+          { label: 'Spiritual',      filter: 'Other Spiritual Products',  image: '/attar.png'     },
+        ].map(cat => (
           <button
-            key={cat}
-            className={`category-btn premium-tab ${activeCategory === cat ? 'active' : ''}`}
-            onClick={() => setActiveCategory(cat)}
+            key={cat.filter}
+            className={`cat-circle-item ${activeCategory === cat.filter ? 'active' : ''}`}
+            onClick={() => setActiveCategory(cat.filter)}
           >
-            {cat}
+            <div className="cat-circle-img">
+              <img src={cat.image} alt={cat.label} />
+            </div>
+            <span className="cat-circle-label">{cat.label}</span>
           </button>
         ))}
       </motion.div>
+
 
       <div className="products-grid">
         {filtered.map((p, index) => {
