@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import Scene from './components/Scene';
 import Navbar from './components/Navbar';
-import Hero from './components/Hero';
 import Products from './components/Products';
 import About from './components/About';
 import Contact from './components/Contact';
@@ -20,7 +19,6 @@ function App() {
 
       <div className="content-layer">
         <Navbar />
-        <Hero />
         <Products />
         <About />
         <Contact />

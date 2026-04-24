@@ -98,21 +98,6 @@ export default function Scene() {
         <FloatingAgarbatti position={[3, 1, -3]} rotation={[0, 0, -0.4]} scale={1.1} />
         <FloatingDhoopCone position={[0, -2.5, -3]} rotation={[0.1, 0, 0.1]} scale={1.3} />
 
-        {/* Floating 3D Title */}
-        <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.5} position={[0, 2.5, -5]}>
-          <Html transform center>
-            <div style={{
-              fontFamily: "'Outfit', sans-serif",
-              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-              fontWeight: '800',
-              color: '#d4af37',
-              textShadow: '0px 0px 20px rgba(139, 69, 19, 0.8)',
-              whiteSpace: 'nowrap'
-            }}>
-              ASMITA GRUH UDHYOG
-            </div>
-          </Html>
-        </Float>
 
         {/* Controls - autoRotate gently */}
         <OrbitControls 
