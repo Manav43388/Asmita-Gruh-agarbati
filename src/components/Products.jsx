@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShoppingCart, Check, Star, Plus, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import ProductModal from './ProductModal';
 
 const products = [
   {
@@ -155,6 +156,7 @@ export default function Products() {
   const { addToCart, cartItems, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
   const [addedIds, setAddedIds] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -233,23 +235,31 @@ export default function Products() {
             >
               {p.tag && <span className="product-tag">{p.tag}</span>}
 
-              <div className="product-image-container">
-                <img src={p.image} alt={p.title} className="product-image" />
-                {inCart > 0 && (
-                  <div className="in-cart-badge">
-                    <ShoppingCart size={12} /> {inCart} in cart
-                  </div>
-                )}
-              </div>
+              <div
+                className="product-clickable"
+                onClick={() => setSelectedProduct(p)}
+                role="button"
+                tabIndex={0}
+                aria-label={`View details for ${p.title}`}
+              >
+                <div className="product-image-container">
+                  <img src={p.image} alt={p.title} className="product-image" />
+                  {inCart > 0 && (
+                    <div className="in-cart-badge">
+                      <ShoppingCart size={12} /> {inCart} in cart
+                    </div>
+                  )}
+                </div>
 
-              <div className="product-info">
-                <h3>{p.title}</h3>
-                <p>{p.desc}</p>
-                {p.stock <= 7 && (
-                  <div className={`stock-indicator ${p.stock <= 3 ? 'critical' : 'low'}`}>
-                    🔥 Only {p.stock} left!
-                  </div>
-                )}
+                <div className="product-info">
+                  <h3>{p.title}</h3>
+                  <p>{p.desc}</p>
+                  {p.stock <= 7 && (
+                    <div className={`stock-indicator ${p.stock <= 3 ? 'critical' : 'low'}`}>
+                      🔥 Only {p.stock} left!
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="product-footer">
@@ -303,6 +313,12 @@ export default function Products() {
           View Cart &amp; Checkout
         </button>
       </motion.div>
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </section>
   );
 }
