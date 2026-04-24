@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, MessageCircle, Send, CheckCircle, Instagram } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageCircle, Send, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Contact() {
@@ -132,7 +132,9 @@ export default function Contact() {
             <div className="info-icon"><MapPin size={22} /></div>
             <div className="info-text">
               <h4>Visit Us</h4>
-              <p>Asmita Gruh Udhyog, Gujarat, India</p>
+              <a href="https://share.google/emQA5aL8qLl4hM6IK" target="_blank" rel="noreferrer" className="info-link">
+                Asmita Gruh Udhyog, Gujarat, India
+              </a>
             </div>
           </div>
 
@@ -155,7 +157,9 @@ export default function Contact() {
           </div>
 
           <div className="info-item">
-            <div className="info-icon"><Instagram size={22} /></div>
+            <div className="info-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+            </div>
             <div className="info-text">
               <h4>Follow on Instagram</h4>
               <a href="https://www.instagram.com/asmita_ghruh_udhyog" target="_blank" rel="noreferrer" className="info-link">
