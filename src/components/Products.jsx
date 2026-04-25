@@ -72,6 +72,17 @@ const initialProducts = [
     tag: 'Premium',
     category: 'Other Spiritual Products',
     stock: 4,
+  },
+  {
+    id: 7,
+    title: 'Velvet Idol Cloth',
+    desc: 'Premium red velvet cloth with gold lace for deity idols and puja altars.',
+    image: '/floral.png',
+    price: 149,
+    unit: 'per piece',
+    tag: 'New',
+    category: 'Idol Cloth',
+    stock: 12,
   }
 ];
 
