@@ -111,16 +111,12 @@ const Orders = () => {
                       className="admin-select"
                       value={order.status}
                       onChange={(e) => updateStatus(order.id, e.target.value)}
-                      style={{ 
-                        background: order.status === 'Pending' ? 'rgba(234, 179, 8, 0.1)' : 
-                                   order.status === 'Delivered' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255,255,255,0.05)',
-                        color: order.status === 'Pending' ? '#eab308' : 
-                               order.status === 'Delivered' ? '#22c55e' : '#fff'
-                      }}
                     >
-                      <option value="Pending">Pending</option>
+                      <option value="Order placed">Order placed</option>
                       <option value="Confirmed">Confirmed</option>
+                      <option value="Packed">Packed</option>
                       <option value="Shipped">Shipped</option>
+                      <option value="Out for delivery">Out for delivery</option>
                       <option value="Delivered">Delivered</option>
                     </select>
                   </td>

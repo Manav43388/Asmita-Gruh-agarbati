@@ -82,7 +82,7 @@ export default function CheckoutModal() {
         address: fullAddress,
         product: productString,
         amount: subtotal,
-        status: 'Pending',
+        status: 'Order placed',
         trackingId: '',
         createdAt: serverTimestamp(),
         userId: user?.uid || null,
