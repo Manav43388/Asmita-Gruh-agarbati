@@ -37,10 +37,17 @@ function App() {
 
           <Navbar />
 
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/track" element={<OrderTracking />} />
-          </Routes>
+          <div className="content-layer">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/track" element={
+                <>
+                  <OrderTracking />
+                  <Footer />
+                </>
+              } />
+            </Routes>
+          </div>
 
           {/* Global overlays */}
           <CartDrawer />
