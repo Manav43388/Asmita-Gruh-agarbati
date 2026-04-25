@@ -20,8 +20,8 @@ const MOCK_ORDERS = [
     items: [
       { 
         id: 1, 
-        name: 'Mogra Premium Agarbatti', 
-        image: 'https://images.unsplash.com/photo-1612548403247-aa287dfe9410?auto=format&fit=crop&q=80&w=200', 
+        name: 'Premium Agarbatti', 
+        image: '/agarbatti.png', 
         qty: 2, 
         price: 250 
       }
@@ -46,8 +46,8 @@ const MOCK_ORDERS = [
     items: [
       { 
         id: 2, 
-        name: 'Sandalwood Dhoop Sticks', 
-        image: 'https://images.unsplash.com/photo-1602812065352-721473210454?auto=format&fit=crop&q=80&w=200', 
+        name: 'Mystic Dhoop Cones', 
+        image: '/dhoop.png', 
         qty: 1, 
         price: 180 
       }
