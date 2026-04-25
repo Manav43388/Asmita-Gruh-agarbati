@@ -3837,6 +3837,53 @@ h6 {
   }
 }
 
+.success-summary-row.highlight {
+  background: rgba(255, 153, 51, 0.1);
+  border: 1px dashed var(--saffron);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.order-id-text {
+  font-weight: 800;
+  color: var(--saffron);
+  letter-spacing: 1px;
+}
+
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.track-order-btn-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--saffron);
+  color: white;
+  text-decoration: none;
+  padding: 1rem;
+  border-radius: 50px;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.track-order-btn-link:hover {
+  background: #ff8c1a;
+  transform: translateY(-2px);
+}
+
+.back-home-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-light) !important;
+}
+
 .mobile-menu-divider {
   height: 1px;
   background: var(--glass-border);

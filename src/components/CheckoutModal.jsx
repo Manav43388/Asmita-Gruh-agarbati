@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, Package, Truck, MessageCircle, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -54,8 +55,16 @@ export default function CheckoutModal() {
     return `🛒 *New Order - Asmita Gruh Udhyog*\n\n*Items Ordered:*\n${itemLines}\n\n*Order Total: ₹${subtotal.toLocaleString()}*\n\n*Customer Details:*\nName: ${formData.name}\nPhone: ${formData.phone}${formData.email ? '\nEmail: ' + formData.email : ''}\nAddress: ${formData.address}, ${formData.city} - ${formData.pincode}${formData.notes ? '\nNotes: ' + formData.notes : ''}`;
   };
 
+  const [orderId, setOrderId] = useState('');
+
+  const generateOrderId = () => {
+    return 'AS-' + Math.floor(1000 + Math.random() * 9000);
+  };
+
   const handlePlaceOrder = () => {
-    const msg = buildWhatsAppMessage();
+    const newId = generateOrderId();
+    setOrderId(newId);
+    const msg = `🛒 *New Order - Asmita Gruh Udhyog*\n*Order ID: ${newId}*\n\n*Items Ordered:*\n${cartItems.map(i => `• ${i.title} × ${i.quantity} = ₹${(i.price * i.quantity).toLocaleString()}`).join('\n')}\n\n*Order Total: ₹${subtotal.toLocaleString()}*\n\n*Customer Details:*\nName: ${formData.name}\nPhone: ${formData.phone}${formData.email ? '\nEmail: ' + formData.email : ''}\nAddress: ${formData.address}, ${formData.city} - ${formData.pincode}${formData.notes ? '\nNotes: ' + formData.notes : ''}`;
     const url = `https://wa.me/916352291433?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
     setStep(2);
@@ -63,7 +72,7 @@ export default function CheckoutModal() {
 
   const handleClose = () => {
     setIsCheckoutOpen(false);
-    setTimeout(() => { setStep(0); setFormData({ name: '', phone: '', email: '', address: '', city: '', pincode: '', notes: '' }); setErrors({}); }, 400);
+    setTimeout(() => { setStep(0); setFormData({ name: '', phone: '', email: '', address: '', city: '', pincode: '', notes: '' }); setErrors({}); setOrderId(''); }, 400);
   };
 
   const handleOrderComplete = () => {
@@ -271,6 +280,9 @@ export default function CheckoutModal() {
                   transition={{ delay: 0.7 }}
                   className="success-summary"
                 >
+                  <div className="success-summary-row highlight">
+                    <span>Order ID</span><span className="order-id-text">{orderId}</span>
+                  </div>
                   <div className="success-summary-row">
                     <span>Name</span><span>{formData.name}</span>
                   </div>
@@ -281,12 +293,26 @@ export default function CheckoutModal() {
                     <span>Order Total</span><span>₹{subtotal.toLocaleString()}</span>
                   </div>
                 </motion.div>
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.9 }}
-                  className="checkout-next-btn"
-                  onClick={handleOrderComplete}
+                
+                <div className="success-actions">
+                  <Link to="/track" className="track-order-btn-link" onClick={() => { localStorage.setItem('last_order_search', orderId); handleOrderComplete(); }}>
+                    Track This Order <ChevronRight size={18} />
+                  </Link>
+                  <button
+                    className="checkout-next-btn back-home-btn"
+                    onClick={handleOrderComplete}
+                  >
+                    Back to Home
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
                 >
                   Back to Home
                 </motion.button>
