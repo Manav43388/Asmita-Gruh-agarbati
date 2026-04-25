@@ -58,13 +58,20 @@ export default function Navbar() {
               Track Order
             </Link>
           </li>
+          {user?.isAdmin && (
+            <li>
+              <Link to="/admin/dashboard" className="admin-link-nav">
+                Admin Panel
+              </Link>
+            </li>
+          )}
         </ul>
 
         <div className="nav-actions">
           {/* Auth Button */}
           {user ? (
             <div className="nav-user-avatar" onClick={() => setIsAuthOpen(true)}>
-              {user.name.charAt(0).toUpperCase()}
+              {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
             </div>
           ) : (
             <button className="nav-login-btn" onClick={() => setIsAuthOpen(true)}>

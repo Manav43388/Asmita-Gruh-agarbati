@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Check, Star, Plus, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import ProductModal from './ProductModal';
+import { db } from '../firebase/config';
+import { collection, onSnapshot } from 'firebase/firestore';
 
-const products = [
+const initialProducts = [
   {
     id: 1,
     title: 'Premium Agarbatti',
@@ -70,83 +72,6 @@ const products = [
     tag: 'Premium',
     category: 'Other Spiritual Products',
     stock: 4,
-  },
-  {
-    id: 7,
-    title: 'Charcoal Dhoop Sticks',
-    desc: 'Extra-long burning dhoop sticks infused with sandalwood and herbs.',
-    image: '/dhoop.png',
-    price: 179,
-    unit: 'per pack (30 sticks)',
-    tag: null,
-    category: 'Dhoop Sticks',
-    stock: 15,
-  },
-  {
-    id: 8,
-    title: 'Chandan Agarbatti',
-    desc: 'Pure sandalwood incense for a cool, meditative, temple-like ambiance.',
-    image: '/agarbatti.png',
-    price: 229,
-    unit: 'per box (40 sticks)',
-    tag: 'Popular',
-    category: 'Incense Sticks',
-    stock: 6,
-  },
-  {
-    id: 9,
-    title: 'Gulab Gulkand Attar',
-    desc: 'A romantic rose and gulkand blend — perfect for any occasion.',
-    image: '/attar.png',
-    price: 349,
-    unit: 'per bottle (10ml)',
-    tag: null,
-    category: 'Other Spiritual Products',
-    stock: 20,
-  },
-  {
-    id: 10,
-    title: 'Havan Samagri',
-    desc: 'Premium mix of herbs, resins, and grains for yagna and havan rituals.',
-    image: '/sambrani.png',
-    price: 299,
-    unit: 'per bag (250g)',
-    tag: 'New',
-    category: 'Puja Items',
-    stock: 9,
-  },
-  {
-    id: 11,
-    title: 'Rose Dhoop Cones',
-    desc: 'Delicate rose-scented cones for a floral, uplifting spiritual space.',
-    image: '/floral.png',
-    price: 139,
-    unit: 'per pack (25 cones)',
-    tag: null,
-    category: 'Dhoop Sticks',
-    stock: 2,
-  },
-  {
-    id: 12,
-    title: 'Puja Gift Hamper',
-    desc: 'Curated puja set with agarbatti, dhoop, camphor & attar — a perfect gift.',
-    image: '/camphor.png',
-    price: 599,
-    unit: 'per hamper',
-    tag: 'Premium',
-    category: 'Puja Items',
-    stock: 11,
-  },
-  {
-    id: 13,
-    title: 'Velvet Idol Cloth',
-    desc: 'Premium velvet aasan and poshak for your deities.',
-    image: '/floral.png',
-    price: 150,
-    unit: 'per piece',
-    tag: 'New',
-    category: 'Idol Cloth',
-    stock: 8,
   }
 ];
 
@@ -157,6 +82,26 @@ export default function Products() {
   const [addedIds, setAddedIds] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
+      if (!snapshot.empty) {
+        const productsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          title: doc.data().name,
+          desc: doc.data().description,
+          ...doc.data()
+        }));
+        setProducts(productsData);
+      } else {
+        setProducts(initialProducts);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -177,11 +122,9 @@ export default function Products() {
   };
 
   const filtered = activeCategory === 'All' ? products : products.filter(p => p.category === activeCategory);
-  const featuredProduct = products[0]; // Premium Agarbatti
 
   return (
     <section id="products" className="section">
-      {/* Divine Category Browser */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -254,7 +197,7 @@ export default function Products() {
                 <div className="product-info">
                   <h3>{p.title}</h3>
                   <p>{p.desc}</p>
-                  {p.stock <= 7 && (
+                  {p.stock <= 7 && p.stock > 0 && (
                     <div className={`stock-indicator ${p.stock <= 3 ? 'critical' : 'low'}`}>
                       🔥 Only {p.stock} left!
                     </div>
@@ -265,7 +208,7 @@ export default function Products() {
               <div className="product-footer">
                 <div className="product-price-block">
                   <span className="product-price">₹{p.price}</span>
-                  <span className="product-unit">{p.unit}</span>
+                  <span className="product-unit">{p.unit || 'per pack'}</span>
                 </div>
 
                 {inCart > 0 ? (

@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
-
+import { db } from '../firebase/config';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { toast } from 'react-hot-toast';
 const STEPS = ['Review Order', 'Shipping Info', 'Confirm'];
 
 export default function CheckoutModal() {
@@ -13,13 +15,14 @@ export default function CheckoutModal() {
   const { user } = useAuth();
   const { addOrder } = useOrders();
   const [step, setStep] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', address: '', city: '', pincode: '', notes: '' });
 
   useEffect(() => {
     if (user && isCheckoutOpen) {
       setFormData(prev => ({
         ...prev,
-        name: prev.name || user.name || '',
+        name: prev.name || user.displayName || '',
         email: prev.email || user.email || ''
       }));
     }
@@ -60,47 +63,48 @@ export default function CheckoutModal() {
   const [orderId, setOrderId] = useState('');
 
   const generateOrderId = () => {
-    return 'AS-' + Math.floor(1000 + Math.random() * 9000);
+    return 'ORD' + Date.now();
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
+    setLoading(true);
     const newId = generateOrderId();
     setOrderId(newId);
     
-    // Save to global order state
-    const newOrder = {
-      orderId: newId,
-      userEmail: user?.email || formData.email,
-      orderDate: new Date().toISOString().split('T')[0],
-      status: 'Order Placed',
-      deliveryDate: 'Estimated 3-5 days',
-      address: `${formData.address}, ${formData.city} - ${formData.pincode}`,
-      paymentMethod: 'WhatsApp Payment',
-      items: cartItems.map(item => ({
-        id: item.id,
-        name: item.title,
-        image: item.image,
-        qty: item.quantity,
-        price: item.price
-      })),
-      totalPrice: subtotal,
-      timeline: [
-        { status: 'Order Placed', date: new Date().toLocaleString(), done: true },
-        { status: 'Confirmed', date: '', done: false },
-        { status: 'Packed', date: '', done: false },
-        { status: 'Shipped', date: '', done: false },
-        { status: 'Out for Delivery', date: '', done: false },
-        { status: 'Delivered', date: '', done: false }
-      ]
-    };
+    try {
+      const fullAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
+      const productString = cartItems.map(i => `${i.title} (x${i.quantity})`).join(', ');
 
-    addOrder(newOrder);
+      const orderData = {
+        orderId: newId,
+        name: formData.name,
+        phone: formData.phone,
+        address: fullAddress,
+        product: productString,
+        amount: subtotal,
+        status: 'Pending',
+        trackingId: '',
+        createdAt: serverTimestamp(),
+        userId: user?.uid || null
+      };
 
-    const msg = `🛒 *New Order - Asmita Gruh Udhyog*\n*Order ID: ${newId}*\n\n*Items Ordered:*\n${cartItems.map(i => `• ${i.title} × ${i.quantity} = ₹${(i.price * i.quantity).toLocaleString()}`).join('\n')}\n\n*Order Total: ₹${subtotal.toLocaleString()}*\n\n*Customer Details:*\nName: ${formData.name}\nPhone: ${formData.phone}${formData.email ? '\nEmail: ' + formData.email : ''}\nAddress: ${formData.address}, ${formData.city} - ${formData.pincode}${formData.notes ? '\nNotes: ' + formData.notes : ''}`;
-    const url = `https://wa.me/916352291433?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
-    setStep(2);
+      // Save to Firestore
+      await addDoc(collection(db, 'orders'), orderData);
+      
+      // WhatsApp message
+      const msg = `🛒 *New Order - Asmita Gruh Udhyog*\n*Order ID: ${newId}*\n\n*Items Ordered:*\n${cartItems.map(i => `• ${i.title} × ${i.quantity} = ₹${(i.price * i.quantity).toLocaleString()}`).join('\n')}\n\n*Order Total: ₹${subtotal.toLocaleString()}*\n\n*Customer Details:*\nName: ${formData.name}\nPhone: ${formData.phone}${formData.email ? '\nEmail: ' + formData.email : ''}\nAddress: ${fullAddress}${formData.notes ? '\nNotes: ' + formData.notes : ''}`;
+      const url = `https://wa.me/916352291433?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+      
+      setStep(2);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      toast.error("Failed to place order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const handleClose = () => {
     setIsCheckoutOpen(false);

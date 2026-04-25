@@ -1,59 +1,69 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut 
+} from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase/config';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const savedUser = localStorage.getItem('asmita_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Check if user is admin
+        const adminDoc = await getDoc(doc(db, 'adminUsers', firebaseUser.email));
+        const adminStatus = adminDoc.exists();
+        
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          isAdmin: adminStatus
+        });
+        setIsAdmin(adminStatus);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = (email, password) => {
-    // Mock login logic
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email && password) {
-          const userData = { email, name: email.split('@')[0], id: 'user_' + Date.now() };
-          setUser(userData);
-          localStorage.setItem('asmita_user', JSON.stringify(userData));
-          resolve(userData);
-        } else {
-          reject(new Error('Invalid credentials'));
-        }
-      }, 1000);
-    });
+  const login = async (email, password) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return result.user;
+    } catch (error) {
+      throw error;
+    }
   };
 
-  const signup = (name, email, password) => {
-    // Mock signup logic
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (name && email && password) {
-          const userData = { name, email, id: 'user_' + Date.now() };
-          setUser(userData);
-          localStorage.setItem('asmita_user', JSON.stringify(userData));
-          resolve(userData);
-        } else {
-          reject(new Error('All fields are required'));
-        }
-      }, 1000);
-    });
+  const signup = async (email, password, name) => {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      // You might want to save the name or other info to Firestore here
+      return result.user;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('asmita_user');
+    return signOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, isAdmin, login, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -66,3 +76,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
