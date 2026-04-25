@@ -3880,7 +3880,11 @@ h6 {
 
 .back-home-btn {
   background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid var(--g.mobile-nav-link.login-link,
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-light) !important;
+}
+
+.mobile-nav-link.login-link,
 .mobile-nav-link.profile-link {
   width: 100%;
   text-align: left;

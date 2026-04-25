@@ -313,14 +313,3 @@ export default function CheckoutModal() {
     </AnimatePresence>
   );
 }
-                >
-                  Back to Home
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
