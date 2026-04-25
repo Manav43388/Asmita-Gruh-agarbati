@@ -1,273 +1,267 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Package, Truck, CheckCircle, Clock, 
+  Package, Truck, CheckCircle, Clock, 
   MapPin, MessageCircle, Copy, ChevronRight, 
-  ArrowLeft, AlertCircle, Loader2 
+  ArrowLeft, ShoppingBag, CreditCard, Calendar,
+  Box, Info, User
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-// Mock Order Database
+// Enhanced Mock Order Database
 const MOCK_ORDERS = [
   {
-    orderId: 'AS-1001',
-    customerName: 'Rahul Sharma',
-    phoneNumber: '9876543210',
-    products: [
-      { name: 'Mogra Premium Agarbatti', qty: 2, price: 250 },
-      { name: 'Sandalwood Dhoop Sticks', qty: 1, price: 180 }
-    ],
-    totalPrice: 680,
-    status: 'Shipped',
+    orderId: 'AS-4821',
     orderDate: '2026-04-20',
+    status: 'Shipped',
     deliveryDate: '2026-04-26',
+    address: '123, Lotus Apartment, City Light, Surat, Gujarat - 395007',
+    paymentMethod: 'UPI (Paid)',
+    items: [
+      { 
+        id: 1, 
+        name: 'Mogra Premium Agarbatti', 
+        image: 'https://images.unsplash.com/photo-1612548403247-aa287dfe9410?auto=format&fit=crop&q=80&w=200', 
+        qty: 2, 
+        price: 250 
+      }
+    ],
+    totalPrice: 500,
+    timeline: [
+      { status: 'Order Placed', date: '2026-04-20 10:30 AM', done: true },
+      { status: 'Confirmed', date: '2026-04-20 11:45 AM', done: true },
+      { status: 'Packed', date: '2026-04-21 09:00 AM', done: true },
+      { status: 'Shipped', date: '2026-04-21 02:30 PM', done: true },
+      { status: 'Out for Delivery', date: '', done: false },
+      { status: 'Delivered', date: '', done: false }
+    ]
   },
   {
-    orderId: 'AS-1002',
-    customerName: 'Rahul Sharma',
-    phoneNumber: '9876543210',
-    products: [
-      { name: 'Rose Incense Sticks', qty: 3, price: 120 }
-    ],
-    totalPrice: 360,
+    orderId: 'AS-3912',
+    orderDate: '2026-04-10',
     status: 'Delivered',
-    orderDate: '2026-03-15',
-    deliveryDate: '2026-03-20',
-  },
-  {
-    orderId: 'AS-1003',
-    customerName: 'Priya Patel',
-    phoneNumber: '9988776655',
-    products: [
-      { name: 'Combo Divine Pack', qty: 1, price: 1200 }
+    deliveryDate: '2026-04-14',
+    address: '123, Lotus Apartment, City Light, Surat, Gujarat - 395007',
+    paymentMethod: 'Cash on Delivery',
+    items: [
+      { 
+        id: 2, 
+        name: 'Sandalwood Dhoop Sticks', 
+        image: 'https://images.unsplash.com/photo-1602812065352-721473210454?auto=format&fit=crop&q=80&w=200', 
+        qty: 1, 
+        price: 180 
+      }
     ],
-    totalPrice: 1200,
-    status: 'Processing',
-    orderDate: '2026-04-24',
-    deliveryDate: '2026-04-30',
+    totalPrice: 180,
+    timeline: [
+      { status: 'Order Placed', date: '2026-04-10 04:20 PM', done: true },
+      { status: 'Confirmed', date: '2026-04-10 05:00 PM', done: true },
+      { status: 'Packed', date: '2026-04-11 10:00 AM', done: true },
+      { status: 'Shipped', date: '2026-04-12 11:00 AM', done: true },
+      { status: 'Out for Delivery', date: '2026-04-14 09:30 AM', done: true },
+      { status: 'Delivered', date: '2026-04-14 02:15 PM', done: true }
+    ]
   }
 ];
 
-const STATUS_STEPS = [
-  { label: 'Order Placed', icon: Clock },
-  { label: 'Processing', icon: Package },
-  { label: 'Shipped', icon: Truck },
-  { label: 'Out for Delivery', icon: MapPin },
-  { label: 'Delivered', icon: CheckCircle },
-];
+const STATUS_MAP = {
+  'Order Placed': { icon: Clock, color: '#a0a0a0' },
+  'Confirmed': { icon: Info, color: '#3b82f6' },
+  'Packed': { icon: Box, color: '#f59e0b' },
+  'Shipped': { icon: Truck, color: '#8b5cf6' },
+  'Out for Delivery': { icon: MapPin, color: '#ec4899' },
+  'Delivered': { icon: CheckCircle, color: '#10b981' }
+};
+
+const TRACKER_STEPS = ['Order Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
 
 export default function OrderTracking() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth();
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [currentOrder, setCurrentOrder] = useState(null);
-  const [pastOrders, setPastOrders] = useState([]);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const lastSearch = localStorage.getItem('last_order_search');
-    if (lastSearch) {
-      setSearchQuery(lastSearch);
-      handleTrack(lastSearch);
-    }
-  }, []);
+  // In a real app, we'd fetch orders based on user.email or user.id
+  const userOrders = user ? MOCK_ORDERS : [];
 
-  const handleTrack = (query = searchQuery) => {
-    if (!query.trim()) return;
-    
-    setLoading(true);
-    setError('');
-    setCurrentOrder(null);
-    setPastOrders([]);
-
-    // Simulate API Fetch
-    setTimeout(() => {
-      const q = query.trim().toUpperCase();
-      let foundOrder = MOCK_ORDERS.find(o => o.orderId === q);
-      let userPastOrders = [];
-
-      if (!foundOrder) {
-        // Search by phone
-        userPastOrders = MOCK_ORDERS.filter(o => o.phoneNumber === query);
-        if (userPastOrders.length > 0) {
-          // Sort by date desc and take latest as current
-          userPastOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-          foundOrder = userPastOrders[0];
-          userPastOrders = userPastOrders.slice(1);
-        }
-      } else {
-        // If searching by ID, also find other orders for that user's phone
-        userPastOrders = MOCK_ORDERS.filter(o => o.phoneNumber === foundOrder.phoneNumber && o.orderId !== foundOrder.orderId);
-      }
-
-      if (foundOrder) {
-        setCurrentOrder(foundOrder);
-        setPastOrders(userPastOrders);
-        localStorage.setItem('last_order_search', query);
-      } else {
-        setError('No orders found for the given ID or Phone Number.');
-      }
-      setLoading(false);
-    }, 1000);
+  const getStepIndex = (status) => {
+    const idx = TRACKER_STEPS.indexOf(status);
+    return idx === -1 ? 0 : idx;
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    alert('Order ID Copied!');
-  };
-
-  const getStatusIndex = (status) => {
-    return STATUS_STEPS.findIndex(s => s.label === status);
-  };
+  if (!user) {
+    return (
+      <div className="tracking-page">
+        <div className="tracking-container">
+          <div className="auth-required-view glass-panel">
+            <User size={64} className="auth-icon" />
+            <h2>Login to Track Orders</h2>
+            <p>Please login to your account to view and track your orders.</p>
+            <button className="cta-button" onClick={() => window.dispatchEvent(new CustomEvent('open-auth'))}>
+              Login Now
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tracking-page">
       <div className="tracking-container">
-        {/* Header */}
-        <header className="tracking-header">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            Track Your Divine Order
-          </motion.h1>
-          <p>Enter your Order ID or Phone Number to stay updated</p>
-        </header>
-
-        {/* Search Box */}
-        <div className="tracking-search-box glass-panel">
-          <div className="search-input-wrapper">
-            <Search className="search-icon" size={20} />
-            <input 
-              type="text" 
-              placeholder="Order ID (e.g. AS-1001) or Phone Number" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleTrack()}
-            />
-          </div>
-          <button className="track-btn" onClick={() => handleTrack()} disabled={loading}>
-            {loading ? <Loader2 className="animate-spin" size={20} /> : 'Track Order'}
-          </button>
-        </div>
-
-        {/* Results */}
         <AnimatePresence mode="wait">
-          {error && (
+          {!selectedOrder ? (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="error-message glass-panel"
+              key="list"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="orders-list-view"
             >
-              <AlertCircle size={40} />
-              <p>{error}</p>
-            </motion.div>
-          )}
+              <header className="tracking-header-amazon">
+                <h1>Your Orders</h1>
+                <p>Manage and track your recent purchases</p>
+              </header>
 
-          {currentOrder && (
-            <motion.div 
-              key={currentOrder.orderId}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="order-results"
-            >
-              {/* Current Order Card */}
-              <div className="current-order-card glass-panel">
-                <div className="order-card-header">
-                  <div>
-                    <span className="order-id-label">Order ID</span>
-                    <h3>{currentOrder.orderId}</h3>
-                  </div>
-                  <button className="copy-id-btn" onClick={() => copyToClipboard(currentOrder.orderId)}>
-                    <Copy size={16} /> Copy ID
-                  </button>
-                </div>
-
-                <div className="order-details-grid">
-                  <div className="detail-item">
-                    <label>Customer Name</label>
-                    <p>{currentOrder.customerName}</p>
-                  </div>
-                  <div className="detail-item">
-                    <label>Order Date</label>
-                    <p>{new Date(currentOrder.orderDate).toLocaleDateString()}</p>
-                  </div>
-                  <div className="detail-item">
-                    <label>Total Price</label>
-                    <p className="price-tag">₹{currentOrder.totalPrice}</p>
-                  </div>
-                  <div className="detail-item">
-                    <label>Est. Delivery</label>
-                    <p>{new Date(currentOrder.deliveryDate).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                <div className="order-products-list">
-                  <label>Products Ordered</label>
-                  <ul>
-                    {currentOrder.products.map((p, i) => (
-                      <li key={i}>{p.name} <span>× {p.qty}</span></li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Progress Tracker */}
-                <div className="status-tracker">
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${(getStatusIndex(currentOrder.status) / (STATUS_STEPS.length - 1)) * 100}%` }}
-                    />
-                  </div>
-                  <div className="steps-container">
-                    {STATUS_STEPS.map((step, idx) => {
-                      const isActive = idx <= getStatusIndex(currentOrder.status);
-                      const Icon = step.icon;
-                      return (
-                        <div key={idx} className={`status-step ${isActive ? 'active' : ''}`}>
-                          <div className="step-icon-circle">
-                            <Icon size={20} />
-                          </div>
-                          <span>{step.label}</span>
+              <div className="orders-grid-amazon">
+                {userOrders.length > 0 ? userOrders.map(order => (
+                  <div key={order.orderId} className="order-card-amazon glass-panel" onClick={() => setSelectedOrder(order)}>
+                    <div className="order-card-top">
+                      <div className="order-main-info">
+                        <img src={order.items[0].image} alt={order.items[0].name} className="order-thumb" />
+                        <div className="order-text">
+                          <h4>{order.items[0].name}</h4>
+                          <p>Order ID: {order.orderId}</p>
+                          <p className="order-date-small">Ordered on: {new Date(order.orderDate).toLocaleDateString()}</p>
                         </div>
-                      );
-                    })}
+                      </div>
+                      <div className="order-status-badge" style={{ color: STATUS_MAP[order.status]?.color }}>
+                        <span className="dot" style={{ backgroundColor: STATUS_MAP[order.status]?.color }} />
+                        {order.status}
+                      </div>
+                    </div>
+                    <div className="order-card-bottom">
+                      <div className="order-meta-item">
+                        <span>Qty: {order.items[0].qty}</span>
+                        <span className="divider">|</span>
+                        <span>Total: ₹{order.totalPrice}</span>
+                      </div>
+                      <button className="view-detail-btn-amazon">
+                        Track Order <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="no-orders-view glass-panel">
+                    <ShoppingBag size={48} />
+                    <h3>No orders yet</h3>
+                    <p>When you place an order, it will appear here.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="detail"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="order-detail-view-amazon"
+            >
+              <button className="back-link" onClick={() => setSelectedOrder(null)}>
+                <ArrowLeft size={18} /> Back to Orders
+              </button>
+
+              <div className="detail-layout">
+                {/* Left: Product & Info */}
+                <div className="detail-main">
+                  <div className="detail-product-card glass-panel">
+                    <div className="detail-product-header">
+                      <img src={selectedOrder.items[0].image} alt={selectedOrder.items[0].name} className="detail-img" />
+                      <div className="detail-product-info">
+                        <h2>{selectedOrder.items[0].name}</h2>
+                        <div className="id-copy-row">
+                          <span>Order #{selectedOrder.orderId}</span>
+                          <button onClick={() => { navigator.clipboard.writeText(selectedOrder.orderId); alert('Copied!'); }}>
+                            <Copy size={14} />
+                          </button>
+                        </div>
+                        <p className="detail-price">₹{selectedOrder.totalPrice}</p>
+                      </div>
+                    </div>
+
+                    <div className="detail-info-grid">
+                      <div className="info-block">
+                        <div className="info-label"><MapPin size={14} /> Delivery Address</div>
+                        <p>{selectedOrder.address}</p>
+                      </div>
+                      <div className="info-block">
+                        <div className="info-label"><CreditCard size={14} /> Payment Method</div>
+                        <p>{selectedOrder.paymentMethod}</p>
+                      </div>
+                      <div className="info-block">
+                        <div className="info-label"><Calendar size={14} /> Est. Delivery</div>
+                        <p>{new Date(selectedOrder.deliveryDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tracking Timeline */}
+                  <div className="detail-timeline-card glass-panel">
+                    <h3>Order Progress</h3>
+                    
+                    {/* Progress Bar */}
+                    <div className="amazon-tracker">
+                      <div className="tracker-line">
+                        <div 
+                          className="tracker-fill" 
+                          style={{ width: `${(getStepIndex(selectedOrder.status) / (TRACKER_STEPS.length - 1)) * 100}%` }} 
+                        />
+                      </div>
+                      <div className="tracker-steps">
+                        {TRACKER_STEPS.map((step, idx) => {
+                          const active = idx <= getStepIndex(selectedOrder.status);
+                          return (
+                            <div key={step} className={`tracker-step ${active ? 'active' : ''}`}>
+                              <div className="step-point" />
+                              <span className="step-label">{step}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="timeline-list">
+                      {selectedOrder.timeline.map((event, i) => (
+                        <div key={i} className={`timeline-item ${event.done ? 'done' : ''}`}>
+                          <div className="timeline-marker">
+                            {event.done ? <CheckCircle size={16} /> : <div className="dot" />}
+                          </div>
+                          <div className="timeline-content">
+                            <p className="status-text">{event.status}</p>
+                            {event.date && <p className="date-text">{event.date}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div className="card-actions">
-                  <a 
-                    href={`https://wa.me/916352291433?text=Hi, I want to inquire about my order ${currentOrder.orderId}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="whatsapp-track-btn"
-                  >
-                    <MessageCircle size={18} /> Contact on WhatsApp
-                  </a>
+                {/* Right: Actions */}
+                <div className="detail-side">
+                  <div className="actions-card glass-panel">
+                    <h3>Need Help?</h3>
+                    <p>Have questions about your order? We're here to help you.</p>
+                    <a 
+                      href={`https://wa.me/916352291433?text=Hi, I need help with my order ${selectedOrder.orderId}`} 
+                      className="whatsapp-btn-amazon"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle size={20} /> Chat on WhatsApp
+                    </a>
+                  </div>
                 </div>
               </div>
-
-              {/* Past Orders Section */}
-              {pastOrders.length > 0 && (
-                <div className="past-orders-section">
-                  <h2>Past Orders</h2>
-                  <div className="past-orders-list">
-                    {pastOrders.map(order => (
-                      <div key={order.orderId} className="past-order-item glass-panel">
-                        <div className="past-order-info">
-                          <span className="past-id">{order.orderId}</span>
-                          <span className="past-date">{new Date(order.orderDate).toLocaleDateString()}</span>
-                        </div>
-                        <div className="past-order-meta">
-                          <span className={`status-badge ${order.status.toLowerCase()}`}>{order.status}</span>
-                          <span className="past-price">₹{order.totalPrice}</span>
-                        </div>
-                        <button className="view-details-btn" onClick={() => handleTrack(order.orderId)}>
-                          View Details <ChevronRight size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
