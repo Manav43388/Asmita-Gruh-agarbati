@@ -30,67 +30,6 @@ const STEPS = [
 ];
 
 export default function OrderTracking() {
-  const [searchInput, setSearchInput] = useState('');
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Sync with Firestore if an order is found
-  useEffect(() => {
-    let unsubscribe = () => {};
-
-    if (order?.id) {
-      unsubscribe = onSnapshot(doc(db, 'orders', order.id), (doc) => {
-        if (doc.exists()) {
-          setOrder({ id: doc.id, ...doc.data() });
-        }
-      });
-    }
-
-    return () => unsubscribe();
-  }, [order?.id]);
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchInput.trim()) return;
-
-    setLoading(true);
-    setError(null);
-    setOrder(null);
-
-    try {
-      const ordersRef = collection(db, 'orders');
-      
-      // Try searching by Order ID first
-      const qId = query(ordersRef, where('orderId', '==', searchInput.trim()));
-      const unsubscribeId = onSnapshot(qId, (snapshot) => {
-        if (!snapshot.empty) {
-          const doc = snapshot.docs[0];
-          setOrder({ id: doc.id, ...doc.data() });
-          setLoading(false);
-        } else {
-          // If not found by ID, try by Phone
-          const qPhone = query(ordersRef, where('phone', '==', searchInput.trim()));
-          onSnapshot(qPhone, (phoneSnapshot) => {
-            if (!phoneSnapshot.empty) {
-              const doc = phoneSnapshot.docs[0];
-              setOrder({ id: doc.id, ...doc.data() });
-            } else {
-              setError('Order not found. Please check your Order ID or Phone Number.');
-            }
-            setLoading(false);
-          });
-        }
-      });
-    } catch (err) {
-      console.error(err);
-      setError('Something went wrong. Please try again.');
-      setLoading(false);
-    }
-  };
-
-  const currentStepIndex = STEPS.findIndex(s => s.id === order?.status);
-
   const { user } = useAuth();
   const [searchInput, setSearchInput] = useState('');
   const [userOrders, setUserOrders] = useState([]);
@@ -109,7 +48,7 @@ export default function OrderTracking() {
     const q = query(collection(db, 'orders'), where('userEmail', '==', user.email));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUserOrders(orders.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds));
+      setUserOrders(orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
       setLoading(false);
     });
 
@@ -128,7 +67,7 @@ export default function OrderTracking() {
   }, [selectedOrder?.id]);
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!searchInput.trim()) return;
 
     setLoading(true);
@@ -170,7 +109,7 @@ export default function OrderTracking() {
   return (
     <div className="tracking-page">
       <div className="tracking-container">
-        {/* Header - Always show search for easy access */}
+        {/* Header */}
         <header className="tracking-header-amazon">
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}
@@ -181,7 +120,7 @@ export default function OrderTracking() {
           <p>Enter your Order ID or Phone Number to stay updated</p>
         </header>
 
-        {/* Search Box - Matches the "Yesterday" UI */}
+        {/* Search Box */}
         <div className="tracking-search-box glass-panel">
           <form onSubmit={handleSearch} className="search-input-wrapper">
             <Search className="search-icon" size={20} />
@@ -354,3 +293,4 @@ export default function OrderTracking() {
       </div>
     </div>
   );
+}
