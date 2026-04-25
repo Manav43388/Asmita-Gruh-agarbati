@@ -7,62 +7,7 @@ import {
   Box, Info, User
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-// Enhanced Mock Order Database
-const MOCK_ORDERS = [
-  {
-    orderId: 'AS-4821',
-    orderDate: '2026-04-20',
-    status: 'Shipped',
-    deliveryDate: '2026-04-26',
-    address: '123, Lotus Apartment, City Light, Surat, Gujarat - 395007',
-    paymentMethod: 'UPI (Paid)',
-    items: [
-      { 
-        id: 1, 
-        name: 'Premium Agarbatti', 
-        image: '/agarbatti.png', 
-        qty: 2, 
-        price: 250 
-      }
-    ],
-    totalPrice: 500,
-    timeline: [
-      { status: 'Order Placed', date: '2026-04-20 10:30 AM', done: true },
-      { status: 'Confirmed', date: '2026-04-20 11:45 AM', done: true },
-      { status: 'Packed', date: '2026-04-21 09:00 AM', done: true },
-      { status: 'Shipped', date: '2026-04-21 02:30 PM', done: true },
-      { status: 'Out for Delivery', date: '', done: false },
-      { status: 'Delivered', date: '', done: false }
-    ]
-  },
-  {
-    orderId: 'AS-3912',
-    orderDate: '2026-04-10',
-    status: 'Delivered',
-    deliveryDate: '2026-04-14',
-    address: '123, Lotus Apartment, City Light, Surat, Gujarat - 395007',
-    paymentMethod: 'Cash on Delivery',
-    items: [
-      { 
-        id: 2, 
-        name: 'Mystic Dhoop Cones', 
-        image: '/dhoop.png', 
-        qty: 1, 
-        price: 180 
-      }
-    ],
-    totalPrice: 180,
-    timeline: [
-      { status: 'Order Placed', date: '2026-04-10 04:20 PM', done: true },
-      { status: 'Confirmed', date: '2026-04-10 05:00 PM', done: true },
-      { status: 'Packed', date: '2026-04-11 10:00 AM', done: true },
-      { status: 'Shipped', date: '2026-04-12 11:00 AM', done: true },
-      { status: 'Out for Delivery', date: '2026-04-14 09:30 AM', done: true },
-      { status: 'Delivered', date: '2026-04-14 02:15 PM', done: true }
-    ]
-  }
-];
+import { useOrders } from '../context/OrderContext';
 
 const STATUS_MAP = {
   'Order Placed': { icon: Clock, color: '#a0a0a0' },
@@ -77,11 +22,9 @@ const TRACKER_STEPS = ['Order Placed', 'Packed', 'Shipped', 'Out for Delivery', 
 
 export default function OrderTracking() {
   const { user } = useAuth();
+  const { userOrders } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // In a real app, we'd fetch orders based on user.email or user.id
-  const userOrders = user ? MOCK_ORDERS : [];
 
   const getStepIndex = (status) => {
     const idx = TRACKER_STEPS.indexOf(status);

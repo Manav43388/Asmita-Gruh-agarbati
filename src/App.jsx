@@ -14,6 +14,7 @@ import CheckoutModal from './components/CheckoutModal';
 import OrderTracking from './components/OrderTracking';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { OrderProvider } from './context/OrderContext';
 import './index.css';
 
 const Home = () => (
@@ -31,29 +32,31 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <CartProvider>
-          <Suspense fallback={null}>
-            <Scene />
-          </Suspense>
+        <OrderProvider>
+          <CartProvider>
+            <Suspense fallback={null}>
+              <Scene />
+            </Suspense>
 
-          <Navbar />
+            <Navbar />
 
-          <div className="content-layer">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/track" element={
-                <>
-                  <OrderTracking />
-                  <Footer />
-                </>
-              } />
-            </Routes>
-          </div>
+            <div className="content-layer">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/track" element={
+                  <>
+                    <OrderTracking />
+                    <Footer />
+                  </>
+                } />
+              </Routes>
+            </div>
 
-          {/* Global overlays */}
-          <CartDrawer />
-          <CheckoutModal />
-        </CartProvider>
+            {/* Global overlays */}
+            <CartDrawer />
+            <CheckoutModal />
+          </CartProvider>
+        </OrderProvider>
       </AuthProvider>
     </Router>
   );

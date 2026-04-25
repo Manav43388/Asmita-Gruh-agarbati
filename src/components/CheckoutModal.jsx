@@ -4,12 +4,14 @@ import { X, CheckCircle, Package, Truck, MessageCircle, ChevronRight } from 'luc
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useOrders } from '../context/OrderContext';
 
 const STEPS = ['Review Order', 'Shipping Info', 'Confirm'];
 
 export default function CheckoutModal() {
   const { cartItems, isCheckoutOpen, setIsCheckoutOpen, subtotal, clearCart } = useCart();
   const { user } = useAuth();
+  const { addOrder } = useOrders();
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', address: '', city: '', pincode: '', notes: '' });
 
@@ -64,6 +66,36 @@ export default function CheckoutModal() {
   const handlePlaceOrder = () => {
     const newId = generateOrderId();
     setOrderId(newId);
+    
+    // Save to global order state
+    const newOrder = {
+      orderId: newId,
+      userEmail: user?.email || formData.email,
+      orderDate: new Date().toISOString().split('T')[0],
+      status: 'Order Placed',
+      deliveryDate: 'Estimated 3-5 days',
+      address: `${formData.address}, ${formData.city} - ${formData.pincode}`,
+      paymentMethod: 'WhatsApp Payment',
+      items: cartItems.map(item => ({
+        id: item.id,
+        name: item.title,
+        image: item.image,
+        qty: item.quantity,
+        price: item.price
+      })),
+      totalPrice: subtotal,
+      timeline: [
+        { status: 'Order Placed', date: new Date().toLocaleString(), done: true },
+        { status: 'Confirmed', date: '', done: false },
+        { status: 'Packed', date: '', done: false },
+        { status: 'Shipped', date: '', done: false },
+        { status: 'Out for Delivery', date: '', done: false },
+        { status: 'Delivered', date: '', done: false }
+      ]
+    };
+
+    addOrder(newOrder);
+
     const msg = `🛒 *New Order - Asmita Gruh Udhyog*\n*Order ID: ${newId}*\n\n*Items Ordered:*\n${cartItems.map(i => `• ${i.title} × ${i.quantity} = ₹${(i.price * i.quantity).toLocaleString()}`).join('\n')}\n\n*Order Total: ₹${subtotal.toLocaleString()}*\n\n*Customer Details:*\nName: ${formData.name}\nPhone: ${formData.phone}${formData.email ? '\nEmail: ' + formData.email : ''}\nAddress: ${formData.address}, ${formData.city} - ${formData.pincode}${formData.notes ? '\nNotes: ' + formData.notes : ''}`;
     const url = `https://wa.me/916352291433?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
