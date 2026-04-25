@@ -3,7 +3,8 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signOut 
+  signOut,
+  updateProfile 
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
@@ -51,7 +52,10 @@ export const AuthProvider = ({ children }) => {
   const signup = async (email, password, name) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      // You might want to save the name or other info to Firestore here
+      // Set the display name
+      if (name) {
+        await updateProfile(result.user, { displayName: name });
+      }
       return result.user;
     } catch (error) {
       throw error;
