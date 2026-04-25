@@ -24,7 +24,7 @@ export default function AuthModal({ isOpen, onClose }) {
       if (isLogin) {
         await login(formData.email, formData.password);
       } else {
-        await signup(formData.name, formData.email, formData.password);
+        await signup(formData.email, formData.password, formData.name);
       }
       onClose();
     } catch (err) {
@@ -62,9 +62,9 @@ export default function AuthModal({ isOpen, onClose }) {
             <div className="auth-content profile-view">
               <div className="auth-header">
                 <div className="avatar-large">
-                  {user.name.charAt(0).toUpperCase()}
+                  {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
                 </div>
-                <h3>Welcome, {user.name}!</h3>
+                <h3>Welcome, {user.displayName || 'User'}!</h3>
                 <p>{user.email}</p>
               </div>
               

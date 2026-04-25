@@ -144,7 +144,7 @@ export default function Navbar() {
                   className="mobile-nav-link profile-link" 
                   onClick={() => { setIsAuthOpen(true); setMenuOpen(false); }}
                 >
-                  <User size={18} /> Profile ({user.name})
+                  <User size={18} /> Profile ({user.displayName || 'User'})
                 </button>
               ) : (
                 <button 
