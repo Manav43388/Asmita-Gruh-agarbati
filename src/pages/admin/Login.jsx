@@ -6,6 +6,7 @@ import { Lock, Mail, Loader2, ShieldCheck } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { user, isAdmin, login, loading: authLoading } = useAuth();
   const navigate = useNavigate();
