@@ -88,12 +88,21 @@ export default function Products() {
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
       if (!snapshot.empty) {
-        const productsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          title: doc.data().name,
-          desc: doc.data().description,
-          ...doc.data()
-        }));
+        const productsData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.name || data.title || 'New Product',
+            desc: data.description || data.desc || 'No description available',
+            image: data.image || data.imageUrl || '/agarbatti.png',
+            price: data.price || 0,
+            unit: data.unit || 'per pack',
+            category: data.category || 'Incense Sticks',
+            stock: data.stock || 10,
+            tag: data.tag || null,
+            ...data
+          };
+        });
         setProducts(productsData);
       } else {
         setProducts(initialProducts);
