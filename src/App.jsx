@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+// Build trigger for tracking page update
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Scene from './components/Scene';
 import Navbar from './components/Navbar';
