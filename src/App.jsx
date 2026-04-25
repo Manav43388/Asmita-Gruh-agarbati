@@ -10,29 +10,32 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
 function App() {
   return (
-    <CartProvider>
-      <Suspense fallback={null}>
-        <Scene />
-      </Suspense>
+    <AuthProvider>
+      <CartProvider>
+        <Suspense fallback={null}>
+          <Scene />
+        </Suspense>
 
-      <div className="content-layer">
-        <Navbar />
-        <Products />
-        <FAQ />
-        <Reviews />
-        <About />
-        <Contact />
-        <Footer />
-      </div>
+        <div className="content-layer">
+          <Navbar />
+          <Products />
+          <FAQ />
+          <Reviews />
+          <About />
+          <Contact />
+          <Footer />
+        </div>
 
-      {/* Global overlays */}
-      <CartDrawer />
-      <CheckoutModal />
-    </CartProvider>
+        {/* Global overlays */}
+        <CartDrawer />
+        <CheckoutModal />
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

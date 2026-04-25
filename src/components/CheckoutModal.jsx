@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, Package, Truck, MessageCircle, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const STEPS = ['Review Order', 'Shipping Info', 'Confirm'];
 
 export default function CheckoutModal() {
   const { cartItems, isCheckoutOpen, setIsCheckoutOpen, subtotal, clearCart } = useCart();
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', address: '', city: '', pincode: '', notes: '' });
+
+  useEffect(() => {
+    if (user && isCheckoutOpen) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || user.name || '',
+        email: prev.email || user.email || ''
+      }));
+    }
+  }, [user, isCheckoutOpen]);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {

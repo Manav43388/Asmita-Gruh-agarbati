@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X } from 'lucide-react';
+import { ShoppingCart, Menu, X, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from './AuthModal';
 
 const NAV_LINKS = [
   { href: '#home', label: 'Home' },
@@ -12,7 +14,9 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { totalItems, setIsCartOpen } = useCart();
+  const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const handleNavClick = (href) => {
     setMenuOpen(false);
@@ -40,7 +44,19 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="nav-actions">
+          {/* Auth Button */}
+          {user ? (
+            <div className="nav-user-avatar" onClick={() => setIsAuthOpen(true)}>
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <button className="nav-login-btn" onClick={() => setIsAuthOpen(true)}>
+              <User size={18} />
+              <span>Login</span>
+            </button>
+          )}
+
           {/* Cart Button */}
           <button
             className="nav-cart-btn"
@@ -85,19 +101,40 @@ export default function Navbar() {
             transition={{ duration: 0.25 }}
             className="mobile-menu glass-panel"
           >
-            {NAV_LINKS.map(link => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="mobile-nav-link"
-                onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
-              >
-                {link.label}
-              </a>
-            ))}
+            <div className="mobile-menu-links">
+              {NAV_LINKS.map(link => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="mobile-nav-link"
+                  onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
+                >
+                  {link.label}
+                </a>
+              ))}
+              <div className="mobile-menu-divider" />
+              {user ? (
+                <button 
+                  className="mobile-nav-link profile-link" 
+                  onClick={() => { setIsAuthOpen(true); setMenuOpen(false); }}
+                >
+                  <User size={18} /> Profile ({user.name})
+                </button>
+              ) : (
+                <button 
+                  className="mobile-nav-link login-link" 
+                  onClick={() => { setIsAuthOpen(true); setMenuOpen(false); }}
+                >
+                  <User size={18} /> Login / Sign Up
+                </button>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </>
   );
 }
