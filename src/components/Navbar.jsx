@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, User } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -15,19 +16,29 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { totalItems, setIsCartOpen } = useCart();
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const handleNavClick = (href) => {
     setMenuOpen(false);
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const el = document.querySelector(href);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.querySelector(href);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
     <>
       <nav className="navbar glass-panel" style={{ border: 'none' }}>
-        <div className="nav-brand">
+        <div className="nav-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <img src="/logo.png" alt="Asmita Gruh Udhyog Logo" className="nav-logo-img" />
           <span className="brand-full">Asmita Gruh Udhyog</span>
           <span className="brand-short">Asmita</span>
@@ -42,6 +53,11 @@ export default function Navbar() {
               </a>
             </li>
           ))}
+          <li>
+            <Link to="/track" className={location.pathname === '/track' ? 'active-link' : ''}>
+              Track Order
+            </Link>
+          </li>
         </ul>
 
         <div className="nav-actions">
@@ -112,6 +128,9 @@ export default function Navbar() {
                   {link.label}
                 </a>
               ))}
+              <Link to="/track" className="mobile-nav-link track-link" onClick={() => setMenuOpen(false)}>
+                <Search size={18} /> Track Your Order
+              </Link>
               <div className="mobile-menu-divider" />
               {user ? (
                 <button 

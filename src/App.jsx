@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Scene from './components/Scene';
 import Navbar from './components/Navbar';
 import Products from './components/Products';
@@ -9,33 +10,44 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
+import OrderTracking from './components/OrderTracking';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
+const Home = () => (
+  <div className="content-layer">
+    <div id="home"><Products /></div>
+    <div id="products"><FAQ /></div>
+    <div id="reviews"><Reviews /></div>
+    <div id="about"><About /></div>
+    <div id="contact"><Contact /></div>
+    <Footer />
+  </div>
+);
+
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
+    <Router>
+      <AuthProvider>
+        <CartProvider>
+          <Suspense fallback={null}>
+            <Scene />
+          </Suspense>
 
-        <div className="content-layer">
           <Navbar />
-          <Products />
-          <FAQ />
-          <Reviews />
-          <About />
-          <Contact />
-          <Footer />
-        </div>
 
-        {/* Global overlays */}
-        <CartDrawer />
-        <CheckoutModal />
-      </CartProvider>
-    </AuthProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/track" element={<OrderTracking />} />
+          </Routes>
+
+          {/* Global overlays */}
+          <CartDrawer />
+          <CheckoutModal />
+        </CartProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
