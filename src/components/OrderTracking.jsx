@@ -88,7 +88,6 @@ export default function OrderTracking() {
   const currentStepIndex = STEPS.findIndex(s => s.id === order?.status);
 
   return (
-  return (
     <div className="section tracking-section" style={{ position: 'relative', zIndex: 50 }}>
       <div className="container" style={{ maxWidth: '800px', margin: '0 auto' }}>
         <header className="products-header">
