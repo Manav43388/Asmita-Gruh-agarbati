@@ -47,7 +47,7 @@ export default function OrderTracking() {
 
     const q = query(
       collection(db, 'orders'), 
-      where('userEmail', '==', user.email)
+      where('userId', '==', user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

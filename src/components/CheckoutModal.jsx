@@ -85,7 +85,8 @@ export default function CheckoutModal() {
         status: 'Pending',
         trackingId: '',
         createdAt: serverTimestamp(),
-        userId: user?.uid || null
+        userId: user?.uid || null,
+        userEmail: user?.email || null
       };
 
       // Save to Firestore
