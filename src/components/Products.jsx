@@ -114,7 +114,12 @@ export default function Products() {
             ...data
           };
         });
-        setProducts(productsData);
+        // Merge initial products with new Firebase products
+        // We filter out any initial products that might have been recreated in Firebase with the same name
+        const firebaseNames = productsData.map(p => p.title.toLowerCase());
+        const filteredInitial = initialProducts.filter(p => !firebaseNames.includes(p.title.toLowerCase()));
+        
+        setProducts([...filteredInitial, ...productsData]);
       } else {
         setProducts(initialProducts);
       }
