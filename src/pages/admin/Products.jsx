@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { db, storage } from '../../firebase/config';
 import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { toast } from 'react-hot-toast';
 
 const AdminProducts = () => {
@@ -72,12 +71,8 @@ const AdminProducts = () => {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          canvas.toBlob((blob) => {
-            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-              type: 'image/jpeg',
-              lastModified: Date.now()
-            }));
-          }, 'image/jpeg', 0.95);
+          const base64String = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(base64String);
         };
         img.onerror = (error) => reject(error);
       };
@@ -92,13 +87,8 @@ const AdminProducts = () => {
       let finalImageUrl = formData.image;
 
       if (imageFile) {
-        toast.loading('Compressing image...', { id: 'uploadToast' });
-        const compressedFile = await compressImage(imageFile);
-        
-        toast.loading('Uploading...', { id: 'uploadToast' });
-        const imageRef = ref(storage, `products/${Date.now()}_${compressedFile.name}`);
-        await uploadBytes(imageRef, compressedFile);
-        finalImageUrl = await getDownloadURL(imageRef);
+        toast.loading('Processing image safely...', { id: 'uploadToast' });
+        finalImageUrl = await compressImage(imageFile);
         toast.dismiss('uploadToast');
       } else if (!isEditing && !formData.image) {
         toast.error('Please upload an image');
