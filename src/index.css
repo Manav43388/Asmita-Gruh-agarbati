@@ -273,7 +273,7 @@ h6 {
 .product-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.5s ease;
 }
 
@@ -2819,7 +2819,7 @@ h6 {
 .pd-main-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .pd-tag {
