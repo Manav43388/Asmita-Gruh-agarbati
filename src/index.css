@@ -453,6 +453,12 @@ h6 {
   color: var(--primary-color);
 }
 
+@media (min-width: 969px) {
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
 /* ================================================
    RESPONSIVE BREAKPOINTS
    ================================================ */
@@ -527,12 +533,17 @@ h6 {
     max-width: 55vw;
   }
 
+  .nav-logo-img {
+    width: 36px;
+    height: 36px;
+  }
+
   .brand-full {
-    display: inline;
+    display: none;
   }
 
   .brand-short {
-    display: none;
+    display: inline;
   }
 
   .navbar {
@@ -541,10 +552,23 @@ h6 {
     border-radius: 12px;
   }
 
+  .nav-actions {
+    gap: 0.5rem;
+  }
+
+  .nav-user-avatar,
   .nav-cart-btn,
-  .hamburger-btn {
+  .hamburger-btn,
+  .nav-login-btn {
     width: 36px;
     height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .nav-login-btn span {
+    display: none;
   }
 
   /* — Contact container — */
@@ -868,7 +892,17 @@ h6 {
   }
 
   .cat-circles-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
     gap: 1.2rem 1.4rem;
+    padding-bottom: 15px;
+    scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .cat-circles-row::-webkit-scrollbar {
+    display: none;
   }
 
   .cat-circle-img {

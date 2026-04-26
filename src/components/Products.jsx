@@ -89,7 +89,7 @@ const initialProducts = [
 const CATEGORIES = ['All', 'Incense Sticks', 'Dhoop Sticks', 'Puja Items', 'Idol Cloth', 'Other Spiritual Products'];
 
 export default function Products() {
-  const { addToCart, cartItems, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
+  const { addToCart, cartItems, setIsCartOpen, setIsCheckoutOpen, updateQuantity, removeFromCart } = useCart();
   const [addedIds, setAddedIds] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -231,34 +231,48 @@ export default function Products() {
                   <span className="product-unit">{p.unit || 'per pack'}</span>
                 </div>
 
-                {inCart > 0 ? (
-                  <div className="card-qty-stepper" id={`qty-stepper-${p.id}`}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+                  {inCart > 0 ? (
+                    <div className="card-qty-stepper" id={`qty-stepper-${p.id}`}>
+                      <button
+                        className="card-qty-btn"
+                        onClick={(e) => { e.stopPropagation(); handleDecrease(p.id, inCart); }}
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus size={15} />
+                      </button>
+                      <span className="card-qty-count">{inCart}</span>
+                      <button
+                        className="card-qty-btn"
+                        onClick={(e) => { e.stopPropagation(); handleIncrease(p); }}
+                        aria-label="Increase quantity"
+                      >
+                        <Plus size={15} />
+                      </button>
+                    </div>
+                  ) : (
                     <button
-                      className="card-qty-btn"
-                      onClick={() => handleDecrease(p.id, inCart)}
-                      aria-label="Decrease quantity"
+                      className="add-cart-btn-solid"
+                      onClick={(e) => { e.stopPropagation(); handleAddToCart(p); }}
+                      id={`add-to-cart-${p.id}`}
                     >
-                      <Minus size={15} />
+                      <ShoppingCart size={16} />
+                      Add to Cart
                     </button>
-                    <span className="card-qty-count">{inCart}</span>
-                    <button
-                      className="card-qty-btn"
-                      onClick={() => handleIncrease(p)}
-                      aria-label="Increase quantity"
-                    >
-                      <Plus size={15} />
-                    </button>
-                  </div>
-                ) : (
+                  )}
                   <button
                     className="add-cart-btn-solid"
-                    onClick={() => handleAddToCart(p)}
-                    id={`add-to-cart-${p.id}`}
+                    style={{ background: '#ecc244', color: '#000', padding: '0.5rem' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (inCart === 0) handleAddToCart(p);
+                      if (setIsCheckoutOpen) setIsCheckoutOpen(true);
+                      else setIsCartOpen(true);
+                    }}
                   >
-                    <ShoppingCart size={16} />
-                    Add to Cart
+                    Buy Now
                   </button>
-                )}
+                </div>
               </div>
             </motion.div>
           );

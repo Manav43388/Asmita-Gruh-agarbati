@@ -9,8 +9,9 @@ import {
   IndianRupee,
   Loader2
 } from 'lucide-react';
-import { db } from '../../firebase/config';
+import { db, storage } from '../../firebase/config';
 import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { toast } from 'react-hot-toast';
 
 const AdminProducts = () => {
@@ -19,6 +20,8 @@ const AdminProducts = () => {
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -41,12 +44,27 @@ const AdminProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setUploadingImage(true);
+      let finalImageUrl = formData.image;
+
+      if (imageFile) {
+        const imageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(imageRef, imageFile);
+        finalImageUrl = await getDownloadURL(imageRef);
+      } else if (!isEditing && !formData.image) {
+        toast.error('Please upload an image');
+        setUploadingImage(false);
+        return;
+      }
+
+      const finalData = { ...formData, image: finalImageUrl };
+
       if (isEditing) {
-        await updateDoc(doc(db, 'products', currentId), formData);
+        await updateDoc(doc(db, 'products', currentId), finalData);
         toast.success('Product updated successfully');
       } else {
         await addDoc(collection(db, 'products'), {
-          ...formData,
+          ...finalData,
           createdAt: new Date()
         });
         toast.success('Product added successfully');
@@ -54,7 +72,10 @@ const AdminProducts = () => {
       setShowModal(false);
       resetForm();
     } catch (error) {
+      console.error(error);
       toast.error('Operation failed');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -87,6 +108,7 @@ const AdminProducts = () => {
     });
     setIsEditing(false);
     setCurrentId(null);
+    setImageFile(null);
   };
 
   if (loading) return <div className="admin-page-container">Loading...</div>;
@@ -176,10 +198,12 @@ const AdminProducts = () => {
                     value={formData.category}
                     onChange={e => setFormData({...formData, category: e.target.value})}
                   >
-                    <option>Incense Sticks</option>
-                    <option>Dhoop Sticks</option>
-                    <option>Pujan Samagri</option>
-                    <option>Attar & Perfumes</option>
+                    <option style={{background: '#1a1a1a', color: '#fff'}} value="Incense Sticks">Incense Sticks</option>
+                    <option style={{background: '#1a1a1a', color: '#fff'}} value="Dhoop Sticks">Dhoop Sticks</option>
+                    <option style={{background: '#1a1a1a', color: '#fff'}} value="Pujan Samagri">Pujan Samagri</option>
+                    <option style={{background: '#1a1a1a', color: '#fff'}} value="Attar & Perfumes">Attar & Perfumes</option>
+                    <option style={{background: '#1a1a1a', color: '#fff'}} value="Idol Cloth">Idol Cloth</option>
+                    <option style={{background: '#1a1a1a', color: '#fff'}} value="Other Spiritual Products">Other Spiritual Products</option>
                   </select>
                 </div>
                 <div className="admin-form-group">
@@ -195,14 +219,24 @@ const AdminProducts = () => {
               </div>
 
               <div className="admin-form-group">
-                <label className="admin-label">Image URL</label>
+                <label className="admin-label">Product Image</label>
                 <input 
+                  type="file"
+                  accept="image/*"
                   className="admin-input" 
-                  value={formData.image} 
-                  onChange={e => setFormData({...formData, image: e.target.value})}
-                  placeholder="https://images.unsplash.com/..."
-                  required
+                  onChange={e => {
+                    if (e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                  style={{ padding: '0.8rem' }}
+                  required={!isEditing && !formData.image}
                 />
+                {isEditing && formData.image && !imageFile && (
+                  <p style={{ fontSize: '0.85rem', color: '#a0a0a0', marginTop: '8px' }}>
+                    Current image exists. Upload a new file to replace it.
+                  </p>
+                )}
               </div>
 
               <div className="admin-form-group">
@@ -220,8 +254,8 @@ const AdminProducts = () => {
                 <button type="button" className="admin-button" style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="admin-button">
-                  {isEditing ? 'Save Changes' : 'Create Product'}
+                <button type="submit" className="admin-button" disabled={uploadingImage}>
+                  {uploadingImage ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create Product')}
                 </button>
               </div>
             </form>
