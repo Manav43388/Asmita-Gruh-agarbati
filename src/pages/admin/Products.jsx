@@ -50,8 +50,8 @@ const AdminProducts = () => {
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1920;
           let width = img.width;
           let height = img.height;
 
@@ -77,7 +77,7 @@ const AdminProducts = () => {
               type: 'image/jpeg',
               lastModified: Date.now()
             }));
-          }, 'image/jpeg', 0.7);
+          }, 'image/jpeg', 0.95);
         };
         img.onerror = (error) => reject(error);
       };
