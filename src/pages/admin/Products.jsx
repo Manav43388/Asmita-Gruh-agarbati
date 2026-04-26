@@ -41,6 +41,50 @@ const AdminProducts = () => {
     return () => unsubscribe();
   }, []);
 
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            }));
+          }, 'image/jpeg', 0.7);
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -48,9 +92,14 @@ const AdminProducts = () => {
       let finalImageUrl = formData.image;
 
       if (imageFile) {
-        const imageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
-        await uploadBytes(imageRef, imageFile);
+        toast.loading('Compressing image...', { id: 'uploadToast' });
+        const compressedFile = await compressImage(imageFile);
+        
+        toast.loading('Uploading...', { id: 'uploadToast' });
+        const imageRef = ref(storage, `products/${Date.now()}_${compressedFile.name}`);
+        await uploadBytes(imageRef, compressedFile);
         finalImageUrl = await getDownloadURL(imageRef);
+        toast.dismiss('uploadToast');
       } else if (!isEditing && !formData.image) {
         toast.error('Please upload an image');
         setUploadingImage(false);
