@@ -53,9 +53,33 @@ export default function Navbar() {
               </a>
             </li>
           ))}
+          <li>
+            <Link to="/track" className={location.pathname === '/track' ? 'active-link' : ''}>
+              Track Order
+            </Link>
+          </li>
+          {user?.isAdmin && (
+            <li>
+              <Link to="/admin/dashboard" className="admin-link-nav">
+                Admin Panel
+              </Link>
+            </li>
+          )}
         </ul>
 
         <div className="nav-actions">
+          {/* Auth Button */}
+          {user ? (
+            <div className="nav-user-avatar" onClick={() => setIsAuthOpen(true)}>
+              {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <button className="nav-login-btn" onClick={() => setIsAuthOpen(true)}>
+              <User size={18} />
+              <span>Login</span>
+            </button>
+          )}
+
           {/* Cart Button */}
           <button
             className="nav-cart-btn"
