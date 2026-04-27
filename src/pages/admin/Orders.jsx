@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, 
-  Filter, 
   ExternalLink, 
   Truck,
-  Edit2,
-  Check
+  ShoppingBag,
+  MapPin,
+  Phone,
+  User,
+  Calendar
 } from 'lucide-react';
 import { db } from '../../firebase/config';
-import { collection, query, onSnapshot, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 
 const Orders = () => {
@@ -17,11 +19,9 @@ const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Using a simpler query first to ensure we see EVERYTHING
     const q = collection(db, 'orders');
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort manually in JS for now to avoid index issues
       const sorted = ordersData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
       setOrders(sorted);
       setLoading(false);
@@ -53,21 +53,43 @@ const Orders = () => {
     order.phone?.includes(searchTerm)
   );
 
-  if (loading) return <div className="admin-page-container">Loading...</div>;
+  const getStatusBadge = (status) => {
+    const s = status?.toLowerCase() || '';
+    if (s.includes('deliver')) return 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20';
+    if (s.includes('ship') || s.includes('out')) return 'bg-blue-400/10 text-blue-400 border-blue-400/20';
+    return 'bg-amber-400/10 text-amber-400 border-amber-400/20'; // Pending / default
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full h-full flex flex-col gap-6 animate-pulse">
+        <div className="flex justify-between items-end mb-4">
+          <div className="h-10 w-48 bg-[#141414] rounded-lg"></div>
+          <div className="h-12 w-64 bg-[#141414] rounded-xl"></div>
+        </div>
+        <div className="h-screen bg-[#141414] rounded-2xl border border-[#2a2a2a]"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="admin-content-fade">
-      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+    <div className="animate-in fade-in duration-500">
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="admin-title" style={{ textAlign: 'left', marginBottom: '0.5rem' }}>Order Management</h1>
-          <p className="admin-subtitle" style={{ textAlign: 'left' }}>Track, manage and update customer orders.</p>
+          <h1 className="text-3xl font-bold text-white mb-2 font-['Outfit'] flex items-center gap-3">
+            Order Management
+            <ShoppingBag className="text-admin-accent" size={28} />
+          </h1>
+          <p className="text-gray-400">Track, manage and update customer orders.</p>
         </div>
         
-        <div className="admin-input-wrapper" style={{ width: '300px' }}>
-          <Search className="admin-input-icon" size={18} />
+        <div className="relative w-full sm:w-[320px] group">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-admin-accent transition-colors">
+            <Search size={18} />
+          </div>
           <input 
             type="text" 
-            className="admin-input" 
+            className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-all placeholder:text-gray-600 shadow-inner"
             placeholder="Search Order ID, Name..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -75,41 +97,49 @@ const Orders = () => {
         </div>
       </div>
 
-      <div className="admin-table-container">
-        <div style={{ overflowX: 'auto' }}>
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer Info</th>
-                <th>Product & Amount</th>
-                <th>Status</th>
-                <th>Tracking ID</th>
-                <th>Actions</th>
+      <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl shadow-xl overflow-hidden flex flex-col h-[calc(100vh-220px)]">
+        <div className="overflow-x-auto flex-1">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
+            <thead className="sticky top-0 bg-[#0a0a0a] z-10 shadow-md">
+              <tr className="border-b border-[#2a2a2a] text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                <th className="px-6 py-5">Order Info</th>
+                <th className="px-6 py-5">Customer Info</th>
+                <th className="px-6 py-5">Product & Amount</th>
+                <th className="px-6 py-5">Status</th>
+                <th className="px-6 py-5">Tracking ID</th>
+                <th className="px-6 py-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[#2a2a2a] overflow-y-auto">
               {filteredOrders.map((order) => (
-                <tr key={order.id}>
-                  <td>
-                    <div style={{ fontWeight: 700, color: '#d4af37' }}>{order.orderId}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#666' }}>
+                <tr key={order.id} className="hover:bg-white/[0.02] transition-colors group">
+                  <td className="px-6 py-4 align-top">
+                    <div className="font-bold text-admin-accent text-sm mb-1">{order.orderId}</div>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      <Calendar size={12} />
                       {order.createdAt?.toDate?.().toLocaleString() || 'Just now'}
                     </div>
                   </td>
-                  <td>
-                    <div style={{ fontWeight: 600 }}>{order.name}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#a0a0a0' }}>{order.phone}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#666', maxWidth: '200px' }}>{order.address}</div>
+                  <td className="px-6 py-4 align-top">
+                    <div className="flex items-center gap-2 font-medium text-gray-200 mb-1">
+                      <User size={14} className="text-gray-500" /> {order.name}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                      <Phone size={14} className="text-gray-500" /> {order.phone}
+                    </div>
+                    <div className="flex items-start gap-2 text-xs text-gray-500 max-w-[220px]">
+                      <MapPin size={14} className="flex-shrink-0 mt-0.5" /> 
+                      <span className="line-clamp-2" title={order.address}>{order.address}</span>
+                    </div>
                   </td>
-                  <td>
-                    <div style={{ fontWeight: 500 }}>{order.product}</div>
-                    <div style={{ color: '#22c55e', fontWeight: 700 }}>₹{order.amount}</div>
+                  <td className="px-6 py-4 align-top">
+                    <div className="font-medium text-gray-300 text-sm mb-1 line-clamp-2">{order.product}</div>
+                    <div className="text-emerald-400 font-bold tracking-wide">₹{order.amount}</div>
                   </td>
-                  <td>
+                  <td className="px-6 py-4 align-top">
                     <select 
-                      className="admin-select"
-                      value={order.status}
+                      className={`appearance-none bg-[#0a0a0a] border border-[#2a2a2a] text-sm rounded-lg px-3 py-2 pr-8 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors cursor-pointer hover:bg-[#1a1a1a] ${getStatusBadge(order.status).replace('bg-', 'hover:bg-').split(' ')[1]}`}
+                      value={order.status || 'Order placed'}
                       onChange={(e) => updateStatus(order.id, e.target.value)}
                     >
                       <option value="Order placed">Order placed</option>
@@ -120,26 +150,40 @@ const Orders = () => {
                       <option value="Delivered">Delivered</option>
                     </select>
                   </td>
-                  <td>
-                    <div className="admin-input-wrapper" style={{ width: '150px' }}>
-                      <Truck className="admin-input-icon" size={14} />
+                  <td className="px-6 py-4 align-top">
+                    <div className="relative w-[150px] group/input">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 group-focus-within/input:text-admin-accent transition-colors">
+                        <Truck size={14} />
+                      </div>
                       <input 
                         type="text" 
-                        className="admin-input" 
-                        style={{ padding: '0.4rem 0.6rem 0.4rem 2rem', fontSize: '0.8rem' }}
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-gray-300 text-sm rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors placeholder:text-gray-600 hover:border-gray-600"
                         placeholder="TRK123..." 
                         defaultValue={order.trackingId}
                         onBlur={(e) => updateTracking(order.id, e.target.value)}
                       />
                     </div>
                   </td>
-                  <td>
-                    <button className="admin-action-btn" title="View Details">
-                      <ExternalLink size={16} />
+                  <td className="px-6 py-4 align-top text-right">
+                    <button className="p-2 text-gray-400 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-colors border border-transparent hover:border-admin-accent/20" title="View Details">
+                      <ExternalLink size={18} />
                     </button>
                   </td>
                 </tr>
               ))}
+              
+              {filteredOrders.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center gap-4 text-gray-500">
+                      <div className="p-4 rounded-full bg-[#0a0a0a] border border-[#2a2a2a]">
+                        <Search size={32} className="opacity-50" />
+                      </div>
+                      <p className="text-lg">No orders found matching "{searchTerm}"</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
