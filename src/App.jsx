@@ -18,6 +18,7 @@ const AdminLogin = React.lazy(() => import('./pages/admin/Login'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'));
 const AdminOrders = React.lazy(() => import('./pages/admin/Orders'));
 const AdminProducts = React.lazy(() => import('./pages/admin/Products'));
+const AdminAnalytics = React.lazy(() => import('./pages/admin/Analytics'));
 
 import ProtectedRoute from './components/ProtectedRoute';
 import { CartProvider } from './context/CartContext';
@@ -69,6 +70,7 @@ function App() {
                       }>
                         <Route index element={<AdminDashboard />} />
                         <Route path="dashboard" element={<AdminDashboard />} />
+                        <Route path="analytics" element={<AdminAnalytics />} />
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="products" element={<AdminProducts />} />
                       </Route>
