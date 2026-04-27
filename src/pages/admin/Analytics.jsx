@@ -230,7 +230,10 @@ const Analytics = () => {
           </button>
           
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 !bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl z-50 animate-in slide-in-from-top-2">
+            <div 
+              className="absolute right-0 mt-2 w-48 border border-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl z-50 animate-in slide-in-from-top-2"
+              style={{ backgroundColor: '#1a1a1a' }}
+            >
               {[
                 { label: 'Last 7 Days', val: 7 },
                 { label: 'Last 30 Days', val: 30 },
@@ -238,7 +241,8 @@ const Analytics = () => {
               ].map(opt => (
                 <button
                   key={opt.val}
-                  className={`w-full text-left px-4 py-3 text-sm transition-colors ${timeRange === opt.val ? '!bg-admin-accent/20 !text-admin-accent font-bold border-l-2 border-admin-accent' : '!text-gray-300 hover:!bg-[#2a2a2a] hover:!text-white'}`}
+                  style={{ backgroundColor: timeRange === opt.val ? 'rgba(212, 175, 55, 0.2)' : 'transparent' }}
+                  className={`w-full text-left px-4 py-3 text-sm transition-colors ${timeRange === opt.val ? '!text-admin-accent font-bold border-l-2 border-admin-accent' : '!text-gray-300 hover:!bg-[#2a2a2a] hover:!text-white'}`}
                   onClick={() => { setTimeRange(opt.val); setIsDropdownOpen(false); }}
                 >
                   {opt.label}
