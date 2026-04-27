@@ -239,6 +239,13 @@ h6 {
   margin: 0 auto;
 }
 
+.product-clickable {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
 .product-card:hover {
   transform: translateY(-10px);
   border-color: var(--primary-color);
@@ -951,6 +958,8 @@ h6 {
 .product-info {
   padding: 1.2rem 1.4rem 0.8rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-info h3 {
