@@ -155,7 +155,17 @@ const AdminProducts = () => {
   };
 
   const handleEdit = (product) => {
-    setFormData(product);
+    setFormData({
+      ...product,
+      features: product.features || [
+        { feature: 'Organic Ingredients', ours: true },
+        { feature: 'Superior Fragrance', ours: true },
+        { feature: 'Longer Burn Time', ours: true },
+        { feature: 'Premium Packaging', ours: true },
+        { feature: 'Eco-Friendly', ours: true },
+        { feature: 'No Harmful Chemicals', ours: true },
+      ]
+    });
     setCurrentId(product.id);
     setIsEditing(true);
     setShowModal(true);
@@ -582,7 +592,7 @@ const AdminProducts = () => {
                     Comparison Features (Green Checkmarks)
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {formData.features.map((feat, idx) => (
+                    {(formData.features || []).map((feat, idx) => (
                       <label key={feat.feature} className="flex items-center gap-3 p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl cursor-pointer hover:border-admin-accent/50 transition-colors">
                         <input 
                           type="checkbox"
