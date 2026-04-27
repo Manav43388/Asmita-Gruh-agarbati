@@ -220,7 +220,7 @@ const Analytics = () => {
         <div className="relative">
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 bg-[#141414] border border-[#2a2a2a] text-white px-4 py-2.5 rounded-xl hover:border-admin-accent/50 transition-colors shadow-lg shadow-black/20"
+            className="flex items-center gap-2 !bg-[#141414] border border-[#2a2a2a] !text-white px-4 py-2.5 rounded-xl hover:border-admin-accent/50 transition-colors shadow-lg shadow-black/20"
           >
             <CalendarDays size={18} className="text-admin-accent" />
             <span className="font-medium text-sm">
@@ -230,7 +230,7 @@ const Analytics = () => {
           </button>
           
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl z-50 animate-in slide-in-from-top-2">
+            <div className="absolute right-0 mt-2 w-48 !bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl z-50 animate-in slide-in-from-top-2">
               {[
                 { label: 'Last 7 Days', val: 7 },
                 { label: 'Last 30 Days', val: 30 },
@@ -238,7 +238,7 @@ const Analytics = () => {
               ].map(opt => (
                 <button
                   key={opt.val}
-                  className={`w-full text-left px-4 py-3 text-sm transition-colors ${timeRange === opt.val ? 'bg-admin-accent/10 text-admin-accent font-bold border-l-2 border-admin-accent' : 'text-gray-300 hover:bg-[#2a2a2a]'}`}
+                  className={`w-full text-left px-4 py-3 text-sm transition-colors ${timeRange === opt.val ? '!bg-admin-accent/20 !text-admin-accent font-bold border-l-2 border-admin-accent' : '!text-gray-300 hover:!bg-[#2a2a2a] hover:!text-white'}`}
                   onClick={() => { setTimeRange(opt.val); setIsDropdownOpen(false); }}
                 >
                   {opt.label}
