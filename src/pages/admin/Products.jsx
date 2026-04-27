@@ -9,7 +9,8 @@ import {
   IndianRupee,
   Loader2,
   Package,
-  X
+  X,
+  CloudDownload
 } from 'lucide-react';
 import { db, storage } from '../../firebase/config';
 import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
@@ -30,7 +31,19 @@ const AdminProducts = () => {
     category: 'Incense Sticks',
     description: '',
     image: '',
-    unit: 'Per Box'
+    unit: 'Per Box',
+    subtitle: '',
+    fragrance: '',
+    burnTime: '',
+    weight: '',
+    material: '',
+    quantity: '',
+    usage: '',
+    country: 'India',
+    ingredients: '',
+    benefits: '',
+    howToUse: '',
+    storage: ''
   });
 
   useEffect(() => {
@@ -146,7 +159,19 @@ const AdminProducts = () => {
       category: 'Incense Sticks',
       description: '',
       image: '',
-      unit: 'Per Box'
+      unit: 'Per Box',
+      subtitle: '',
+      fragrance: '',
+      burnTime: '',
+      weight: '',
+      material: '',
+      quantity: '',
+      usage: '',
+      country: 'India',
+      ingredients: '',
+      benefits: '',
+      howToUse: '',
+      storage: ''
     });
     setIsEditing(false);
     setCurrentId(null);
@@ -195,7 +220,47 @@ const AdminProducts = () => {
           </div>
           
           <button 
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-admin-accent to-yellow-600 text-[#050505] font-bold rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all duration-300"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600/20 to-yellow-600/20 text-admin-accent border border-admin-accent/30 font-bold rounded-xl hover:bg-admin-accent/10 transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.1)]"
+            onClick={async () => {
+              if (window.confirm('Import default products to database? (Existing products with same name will be skipped)')) {
+                const initialProducts = [
+                  { title: 'Premium Agarbatti', desc: 'Hand-rolled natural incense sticks for daily prayers and meditation.', image: '/agarbatti.png', price: 199, unit: 'per box (50 sticks)', category: 'Incense Sticks', subtitle: 'Hand-rolled | Daily Puja & Meditation', fragrance: 'Sandalwood & Herbal', burnTime: '30 min per stick', weight: '100g per box', material: 'Bamboo + Natural Resins', quantity: '50 sticks', country: 'India' },
+                  { title: 'Mystic Dhoop Cones', desc: 'Thick, earthy smoke perfect for deep relaxation and spiritual awakening.', image: '/dhoop.png', price: 149, unit: 'per pack (20 cones)', category: 'Dhoop Sticks', subtitle: 'Dhoop Cones | Meditation & Relaxation', fragrance: 'Earthy & Woody', burnTime: '45 min per cone', weight: '80g per pack', material: 'Charcoal Base + Natural Resins', quantity: '20 cones', country: 'India' },
+                  { title: 'Sambrani Cups', desc: 'Traditional loban cups that emit purifying smoke to cleanse your space.', image: '/sambrani.png', price: 129, unit: 'per pack (12 cups)', category: 'Other Spiritual Products', subtitle: 'Natural Sambrani | Air Purification', fragrance: 'Traditional Loban', burnTime: '20 min per cup', weight: '120g per pack', material: 'Coal + Natural Resins', quantity: '12 cups', country: 'India' },
+                  { title: 'Camphor (Kapur)', desc: 'Pure, smoke-free camphor for authentic temple-like aarti at home.', image: '/camphor.png', price: 99, unit: 'per tin (50g)', category: 'Puja Items', subtitle: 'Pure Camphor | Temple Grade', fragrance: 'Refining Camphor', burnTime: '5 min per piece', weight: '50g per tin', material: 'Pure Camphor', quantity: 'Approx 50 pieces', country: 'India' },
+                  { title: 'Floral Essences', desc: 'Sweet and calming notes of jasmine, rose, and lavender incense.', image: '/floral.png', price: 249, unit: 'per box (40 sticks)', category: 'Incense Sticks', subtitle: 'Floral Blend | Calming Ambiance', fragrance: 'Mixed Floral', burnTime: '35 min per stick', weight: '90g per box', material: 'Charcoal Free', quantity: '40 sticks', country: 'India' },
+                  { title: 'Natural Attar', desc: 'Alcohol-free, concentrated roll-on perfumes made from essential oils.', image: '/attar.png', price: 399, unit: 'per bottle (10ml)', category: 'Other Spiritual Products', subtitle: 'Alcohol Free | Long Lasting', fragrance: 'Natural Essential Oils', burnTime: 'Lasts 8-12 hours', weight: '10ml', material: 'Essential Oil Blend', quantity: '1 bottle', country: 'India' },
+                  { title: 'Velvet Idol Cloth', desc: 'Premium red velvet cloth with gold lace for deity idols and puja altars.', image: '/floral.png', price: 149, unit: 'per piece', category: 'Idol Cloth', subtitle: 'Premium Velvet | Gold Embroidery', fragrance: 'None', burnTime: 'N/A', weight: '50g', material: 'Velvet Fabric', quantity: '1 piece', country: 'India' }
+                ];
+                
+                toast.loading('Checking and importing...', { id: 'import' });
+                try {
+                  const existingNames = products.map(p => p.name.toLowerCase());
+                  let count = 0;
+                  for (const p of initialProducts) {
+                    if (!existingNames.includes(p.title.toLowerCase())) {
+                      await addDoc(collection(db, 'products'), {
+                        ...p,
+                        name: p.title,
+                        description: p.desc,
+                        createdAt: new Date()
+                      });
+                      count++;
+                    }
+                  }
+                  toast.success(count > 0 ? `${count} products imported successfully` : 'All default products already exist', { id: 'import' });
+                } catch (e) {
+                  toast.error('Import failed', { id: 'import' });
+                }
+              }
+            }}
+          >
+            <CloudDownload size={20} />
+            Import Defaults
+          </button>
+
+          <button 
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-admin-accent to-yellow-600 text-[#050505] font-bold rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30_px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all duration-300"
             onClick={() => { resetForm(); setShowModal(true); }}
           >
             <Plus size={20} />
@@ -366,11 +431,132 @@ const AdminProducts = () => {
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-gray-300 ml-1">Description</label>
                   <textarea 
-                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[120px] resize-y"
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[100px] resize-y"
                     value={formData.description} 
                     onChange={e => setFormData({...formData, description: e.target.value})}
                     placeholder="Write a compelling description for this product..."
                   />
+                </div>
+
+                <div className="pt-4 border-t border-[#2a2a2a]">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <Tag className="text-admin-accent" size={18} />
+                    Specifications
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Subtitle / Punchline</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.subtitle} 
+                        onChange={e => setFormData({...formData, subtitle: e.target.value})}
+                        placeholder="e.g. Hand-rolled | Natural"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Fragrance</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.fragrance} 
+                        onChange={e => setFormData({...formData, fragrance: e.target.value})}
+                        placeholder="e.g. Sandalwood"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Burning Time</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.burnTime} 
+                        onChange={e => setFormData({...formData, burnTime: e.target.value})}
+                        placeholder="e.g. 40 min per stick"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Weight</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.weight} 
+                        onChange={e => setFormData({...formData, weight: e.target.value})}
+                        placeholder="e.g. 100g"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Material</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.material} 
+                        onChange={e => setFormData({...formData, material: e.target.value})}
+                        placeholder="e.g. Bamboo + Resins"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Quantity</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.quantity} 
+                        onChange={e => setFormData({...formData, quantity: e.target.value})}
+                        placeholder="e.g. 50 sticks"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Usage</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.usage} 
+                        onChange={e => setFormData({...formData, usage: e.target.value})}
+                        placeholder="e.g. Daily Puja"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-300 ml-1">Country of Origin</label>
+                      <input 
+                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
+                        value={formData.country} 
+                        onChange={e => setFormData({...formData, country: e.target.value})}
+                        placeholder="India"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-[#2a2a2a] space-y-5">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-300 ml-1">Ingredients (comma separated)</label>
+                    <textarea 
+                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
+                      value={formData.ingredients} 
+                      onChange={e => setFormData({...formData, ingredients: e.target.value})}
+                      placeholder="Natural resins, Essential oils, Bamboo sticks..."
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-300 ml-1">Benefits (comma separated)</label>
+                    <textarea 
+                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
+                      value={formData.benefits} 
+                      onChange={e => setFormData({...formData, benefits: e.target.value})}
+                      placeholder="Purifies air, Aids meditation, Long lasting..."
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-300 ml-1">How to Use</label>
+                    <textarea 
+                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
+                      value={formData.howToUse} 
+                      onChange={e => setFormData({...formData, howToUse: e.target.value})}
+                      placeholder="Light the tip of the stick..."
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-300 ml-1">Storage Instructions</label>
+                    <textarea 
+                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
+                      value={formData.storage} 
+                      onChange={e => setFormData({...formData, storage: e.target.value})}
+                      placeholder="Store in a cool, dry place..."
+                    />
+                  </div>
                 </div>
               </form>
             </div>

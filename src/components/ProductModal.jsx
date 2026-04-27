@@ -170,7 +170,31 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
   const [wishlist, setWishlist] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const data = RICH_DATA[product.id] || RICH_DATA.default;
+  const rich = RICH_DATA[product.id] || RICH_DATA.default;
+  
+  // Dynamic data merging: Priority to product object (Firebase) then RICH_DATA
+  const data = {
+    ...rich,
+    subtitle: product.subtitle || rich.subtitle,
+    fragrance: product.fragrance || rich.fragrance,
+    burnTime: product.burnTime || rich.burnTime,
+    weight: product.weight || rich.weight,
+    material: product.material || rich.material,
+    quantity: product.quantity || rich.quantity,
+    usage: product.usage || rich.usage,
+    country: product.country || rich.country,
+    description: product.description || product.desc || rich.description,
+    howToUse: product.howToUse || rich.howToUse,
+    storage: product.storage || rich.storage,
+    // Convert comma strings to arrays if they come from Firebase
+    ingredients: product.ingredients 
+      ? (typeof product.ingredients === 'string' ? product.ingredients.split(',').map(s => s.trim()) : product.ingredients)
+      : rich.ingredients,
+    benefits: product.benefits 
+      ? (typeof product.benefits === 'string' ? product.benefits.split(',').map(s => s.trim()) : product.benefits)
+      : rich.benefits,
+  };
+
   const images = data.images || [product.image];
   const originalPrice = data.originalPrice || Math.round(product.price * 1.2);
   const savings = originalPrice - product.price;
