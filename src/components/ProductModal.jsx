@@ -117,7 +117,7 @@ const BENEFIT_ICONS = [
   { icon: '🏠', label: 'Home Safe' },
 ];
 
-const COMPARISON = [
+const DEFAULT_FEATURES = [
   { feature: 'Organic Ingredients', ours: true },
   { feature: 'Superior Fragrance', ours: true },
   { feature: 'Longer Burn Time', ours: true },
@@ -193,6 +193,7 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
     benefits: product.benefits 
       ? (typeof product.benefits === 'string' ? product.benefits.split(',').map(s => s.trim()) : product.benefits)
       : rich.benefits,
+    features: product.features || DEFAULT_FEATURES,
   };
 
   const images = data.images || [product.image];
@@ -439,7 +440,7 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
                 ['Fragrance :', data.fragrance],
                 ['Usage Type :', data.usage],
                 ['Burning Time :', data.burnTime],
-                ['Ingredients :', 'Natural ingredients, including herbal powders, resins & essential oils'],
+                ['Ingredients :', Array.isArray(data.ingredients) ? data.ingredients.join(', ') : data.ingredients],
               ].map(([k, v]) => (
                 <div key={k} className="pd-spec-row">
                   <span className="pd-spec-key">{k}</span>
@@ -455,14 +456,18 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
                 <span className="pd-comp-ours">Asmita Gruh™</span>
                 <span className="pd-comp-others">Others</span>
               </div>
-              {COMPARISON.map(({ feature, ours }) => (
+              {data.features.map(({ feature, ours }) => (
                 <div key={feature} className="pd-comp-row">
                   <span className="pd-comp-feature">{feature}</span>
                   <span className="pd-comp-ours">
                     <span className="pd-circle-check"><Check size={13} strokeWidth={3} /></span>
                   </span>
                   <span className="pd-comp-others">
-                    <span className="pd-circle-x"><XIcon size={13} strokeWidth={3} /></span>
+                    {ours ? (
+                      <span className="pd-circle-x"><XIcon size={13} strokeWidth={3} /></span>
+                    ) : (
+                      <span className="pd-circle-check"><Check size={13} strokeWidth={3} /></span>
+                    )}
                   </span>
                 </div>
               ))}
