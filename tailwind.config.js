@@ -11,7 +11,7 @@ export default {
           dark: '#0a0a0a',
           card: '#141414',
           border: '#2a2a2a',
-          accent: '#d4af37', // Gold
+          accent: '#ecc244', // Yellow
           accentHover: '#c19b2e',
         }
       },

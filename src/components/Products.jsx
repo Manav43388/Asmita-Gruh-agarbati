@@ -159,38 +159,9 @@ export default function Products() {
         <h2 className="divine-title">Fragrances For Divine Experiences</h2>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="cat-circles-row"
-      >
-        {[
-          { label: 'All Products',   filter: 'All',                      image: '/agarbatti.png' },
-          { label: 'Incense Sticks', filter: 'Incense Sticks',           image: '/agarbatti.png' },
-          { label: 'Dhoop Sticks',   filter: 'Dhoop Sticks',             image: '/dhoop.png'     },
-          { label: 'Puja Items',     filter: 'Puja Items',               image: '/sambrani.png'  },
-          { label: 'Idol Cloth',     filter: 'Idol Cloth',               image: '/floral.png'    },
-          { label: 'Spiritual',      filter: 'Other Spiritual Products',  image: '/attar.png'     },
-        ].map(cat => (
-          <button
-            key={cat.filter}
-            className={`cat-circle-item ${activeCategory === cat.filter ? 'active' : ''}`}
-            onClick={() => setActiveCategory(cat.filter)}
-          >
-            <div className="cat-circle-img">
-              <img src={cat.image} alt={cat.label} />
-            </div>
-            <span className="cat-circle-label">{cat.label}</span>
-          </button>
-        ))}
-      </motion.div>
-
-
       <div className="products-grid">
         {filtered.map((p, index) => {
           const inCart = getCartQty(p.id);
-          const justAdded = addedIds[p.id];
 
           return (
             <motion.div
@@ -199,34 +170,21 @@ export default function Products() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               viewport={{ once: true }}
-              className="product-card glass-panel"
+              className="product-card"
             >
               {p.tag && <span className="product-tag">{p.tag}</span>}
 
               <div
                 className="product-clickable"
                 onClick={() => setSelectedProduct(p)}
-                role="button"
-                tabIndex={0}
-                aria-label={`View details for ${p.title}`}
               >
                 <div className="product-image-container">
                   <img src={p.image} alt={p.title} className="product-image" />
-                  {inCart > 0 && (
-                    <div className="in-cart-badge">
-                      <ShoppingCart size={12} /> {inCart} in cart
-                    </div>
-                  )}
                 </div>
 
                 <div className="product-info">
                   <h3>{p.title}</h3>
                   <p>{p.desc}</p>
-                  {p.stock <= 7 && p.stock > 0 && (
-                    <div className={`stock-indicator ${p.stock <= 3 ? 'critical' : 'low'}`}>
-                      🔥 Only {p.stock} left!
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -236,47 +194,26 @@ export default function Products() {
                   <span className="product-unit">{p.unit || 'per pack'}</span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+                <div className="product-actions">
                   {inCart > 0 ? (
-                    <div className="card-qty-stepper" id={`qty-stepper-${p.id}`}>
-                      <button
-                        className="card-qty-btn"
-                        onClick={(e) => { e.stopPropagation(); handleDecrease(p.id, inCart); }}
-                        aria-label="Decrease quantity"
-                      >
-                        <Minus size={15} />
+                    <div className="card-qty-stepper">
+                      <button onClick={(e) => { e.stopPropagation(); handleDecrease(p.id, inCart); }}>
+                        <Minus size={14} />
                       </button>
                       <span className="card-qty-count">{inCart}</span>
-                      <button
-                        className="card-qty-btn"
-                        onClick={(e) => { e.stopPropagation(); handleIncrease(p); }}
-                        aria-label="Increase quantity"
-                      >
-                        <Plus size={15} />
+                      <button onClick={(e) => { e.stopPropagation(); handleIncrease(p); }}>
+                        <Plus size={14} />
                       </button>
                     </div>
                   ) : (
                     <button
                       className="add-cart-btn-solid"
                       onClick={(e) => { e.stopPropagation(); handleAddToCart(p); }}
-                      id={`add-to-cart-${p.id}`}
                     >
-                      <ShoppingCart size={16} />
+                      <ShoppingCart size={15} />
                       Add to Cart
                     </button>
                   )}
-                  <button
-                    className="add-cart-btn-solid"
-                    style={{ background: '#ecc244', color: '#000', padding: '0.5rem' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (inCart === 0) handleAddToCart(p);
-                      if (setIsCheckoutOpen) setIsCheckoutOpen(true);
-                      else setIsCartOpen(true);
-                    }}
-                  >
-                    Buy Now
-                  </button>
                 </div>
               </div>
             </motion.div>

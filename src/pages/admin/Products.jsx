@@ -208,35 +208,32 @@ const AdminProducts = () => {
         {filteredProducts.map((product) => (
           <div 
             key={product.id} 
-            className="group flex flex-col bg-[#141414] rounded-2xl border border-[#2a2a2a] overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_15px_40px_-10px_rgba(0,0,0,0.6)] hover:border-admin-accent/50"
+            className="product-card glass-panel group flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_15px_40px_-10px_rgba(0,0,0,0.6)]"
           >
-            <div className="h-48 relative overflow-hidden bg-white/5">
+            <div className="product-image-container h-48 relative overflow-hidden">
               <img 
                 src={product.image} 
                 alt={product.name} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                className="product-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent opacity-80"></div>
-              
-              <div className="absolute top-3 left-3 bg-[#0a0a0a]/80 backdrop-blur-md border border-white/10 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-                <Tag size={12} className="text-admin-accent" />
+              <div className="product-tag">
                 {product.category}
               </div>
             </div>
             
-            <div className="p-5 flex flex-col flex-1">
+            <div className="product-info p-5 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2 gap-2">
                 <h4 className="text-white font-bold text-lg leading-tight line-clamp-2">{product.name}</h4>
-                <span className="text-admin-accent font-bold text-lg bg-admin-accent/10 px-2 py-0.5 rounded-lg border border-admin-accent/20 shrink-0">₹{product.price}</span>
+                <span className="product-price text-lg shrink-0">₹{product.price}</span>
               </div>
               
               <p className="text-gray-400 text-sm mb-4 line-clamp-2 flex-1">
                 {product.description || 'No description provided.'}
               </p>
               
-              <div className="flex items-center gap-3 pt-4 border-t border-[#2a2a2a] mt-auto">
+              <div className="flex items-center gap-3 pt-4 border-t border-white/5 mt-auto">
                 <button 
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-[#2a2a2a] hover:border-gray-500 font-medium text-sm"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 hover:border-gray-500 font-medium text-sm"
                   onClick={() => handleEdit(product)}
                 >
                   <Edit size={16} /> Edit

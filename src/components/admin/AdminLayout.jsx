@@ -35,7 +35,7 @@ const AdminLayout = () => {
         {/* Mobile Header */}
         <div className="lg:hidden h-20 flex items-center justify-between px-6 border-b border-white/5 bg-[#080808]/70 backdrop-blur-xl sticky top-0 z-30">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-admin-accent to-yellow-200 tracking-wider uppercase text-lg">Asmita Admin</span>
+            <span className="font-bold text-admin-accent tracking-wider uppercase text-lg">ASMITA ADMIN</span>
           </div>
           <button 
             onClick={toggleSidebar} 

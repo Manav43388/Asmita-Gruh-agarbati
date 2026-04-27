@@ -48,7 +48,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
         <div className="h-20 flex items-center justify-between px-6 border-b border-[#2a2a2a]">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full border border-admin-accent/30 shadow-[0_0_10px_rgba(212,175,55,0.2)]" />
-            <span className="text-admin-accent font-bold text-xl tracking-wide uppercase">Admin</span>
+            <span className="text-admin-accent font-bold text-xl tracking-wide uppercase">ADMIN PANEL</span>
           </div>
           <button onClick={toggleSidebar} className="lg:hidden text-gray-400 hover:text-white transition-colors">
             <X size={24} />
