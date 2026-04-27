@@ -381,7 +381,7 @@ const AdminProducts = () => {
             <div className="p-6 border-t border-[#2a2a2a] bg-[#0a0a0a] flex justify-end gap-3">
               <button 
                 type="button" 
-                className="px-6 py-2.5 rounded-xl font-medium text-white hover:bg-white/10 transition-colors border border-transparent hover:border-white/10"
+                className="px-6 py-2.5 rounded-xl font-medium !text-white !bg-[#1a1a1a] hover:!bg-[#2a2a2a] transition-colors border border-transparent hover:border-white/10"
                 onClick={() => setShowModal(false)}
               >
                 Cancel
