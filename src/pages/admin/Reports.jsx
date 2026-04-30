@@ -12,8 +12,16 @@ import {
   ArrowDownRight,
   FileSpreadsheet
 } from 'lucide-react';
-import { db } from '../../firebase/config';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 import { toast } from 'react-hot-toast';
 
 const Reports = () => {
@@ -200,25 +208,38 @@ const Reports = () => {
             </select>
           </div>
           
-          <div className="h-[300px] w-full flex items-end gap-4 pb-12 border-b border-[#2a2a2a] relative">
-            {monthlyRevenue.map(([month, rev], i) => {
-              const maxRev = Math.max(...monthlyRevenue.map(m => m[1]), 1);
-              const height = (rev / maxRev) * 100;
-              return (
-                <div key={month} className="flex-1 flex flex-col items-center gap-3 group relative h-full justify-end max-w-[80px] mx-auto">
-                  <div className="absolute bottom-full mb-2 bg-admin-accent text-[#050505] px-2 py-1 rounded text-[10px] font-black opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                    ₹{rev.toLocaleString()}
-                  </div>
-                  <div 
-                    className="w-full bg-gradient-to-t from-admin-accent to-yellow-600 rounded-t-xl transition-all duration-700 hover:brightness-125" 
-                    style={{ height: `${height}%` }}
+          <div className="h-[300px] w-full">
+            {monthlyRevenue.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyRevenue.map(([month, rev]) => ({ month, revenue: rev }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#666', fontSize: 10, fontWeight: 700 }}
+                    dy={10}
                   />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter absolute -bottom-8">{month}</span>
-                </div>
-              );
-            })}
-            {monthlyRevenue.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-600 text-sm italic">
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#666', fontSize: 10, fontWeight: 700 }}
+                    tickFormatter={(val) => `₹${val}`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#141414', border: '1px solid #2a2a2a', borderRadius: '12px' }}
+                    itemStyle={{ color: '#ecc244', fontWeight: 800 }}
+                    cursor={{ fill: 'rgba(236, 194, 68, 0.05)' }}
+                  />
+                  <Bar dataKey="revenue" radius={[6, 6, 0, 0]} barSize={40}>
+                    {monthlyRevenue.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill="#ecc244" fillOpacity={0.8 + (index * 0.05)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-gray-600 text-sm italic">
                 Insufficient data for chart
               </div>
             )}
