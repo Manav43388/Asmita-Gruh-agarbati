@@ -20,6 +20,7 @@ import { db } from '../../firebase/config';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { createLog } from '../../utils/adminLogs';
+import PrintableInvoice from '../../components/admin/PrintableInvoice';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -379,6 +380,7 @@ const Orders = () => {
           </div>
         </div>
       )}
+      {selectedOrder && <PrintableInvoice order={selectedOrder} />}
     </div>
   );
 };
