@@ -78,13 +78,31 @@ const Orders = () => {
     const text = `*Order Confirmation - ${whatsappConfig.businessName || 'Asmita Gruh Udhyog'}*%0A%0AHello ${order.name}, your order #${order.orderId || order.id.slice(0, 8)} for ${order.product} has been ${order.status || 'Pending'}.%0A%0ATotal: ₹${order.amount}%0A%0AThank you!`;
     window.open(`https://wa.me/91${whatsappConfig.whatsappNumber}?text=${text}`);
     toast.success('Opening WhatsApp');
-  };
+  };  const [activeTab, setActiveTab] = useState('New');
 
-  const filteredOrders = orders.filter(order => 
-    order.orderId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.phone?.includes(searchTerm)
-  );
+  const tabs = [
+    { id: 'All', label: 'All Orders', icon: ShoppingBag },
+    { id: 'New', label: 'New', count: orders.filter(o => o.status === 'Order placed' || o.status === 'Pending').length },
+    { id: 'Ongoing', label: 'Ongoing', count: orders.filter(o => ['Confirmed', 'Packed', 'Shipped', 'Out for delivery'].includes(o.status)).length },
+    { id: 'Completed', label: 'Completed', count: orders.filter(o => o.status === 'Delivered').length },
+    { id: 'Cancelled', label: 'Cancelled', count: orders.filter(o => o.status === 'Cancelled').length },
+  ];
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = 
+      order.orderId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.phone?.includes(searchTerm);
+    
+    if (!matchesSearch) return false;
+
+    if (activeTab === 'All') return true;
+    if (activeTab === 'New') return order.status === 'Order placed' || order.status === 'Pending';
+    if (activeTab === 'Ongoing') return ['Confirmed', 'Packed', 'Shipped', 'Out for delivery'].includes(order.status);
+    if (activeTab === 'Completed') return order.status === 'Delivered';
+    if (activeTab === 'Cancelled') return order.status === 'Cancelled';
+    return true;
+  });
 
   const getStatusBadge = (status) => {
     const s = status?.toLowerCase() || '';
@@ -103,13 +121,13 @@ const Orders = () => {
 
   return (
     <div className="animate-in fade-in duration-500 pb-10">
-      <div className="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 px-4">
+      <div className="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 px-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 font-['Outfit'] flex items-center gap-3">
-            Orders
+            Orders Management
             <ShoppingBag className="text-admin-accent" size={28} />
           </h1>
-          <p className="text-gray-400">Manage and track your customer orders.</p>
+          <p className="text-gray-400 text-sm">Review, track, and manage all your customer orders in one place.</p>
         </div>
         
         <div className="relative w-full sm:w-[360px] group">
@@ -125,6 +143,30 @@ const Orders = () => {
           />
         </div>
       </div>
+
+      <div className="flex items-center gap-2 mb-6 px-4 overflow-x-auto no-scrollbar">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap border ${
+              activeTab === tab.id 
+                ? 'bg-admin-accent/10 border-admin-accent text-admin-accent shadow-[0_0_20px_rgba(212,175,55,0.1)]' 
+                : 'bg-[#141414] border-[#2a2a2a] text-gray-500 hover:border-gray-700 hover:text-gray-300'
+            }`}
+          >
+            {tab.icon && <tab.icon size={16} />}
+            {tab.label}
+            {tab.count !== undefined && (
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+                activeTab === tab.id ? 'bg-admin-accent text-[#0a0a0a]' : 'bg-white/5 text-gray-500'
+              }`}>
+                {tab.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>v>
 
       <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl shadow-2xl overflow-hidden mx-4">
         <div className="overflow-x-auto overflow-y-visible">

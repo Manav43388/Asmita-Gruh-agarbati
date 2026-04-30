@@ -167,9 +167,58 @@ const Dashboard = () => {
         ))}
       </div>
 
+      <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl mb-10">
+        <div className="px-6 py-5 border-b border-[#2a2a2a] flex items-center justify-between bg-gradient-to-r from-amber-500/5 to-transparent">
+          <div className="flex items-center gap-3">
+            <h3 className="text-xl font-bold text-white font-['Outfit']">New Incoming Orders</h3>
+            <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+          </div>
+          <span className="text-xs font-bold text-amber-500 uppercase tracking-widest">{stats.pendingOrders} Active</span>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recentOrders.filter(o => o.status === 'Order placed' || o.status === 'Pending').slice(0, 3).map((order) => (
+              <div key={order.id} className="bg-[#0a0a0a] border border-amber-500/20 p-5 rounded-2xl relative group hover:border-amber-500/50 transition-all shadow-lg hover:shadow-amber-500/5">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-500">
+                    <ShoppingBag size={20} />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Order ID</p>
+                    <p className="text-sm font-bold text-admin-accent">{order.orderId || order.id.slice(0, 8)}</p>
+                  </div>
+                </div>
+                <div className="space-y-3 mb-5">
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Customer</p>
+                    <p className="text-sm font-bold text-white">{order.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Items</p>
+                    <p className="text-xs text-gray-400 line-clamp-1">{order.product}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-[#2a2a2a]">
+                  <span className="text-lg font-black text-white">₹{order.amount}</span>
+                  <Link to="/admin/orders" className="text-[10px] font-bold text-amber-500 uppercase tracking-widest hover:text-white transition-colors">
+                    Manage Order
+                  </Link>
+                </div>
+              </div>
+            ))}
+            {stats.pendingOrders === 0 && (
+              <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[#2a2a2a] rounded-2xl opacity-50">
+                <CheckCircle2 size={40} className="text-gray-500 mb-2" />
+                <p className="text-gray-400 font-medium">All caught up! No new orders.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl">
         <div className="px-6 py-5 border-b border-[#2a2a2a] flex items-center justify-between bg-gradient-to-r from-white/[0.02] to-transparent">
-          <h3 className="text-xl font-bold text-white font-['Outfit']">Recent Orders</h3>
+          <h3 className="text-xl font-bold text-white font-['Outfit']">All Recent Orders</h3>
           <Link 
             to="/admin/orders" 
             className="flex items-center gap-2 text-sm font-medium text-admin-accent hover:text-white transition-colors group"
