@@ -22,6 +22,8 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import { db } from '../../firebase/config';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 
 const Reports = () => {
