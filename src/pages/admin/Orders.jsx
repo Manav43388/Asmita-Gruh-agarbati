@@ -106,10 +106,20 @@ const Orders = () => {
 
   const getStatusBadge = (status) => {
     const s = status?.toLowerCase() || '';
-    if (s.includes('deliver')) return 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20';
-    if (s.includes('ship') || s.includes('out')) return 'bg-blue-400/10 text-blue-400 border-blue-400/20';
-    if (s.includes('cancel')) return 'bg-red-400/10 text-red-400 border-red-400/20';
-    return 'bg-amber-400/10 text-amber-400 border-amber-400/20';
+    if (s.includes('deliver')) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 focus:ring-emerald-500/30';
+    if (s.includes('ship') || s.includes('out')) return 'bg-blue-500/10 text-blue-400 border-blue-500/30 focus:ring-blue-500/30';
+    if (s.includes('cancel')) return 'bg-red-500/10 text-red-400 border-red-500/30 focus:ring-red-500/30';
+    if (s.includes('confirm') || s.includes('pack')) return 'bg-purple-500/10 text-purple-400 border-purple-500/30 focus:ring-purple-500/30';
+    return 'bg-amber-500/10 text-amber-500 border-amber-500/30 focus:ring-amber-500/30';
+  };
+
+  const getStatusIconColor = (status) => {
+    const s = status?.toLowerCase() || '';
+    if (s.includes('deliver')) return 'text-emerald-400';
+    if (s.includes('ship') || s.includes('out')) return 'text-blue-400';
+    if (s.includes('cancel')) return 'text-red-400';
+    if (s.includes('confirm') || s.includes('pack')) return 'text-purple-400';
+    return 'text-amber-400';
   };
 
   if (loading) return (
@@ -213,9 +223,9 @@ const Orders = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 align-top">
-                    <div className="relative group/select">
+                    <div className="relative group/select w-[160px]">
                       <select 
-                        className={`appearance-none bg-[#0a0a0a] border border-[#2a2a2a] text-[11px] font-bold uppercase tracking-wider rounded-lg px-3 py-2 pr-8 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-all cursor-pointer w-[150px] ${getStatusBadge(order.status)}`}
+                        className={`appearance-none w-full bg-[#0a0a0a] border text-[10px] font-black uppercase tracking-[0.15em] rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all cursor-pointer shadow-lg ${getStatusBadge(order.status)}`}
                         value={order.status || 'Pending'}
                         onChange={(e) => updateStatus(order.id, e.target.value)}
                       >
@@ -227,8 +237,8 @@ const Orders = () => {
                         <option value="Delivered">Delivered</option>
                         <option value="Cancelled">Cancelled</option>
                       </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                        <Package2 size={12} />
+                      <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-60 ${getStatusIconColor(order.status)}`}>
+                        <Package2 size={14} strokeWidth={2.5} />
                       </div>
                     </div>
                   </td>
