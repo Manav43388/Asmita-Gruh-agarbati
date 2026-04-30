@@ -44,18 +44,32 @@ const Reports = () => {
     const monthlyData = {};
     orders.forEach(order => {
       if (!order.createdAt) return;
-      const date = order.createdAt.toDate();
+      const date = order.createdAt.toDate ? order.createdAt.toDate() : new Date();
       const monthYear = date.toLocaleString('default', { month: 'short', year: '2-digit' });
-      monthlyData[monthYear] = (monthlyData[monthYear] || 0) + Number(order.amount || 0);
+      const sortKey = date.getFullYear() * 100 + date.getMonth();
+      
+      if (!monthlyData[monthYear]) {
+        monthlyData[monthYear] = { amount: 0, sortKey };
+      }
+      monthlyData[monthYear].amount += Number(order.amount || 0);
     });
-    return Object.entries(monthlyData).reverse();
+    
+    return Object.entries(monthlyData)
+      .sort((a, b) => a[1].sortKey - b[1].sortKey)
+      .map(([month, data]) => [month, data.amount]);
   };
 
   const getProductSales = () => {
     const productData = {};
     orders.forEach(order => {
       const name = order.product || 'Unknown Product';
-      productData[name] = (productData[name] || 0) + 1;
+      // Handle comma-separated products
+      const items = name.split(',').map(i => i.trim());
+      items.forEach(item => {
+        // Remove quantities like (x1)
+        const cleanName = item.replace(/\s*\(x\d+\)\s*/, '');
+        productData[cleanName] = (productData[cleanName] || 0) + 1;
+      });
     });
     return Object.entries(productData).sort((a, b) => b[1] - a[1]).slice(0, 5);
   };
@@ -66,7 +80,7 @@ const Reports = () => {
     const headers = ['Order ID', 'Date', 'Customer', 'Product', 'Amount', 'Status'];
     const rows = orders.map(o => [
       o.orderId || o.id,
-      o.createdAt?.toDate().toLocaleDateString() || '',
+      o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : 'Recent',
       o.name,
       o.product,
       o.amount,
@@ -186,12 +200,12 @@ const Reports = () => {
             </select>
           </div>
           
-          <div className="h-[300px] w-full flex items-end gap-4 pb-8 border-b border-[#2a2a2a] relative">
+          <div className="h-[300px] w-full flex items-end gap-4 pb-12 border-b border-[#2a2a2a] relative">
             {monthlyRevenue.map(([month, rev], i) => {
               const maxRev = Math.max(...monthlyRevenue.map(m => m[1]), 1);
               const height = (rev / maxRev) * 100;
               return (
-                <div key={month} className="flex-1 flex flex-col items-center gap-3 group relative h-full justify-end">
+                <div key={month} className="flex-1 flex flex-col items-center gap-3 group relative h-full justify-end max-w-[80px] mx-auto">
                   <div className="absolute bottom-full mb-2 bg-admin-accent text-[#050505] px-2 py-1 rounded text-[10px] font-black opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                     ₹{rev.toLocaleString()}
                   </div>
@@ -199,7 +213,7 @@ const Reports = () => {
                     className="w-full bg-gradient-to-t from-admin-accent to-yellow-600 rounded-t-xl transition-all duration-700 hover:brightness-125" 
                     style={{ height: `${height}%` }}
                   />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{month}</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter absolute -bottom-8">{month}</span>
                 </div>
               );
             })}

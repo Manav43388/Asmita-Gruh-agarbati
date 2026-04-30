@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -15,10 +15,27 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { db } from '../../firebase/config';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 const AdminSidebar = ({ isOpen, toggleSidebar }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [newOrderCount, setNewOrderCount] = useState(0);
+
+  useEffect(() => {
+    // Listen for new/pending orders
+    const q = query(
+      collection(db, 'orders'), 
+      where('status', 'in', ['Order placed', 'Pending'])
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setNewOrderCount(snapshot.size);
+    });
+    
+    return () => unsubscribe();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -32,7 +49,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
   const navItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Analytics', path: '/admin/analytics', icon: TrendingUp },
-    { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
+    { name: 'Orders', path: '/admin/orders', icon: ShoppingBag, badge: newOrderCount },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Customers', path: '/admin/customers', icon: Users },
     { name: 'Coupons', path: '/admin/coupons', icon: Ticket },
@@ -73,7 +90,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
               key={item.name}
               to={item.path}
               className={({ isActive }) => 
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group
+                `flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group
                  ${isActive 
                     ? 'bg-gradient-to-r from-admin-accent/20 to-transparent text-admin-accent font-medium shadow-[inset_2px_0_0_0_#d4af37]' 
                     : 'text-gray-400 hover:text-white hover:bg-[#1a1a1a]'
@@ -83,8 +100,15 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
                 if (window.innerWidth < 1024) toggleSidebar();
               }}
             >
-              <item.icon size={20} className="transition-transform group-hover:scale-110" />
-              <span>{item.name}</span>
+              <div className="flex items-center gap-3">
+                <item.icon size={20} className="transition-transform group-hover:scale-110" />
+                <span>{item.name}</span>
+              </div>
+              {item.badge > 0 && (
+                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce shadow-[0_0_10px_rgba(239,68,68,0.4)]">
+                  {item.badge}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
