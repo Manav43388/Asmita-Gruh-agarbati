@@ -5,16 +5,25 @@ import {
   Clock,
   CheckCircle2,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle,
+  Users,
+  Undo2
 } from 'lucide-react';
 import { db } from '../../firebase/config';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalRevenue: 0,
+    todayOrders: 0,
+    todayRevenue: 0,
+    weekRevenue: 0,
+    lowStock: 0,
+    newCustomers: 0,
+    refundRequests: 0,
     pendingOrders: 0,
     deliveredOrders: 0
   });
@@ -22,41 +31,88 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = collection(db, 'orders');
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    // Orders listener
+    const ordersQ = collection(db, 'orders');
+    const unsubscribeOrders = onSnapshot(ordersQ, (snapshot) => {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const lastWeek = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+
       let revenue = 0;
+      let tRevenue = 0;
+      let wRevenue = 0;
+      let tOrders = 0;
       let pending = 0;
       let delivered = 0;
+      let refunds = 0;
+      const uniqueCustomers = new Set();
       const ordersData = [];
 
       snapshot.forEach((doc) => {
         const data = doc.data();
-        revenue += Number(data.amount || 0);
+        const amount = Number(data.amount || 0);
+        const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+        const createdTime = createdAt.getTime();
+
+        revenue += amount;
+        if (createdTime >= today) {
+          tRevenue += amount;
+          tOrders++;
+        }
+        if (createdTime >= lastWeek) {
+          wRevenue += amount;
+        }
+
         if (data.status === 'Pending' || data.status === 'Order placed') pending++;
         if (data.status === 'Delivered') delivered++;
+        if (data.status === 'Cancelled' || data.status === 'Refunded') refunds++;
+        
+        if (data.email) uniqueCustomers.add(data.email);
         ordersData.push({ id: doc.id, ...data });
       });
 
-      // Sort manually by date
-      const sorted = ordersData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-      setStats({
+      setStats(prev => ({
+        ...prev,
         totalOrders: snapshot.size,
         totalRevenue: revenue,
+        todayOrders: tOrders,
+        todayRevenue: tRevenue,
+        weekRevenue: wRevenue,
         pendingOrders: pending,
-        deliveredOrders: delivered
-      });
+        deliveredOrders: delivered,
+        refundRequests: refunds,
+        newCustomers: uniqueCustomers.size
+      }));
+      
+      const sorted = ordersData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
       setRecentOrders(sorted.slice(0, 5));
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Products listener for low stock
+    const productsQ = collection(db, 'products');
+    const unsubscribeProducts = onSnapshot(productsQ, (snapshot) => {
+      let lowStockCount = 0;
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (Number(data.stock || 0) < 10) lowStockCount++;
+      });
+      setStats(prev => ({ ...prev, lowStock: lowStockCount }));
+    });
+
+    return () => {
+      unsubscribeOrders();
+      unsubscribeProducts();
+    };
   }, []);
 
   const statCards = [
-    { label: 'Total Orders', value: stats.totalOrders, icon: ShoppingBag, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+    { label: "Today's Orders", value: stats.todayOrders, icon: ShoppingBag, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+    { label: "Today's Revenue", value: `₹${stats.todayRevenue.toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+    { label: "This Week", value: `₹${stats.weekRevenue.toLocaleString()}`, icon: TrendingUp, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
+    { label: 'Low Stock', value: stats.lowStock, icon: AlertTriangle, color: stats.lowStock > 0 ? 'text-red-400' : 'text-gray-400', bg: stats.lowStock > 0 ? 'bg-red-400/10' : 'bg-gray-400/10', border: stats.lowStock > 0 ? 'border-red-400/20' : 'border-gray-400/20' },
+    { label: 'New Customers', value: stats.newCustomers, icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
+    { label: 'Refund/Cancel', value: stats.refundRequests, icon: Undo2, color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
     { label: 'Pending Orders', value: stats.pendingOrders, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
     { label: 'Completed', value: stats.deliveredOrders, icon: CheckCircle2, color: 'text-admin-accent', bg: 'bg-admin-accent/10', border: 'border-admin-accent/20' },
   ];

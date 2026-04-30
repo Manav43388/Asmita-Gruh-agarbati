@@ -92,11 +92,6 @@ export default function CheckoutModal() {
       // Save to Firestore
       await addDoc(collection(db, 'orders'), orderData);
       
-      // WhatsApp message
-      const msg = `🛒 *New Order - Asmita Gruh Udhyog*\n*Order ID: ${newId}*\n\n*Items Ordered:*\n${cartItems.map(i => `• ${i.title} × ${i.quantity} = ₹${(i.price * i.quantity).toLocaleString()}`).join('\n')}\n\n*Order Total: ₹${subtotal.toLocaleString()}*\n\n*Customer Details:*\nName: ${formData.name}\nPhone: ${formData.phone}${formData.email ? '\nEmail: ' + formData.email : ''}\nAddress: ${fullAddress}${formData.notes ? '\nNotes: ' + formData.notes : ''}`;
-      const url = `https://wa.me/916352291433?text=${encodeURIComponent(msg)}`;
-      window.open(url, '_blank');
-      
       setStep(2);
     } catch (error) {
       console.error("Error placing order:", error);
@@ -280,7 +275,7 @@ export default function CheckoutModal() {
                 <div className="checkout-form-actions">
                   <button className="checkout-back-btn" onClick={goBack}>Back</button>
                   <button className="checkout-next-btn" onClick={handlePlaceOrder}>
-                    <MessageCircle size={18} /> Place Order via WhatsApp
+                    <CheckCircle size={18} /> Confirm Order
                   </button>
                 </div>
               </motion.div>
@@ -306,10 +301,10 @@ export default function CheckoutModal() {
                   <CheckCircle size={72} />
                 </motion.div>
                 <motion.h3 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                  Order Sent! 🎉
+                  Order Placed Successfully! 🎉
                 </motion.h3>
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-                  Your order details have been sent to WhatsApp. Our team will contact you shortly to confirm your order and delivery.
+                  Thank you for your order! Your order has been recorded and our team will process it shortly.
                 </motion.p>
                 <motion.div
                   initial={{ opacity: 0 }}

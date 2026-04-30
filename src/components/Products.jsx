@@ -93,7 +93,7 @@ export default function Products() {
                 className="product-clickable"
                 onClick={() => setSelectedProduct(p)}
               >
-                <div className="product-image-container">
+                <div className="product-image-container premium-frame">
                   <img src={p.image} alt={p.title} className="product-image" />
                 </div>
 

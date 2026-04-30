@@ -190,11 +190,11 @@ export default function OrderTracking() {
                       </div>
                       <div className="info-block">
                         <div className="info-label"><CreditCard size={14} /> Payment Method</div>
-                        <p>Cash on Delivery</p>
+                        <p>{selectedOrder.paymentMethod || 'Cash on Delivery'}</p>
                       </div>
                       <div className="info-block">
-                        <div className="info-label"><Calendar size={14} /> Est. Delivery</div>
-                        <p>3-5 Business Days</p>
+                        <div className="info-label"><Truck size={14} /> Tracking ID</div>
+                        <p className="tracking-id-text">{selectedOrder.trackingId || 'Assigning soon...'}</p>
                       </div>
                     </div>
                   </div>
@@ -203,39 +203,51 @@ export default function OrderTracking() {
                   <div className="detail-timeline-card glass-panel">
                     <h3>Order Progress</h3>
                     
-                    <div className="amazon-tracker">
-                      <div className="tracker-line">
-                        <div 
-                          className="tracker-fill" 
-                          style={{ width: `${(getStepIndex(selectedOrder.status) / (STEPS.length - 1)) * 100}%` }} 
-                        />
+                    {selectedOrder.status === 'Cancelled' ? (
+                      <div className="cancelled-alert bg-red-500/10 border border-red-500/20 p-6 rounded-2xl flex items-center gap-4 text-red-400 mt-4">
+                        <AlertCircle size={32} />
+                        <div>
+                          <p className="font-bold">Order Cancelled</p>
+                          <p className="text-sm opacity-80">This order has been cancelled. Please contact support for details.</p>
+                        </div>
                       </div>
-                      <div className="tracker-steps">
-                        {STEPS.map((step, idx) => {
-                          const active = idx <= getStepIndex(selectedOrder.status);
-                          return (
-                            <div key={step.id} className={`tracker-step ${active ? 'active' : ''}`}>
-                              <div className="step-point" />
-                              <span className="step-label">{step.label}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="timeline-list" style={{ marginTop: '3rem' }}>
-                      {STEPS.filter((_, idx) => idx <= getStepIndex(selectedOrder.status)).reverse().map((step, i) => (
-                        <div key={step.id} className="timeline-item done">
-                          <div className="timeline-marker">
-                            <CheckCircle size={18} />
+                    ) : (
+                      <>
+                        <div className="amazon-tracker">
+                          <div className="tracker-line">
+                            <div 
+                              className="tracker-fill" 
+                              style={{ width: `${(getStepIndex(selectedOrder.status) / (STEPS.length - 1)) * 100}%` }} 
+                            />
                           </div>
-                          <div className="timeline-content">
-                            <p className="status-text">{step.label}</p>
-                            <p className="date-text">{i === 0 ? 'Current Status' : 'Completed'}</p>
+                          <div className="tracker-steps">
+                            {STEPS.map((step, idx) => {
+                              const active = idx <= getStepIndex(selectedOrder.status);
+                              return (
+                                <div key={step.id} className={`tracker-step ${active ? 'active' : ''}`}>
+                                  <div className="step-point" />
+                                  <span className="step-label">{step.label}</span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
-                      ))}
-                    </div>
+
+                        <div className="timeline-list" style={{ marginTop: '3rem' }}>
+                          {STEPS.filter((_, idx) => idx <= getStepIndex(selectedOrder.status)).reverse().map((step, i) => (
+                            <div key={step.id} className="timeline-item done">
+                              <div className="timeline-marker">
+                                <CheckCircle size={18} />
+                              </div>
+                              <div className="timeline-content">
+                                <p className="status-text">{step.label}</p>
+                                <p className="date-text">{i === 0 ? 'Current Status' : 'Completed'}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 

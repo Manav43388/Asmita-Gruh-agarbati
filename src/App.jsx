@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-// Build trigger for tracking page update
+// Build trigger: Forcing deployment of branding updates (Asmita Gruh Udhyog)
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 const Scene = React.lazy(() => import('./components/Scene'));
 const Navbar = React.lazy(() => import('./components/Navbar'));
@@ -19,6 +19,12 @@ const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'));
 const AdminOrders = React.lazy(() => import('./pages/admin/Orders'));
 const AdminProducts = React.lazy(() => import('./pages/admin/Products'));
 const AdminAnalytics = React.lazy(() => import('./pages/admin/Analytics'));
+const AdminCustomers = React.lazy(() => import('./pages/admin/Customers'));
+const AdminCoupons = React.lazy(() => import('./pages/admin/Coupons'));
+const AdminCMS = React.lazy(() => import('./pages/admin/CMS'));
+const AdminSettings = React.lazy(() => import('./pages/admin/Settings'));
+const AdminReports = React.lazy(() => import('./pages/admin/Reports'));
+const AdminSecurity = React.lazy(() => import('./pages/admin/Security'));
 
 import ProtectedRoute from './components/ProtectedRoute';
 import { CartProvider } from './context/CartContext';
@@ -73,6 +79,12 @@ function App() {
                         <Route path="analytics" element={<AdminAnalytics />} />
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="products" element={<AdminProducts />} />
+                        <Route path="customers" element={<AdminCustomers />} />
+                        <Route path="coupons" element={<AdminCoupons />} />
+                        <Route path="cms" element={<AdminCMS />} />
+                        <Route path="settings" element={<AdminSettings />} />
+                        <Route path="reports" element={<AdminReports />} />
+                        <Route path="security" element={<AdminSecurity />} />
                       </Route>
                     </Routes>
                   </div>

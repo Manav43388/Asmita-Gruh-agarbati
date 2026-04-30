@@ -10,11 +10,18 @@ import {
   Loader2,
   Package,
   X,
-  Shield
+  Shield,
+  Copy,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  History,
+  Barcode
 } from 'lucide-react';
-import { db, storage } from '../../firebase/config';
+import { db } from '../../firebase/config';
 import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
+import { createLog } from '../../utils/adminLogs';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -25,9 +32,15 @@ const AdminProducts = () => {
   const [imageFile, setImageFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({
+  
+  const initialFormState = {
     name: '',
     price: '',
+    discountPrice: '',
+    sku: '',
+    stock: '',
+    salesCount: 0,
+    status: 'Active',
     category: 'Incense Sticks',
     description: '',
     image: '',
@@ -52,7 +65,9 @@ const AdminProducts = () => {
       { feature: 'Eco-Friendly', ours: true },
       { feature: 'No Harmful Chemicals', ours: true },
     ]
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
     const q = query(collection(db, 'products'), orderBy('name'));
@@ -73,8 +88,8 @@ const AdminProducts = () => {
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1920;
-          const MAX_HEIGHT = 1920;
+          const MAX_WIDTH = 1024;
+          const MAX_HEIGHT = 1024;
           let width = img.width;
           let height = img.height;
 
@@ -95,7 +110,7 @@ const AdminProducts = () => {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          const base64String = canvas.toDataURL('image/jpeg', 0.85);
+          const base64String = canvas.toDataURL('image/jpeg', 0.8);
           resolve(base64String);
         };
         img.onerror = (error) => reject(error);
@@ -111,7 +126,7 @@ const AdminProducts = () => {
       let finalImageUrl = formData.image;
 
       if (imageFile) {
-        toast.loading('Processing image safely...', { id: 'uploadToast' });
+        toast.loading('Processing image...', { id: 'uploadToast' });
         finalImageUrl = await compressImage(imageFile);
         toast.dismiss('uploadToast');
       } else if (!isEditing && !formData.image) {
@@ -120,17 +135,26 @@ const AdminProducts = () => {
         return;
       }
 
-      const finalData = { ...formData, image: finalImageUrl };
+      const finalData = { 
+        ...formData, 
+        image: finalImageUrl,
+        price: Number(formData.price),
+        discountPrice: formData.discountPrice ? Number(formData.discountPrice) : null,
+        stock: Number(formData.stock || 0),
+        salesCount: Number(formData.salesCount || 0)
+      };
 
       if (isEditing) {
         await updateDoc(doc(db, 'products', currentId), finalData);
-        toast.success('Product updated successfully');
+        await createLog('Admin', `Updated product: ${formData.name}`, 'Products');
+        toast.success('Product updated');
       } else {
         await addDoc(collection(db, 'products'), {
           ...finalData,
           createdAt: new Date()
         });
-        toast.success('Product added successfully');
+        await createLog('Admin', `Created product: ${formData.name}`, 'Products');
+        toast.success('Product added');
       }
       setShowModal(false);
       resetForm();
@@ -143,10 +167,12 @@ const AdminProducts = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm('Delete this product permanently?')) {
       try {
+        const productToDelete = products.find(p => p.id === id);
         await deleteDoc(doc(db, 'products', id));
-        toast.success('Product deleted');
+        await createLog('Admin', `Deleted product: ${productToDelete?.name || id}`, 'Products');
+        toast.success('Deleted');
       } catch (error) {
         toast.error('Failed to delete');
       }
@@ -154,442 +180,261 @@ const AdminProducts = () => {
   };
 
   const handleEdit = (product) => {
-    setFormData({
-      ...product,
-      features: product.features || [
-        { feature: 'Organic Ingredients', ours: true },
-        { feature: 'Superior Fragrance', ours: true },
-        { feature: 'Longer Burn Time', ours: true },
-        { feature: 'Premium Packaging', ours: true },
-        { feature: 'Eco-Friendly', ours: true },
-        { feature: 'No Harmful Chemicals', ours: true },
-      ]
-    });
+    setFormData({ ...initialFormState, ...product });
     setCurrentId(product.id);
     setIsEditing(true);
     setShowModal(true);
   };
 
+  const handleDuplicate = async (product) => {
+    try {
+      toast.loading('Duplicating...', { id: 'dup' });
+      const { id, createdAt, ...rest } = product;
+      await addDoc(collection(db, 'products'), {
+        ...rest,
+        name: `${rest.name} (Copy)`,
+        createdAt: new Date()
+      });
+      await createLog('Admin', `Duplicated product: ${product.name}`, 'Products');
+      toast.success('Product duplicated', { id: 'dup' });
+    } catch (error) {
+      toast.error('Duplication failed', { id: 'dup' });
+    }
+  };
+
   const resetForm = () => {
-    setFormData({
-      name: '',
-      price: '',
-      category: 'Incense Sticks',
-      description: '',
-      image: '',
-      unit: 'Per Box',
-      subtitle: '',
-      fragrance: '',
-      burnTime: '',
-      weight: '',
-      material: '',
-      quantity: '',
-      usage: '',
-      country: 'India',
-      ingredients: '',
-      benefits: '',
-      howToUse: '',
-      storage: '',
-      features: [
-        { feature: 'Organic Ingredients', ours: true },
-        { feature: 'Superior Fragrance', ours: true },
-        { feature: 'Longer Burn Time', ours: true },
-        { feature: 'Premium Packaging', ours: true },
-        { feature: 'Eco-Friendly', ours: true },
-        { feature: 'No Harmful Chemicals', ours: true },
-      ]
-    });
+    setFormData(initialFormState);
     setIsEditing(false);
     setCurrentId(null);
     setImageFile(null);
   };
 
+  const getStockBadge = (stock) => {
+    const s = Number(stock || 0);
+    if (s === 0) return 'bg-red-500/10 text-red-500 border-red-500/20';
+    if (s < 10) return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+    return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+  };
+
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  if (loading) {
-    return (
-      <div className="w-full h-full flex flex-col gap-6 animate-pulse">
-        <div className="flex justify-between items-end mb-4">
-          <div className="h-10 w-48 bg-[#141414] rounded-lg"></div>
-          <div className="h-12 w-40 bg-[#141414] rounded-xl"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="h-[350px] bg-[#141414] rounded-2xl border border-[#2a2a2a]"></div>)}
-        </div>
+  if (loading) return (
+    <div className="w-full h-full flex flex-col gap-6 animate-pulse p-4">
+      <div className="h-12 w-64 bg-[#141414] rounded-xl mb-8"></div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[1,2,3,4].map(i => <div key={i} className="h-80 bg-[#141414] rounded-2xl border border-[#2a2a2a]"></div>)}
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+    <div className="animate-in fade-in duration-500 pb-10">
+      <div className="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 px-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 font-['Outfit'] flex items-center gap-3">
-            Product Catalog
+            Products
             <Package className="text-admin-accent" size={28} />
           </h1>
-          <p className="text-gray-400">Add, edit, and manage your spiritual items.</p>
+          <p className="text-gray-400">Inventory and catalog management.</p>
         </div>
         
         <div className="flex items-center gap-4 w-full sm:w-auto">
-          <div className="relative w-full sm:w-[250px] group hidden sm:block">
+          <div className="relative w-full sm:w-[280px] group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-admin-accent transition-colors">
               <Search size={18} />
             </div>
             <input 
               type="text" 
-              className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-all placeholder:text-gray-600 shadow-inner"
-              placeholder="Search products..." 
+              className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-admin-accent transition-all placeholder:text-gray-600 shadow-xl"
+              placeholder="Search catalog..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           
           <button 
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-admin-accent to-yellow-600 text-[#050505] font-bold rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30_px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all duration-300"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-admin-accent to-yellow-600 text-[#050505] font-bold rounded-xl shadow-xl hover:-translate-y-1 transition-all duration-300"
             onClick={() => { resetForm(); setShowModal(true); }}
           >
-            <Plus size={20} />
-            Add Product
+            <Plus size={20} /> Add New
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
         {filteredProducts.map((product) => (
-          <div 
-            key={product.id} 
-            className="product-card glass-panel group flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_15px_40px_-10px_rgba(0,0,0,0.6)]"
-          >
-            <div className="product-image-container h-48 relative overflow-hidden">
-              <img 
-                src={product.image} 
-                alt={product.name} 
-                className="product-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-              />
-              <div className="product-tag">
-                {product.category}
+          <div key={product.id} className="bg-[#141414] border border-[#2a2a2a] rounded-2xl overflow-hidden group hover:border-admin-accent/30 transition-all duration-300 flex flex-col">
+            <div className="relative h-48 premium-frame">
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              <div className="absolute top-3 left-3 flex flex-col gap-2">
+                <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-[10px] text-white font-bold rounded uppercase tracking-wider border border-white/10">
+                  {product.category}
+                </span>
+                {Number(product.stock || 0) < 10 && (
+                  <span className={`px-2 py-1 flex items-center gap-1 text-[10px] font-bold rounded uppercase tracking-wider border ${getStockBadge(product.stock)}`}>
+                    <AlertCircle size={10} /> {Number(product.stock) === 0 ? 'Out of Stock' : 'Low Stock'}
+                  </span>
+                )}
+              </div>
+              <div className="absolute top-3 right-3">
+                <span className={`w-8 h-8 flex items-center justify-center rounded-full backdrop-blur-md border border-white/10 ${product.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                  {product.status === 'Active' ? <Eye size={16} /> : <EyeOff size={16} />}
+                </span>
               </div>
             </div>
             
-            <div className="product-info p-5 flex flex-col flex-1">
-              <div className="flex justify-between items-start mb-2 gap-2">
-                <h4 className="text-white font-bold text-lg leading-tight line-clamp-2">{product.name}</h4>
-                <span className="product-price text-lg shrink-0">₹{product.price}</span>
+            <div className="p-5 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="text-white font-bold leading-tight group-hover:text-admin-accent transition-colors">{product.name}</h4>
+                <div className="text-right">
+                  <p className="text-admin-accent font-bold">₹{product.price}</p>
+                  {product.discountPrice && <p className="text-[10px] text-gray-500 line-through">₹{product.discountPrice}</p>}
+                </div>
               </div>
               
-              <p className="text-gray-400 text-sm mb-4 line-clamp-2 flex-1">
-                {product.description || 'No description provided.'}
-              </p>
-              
-              <div className="flex items-center gap-3 pt-4 border-t border-white/5 mt-auto">
+              <div className="flex items-center gap-4 mt-auto pt-4 border-t border-white/5">
+                <div className="flex-1">
+                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Stock / Sales</p>
+                  <p className="text-xs text-gray-300 font-medium">
+                    {product.stock || 0} Avail. <span className="text-gray-600">|</span> {product.salesCount || 0} Sold
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">SKU</p>
+                  <p className="text-xs text-gray-400">{product.sku || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 mt-5">
                 <button 
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 hover:border-gray-500 font-medium text-sm"
                   onClick={() => handleEdit(product)}
+                  className="flex items-center justify-center p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg transition-all border border-white/5"
+                  title="Edit"
                 >
-                  <Edit size={16} /> Edit
+                  <Edit size={16} />
                 </button>
                 <button 
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors border border-red-500/20 hover:border-red-500/40 font-medium text-sm"
-                  onClick={() => handleDelete(product.id)}
+                  onClick={() => handleDuplicate(product)}
+                  className="flex items-center justify-center p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg transition-all border border-white/5"
+                  title="Duplicate"
                 >
-                  <Trash2 size={16} /> Delete
+                  <Copy size={16} />
+                </button>
+                <button 
+                  onClick={() => handleDelete(product.id)}
+                  className="flex items-center justify-center p-2 bg-red-500/5 hover:bg-red-500/10 text-gray-500 hover:text-red-500 rounded-lg transition-all border border-transparent hover:border-red-500/20"
+                  title="Delete"
+                >
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
           </div>
         ))}
-        
-        {filteredProducts.length === 0 && (
-          <div className="col-span-full py-20 flex flex-col items-center justify-center bg-[#141414] border border-[#2a2a2a] border-dashed rounded-2xl">
-            <Package size={64} className="text-gray-600 mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No products found</h3>
-            <p className="text-gray-400">Try adjusting your search or add a new product.</p>
-          </div>
-        )}
       </div>
 
-      {/* Product Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div 
-            className="bg-[#141414] border border-[#2a2a2a] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl shadow-admin-accent/10 animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-6 border-b border-[#2a2a2a] bg-[#0a0a0a]">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowModal(false)} />
+          <div className="relative bg-[#0a0a0a] border border-[#2a2a2a] w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div className="p-6 border-b border-[#2a2a2a] flex items-center justify-between bg-gradient-to-r from-admin-accent/5 to-transparent">
+              <h2 className="text-xl font-bold text-white flex items-center gap-3">
                 {isEditing ? <Edit className="text-admin-accent" /> : <Plus className="text-admin-accent" />}
-                {isEditing ? 'Edit Product' : 'Add New Product'}
+                {isEditing ? 'Edit Product' : 'New Product'}
               </h2>
-              <button 
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                <X size={24} />
+              <button onClick={() => setShowModal(false)} className="p-2 text-gray-400 hover:text-white rounded-full bg-white/5">
+                <X size={20} />
               </button>
             </div>
             
-            <div className="overflow-y-auto p-6 custom-scrollbar">
-              <form id="product-form" onSubmit={handleSubmit} className="flex flex-col gap-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Product Name</label>
-                    <input 
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                      value={formData.name} 
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                      placeholder="e.g. Premium Rose Agarbatti"
-                      required
-                    />
+            <div className="overflow-y-auto p-8 custom-scrollbar">
+              <form id="product-form" onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Product Name</label>
+                      <input className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">SKU Code</label>
+                        <div className="relative">
+                          <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" size={16} />
+                          <input className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-admin-accent transition-all" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Status</label>
+                        <select className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent transition-all appearance-none cursor-pointer" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1 flex items-center gap-1">
-                      Price <IndianRupee size={12} className="text-gray-500" />
-                    </label>
-                    <input 
-                      type="number"
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                      value={formData.price} 
-                      onChange={e => setFormData({...formData, price: e.target.value})}
-                      placeholder="150"
-                      required
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Category</label>
-                    <select 
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors appearance-none cursor-pointer"
-                      value={formData.category}
-                      onChange={e => setFormData({...formData, category: e.target.value})}
-                    >
-                      <option className="bg-[#1a1a1a]" value="Incense Sticks">Incense Sticks</option>
-                      <option className="bg-[#1a1a1a]" value="Dhoop Sticks">Dhoop Sticks</option>
-                      <option className="bg-[#1a1a1a]" value="Pujan Samagri">Pujan Samagri</option>
-                      <option className="bg-[#1a1a1a]" value="Attar & Perfumes">Attar & Perfumes</option>
-                      <option className="bg-[#1a1a1a]" value="Idol Cloth">Idol Cloth</option>
-                      <option className="bg-[#1a1a1a]" value="Other Spiritual Products">Other Spiritual Products</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Unit</label>
-                    <input 
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                      value={formData.unit} 
-                      onChange={e => setFormData({...formData, unit: e.target.value})}
-                      placeholder="Per Box / 100g"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-300 ml-1">Product Image</label>
-                  <div className="w-full relative border-2 border-dashed border-[#2a2a2a] rounded-xl hover:border-admin-accent/50 transition-colors bg-[#0a0a0a] group">
-                    <input 
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                      onChange={e => {
-                        if (e.target.files[0]) {
-                          setImageFile(e.target.files[0]);
-                        }
-                      }}
-                      required={!isEditing && !formData.image}
-                    />
-                    <div className="p-6 flex flex-col items-center justify-center gap-2 text-gray-400 group-hover:text-admin-accent transition-colors">
-                      <ImageIcon size={32} />
-                      <span className="font-medium">
-                        {imageFile ? imageFile.name : 'Click to upload or drag & drop'}
-                      </span>
-                      <span className="text-xs text-gray-500">SVG, PNG, JPG or GIF (max. 5MB)</span>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Regular Price</label>
+                        <div className="relative">
+                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" size={16} />
+                          <input type="number" className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-admin-accent transition-all" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Discount Price</label>
+                        <div className="relative">
+                          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" size={16} />
+                          <input type="number" className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-admin-accent transition-all" value={formData.discountPrice} onChange={e => setFormData({...formData, discountPrice: e.target.value})} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  {isEditing && formData.image && !imageFile && (
-                    <div className="flex items-center gap-3 mt-3 p-3 bg-white/5 rounded-lg border border-[#2a2a2a]">
-                      <img src={formData.image} alt="Current" className="w-12 h-12 rounded object-cover border border-[#2a2a2a]" />
-                      <p className="text-sm text-gray-400">Current image will be kept unless you upload a new one.</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-300 ml-1">Description</label>
-                  <textarea 
-                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[100px] resize-y"
-                    value={formData.description} 
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                    placeholder="Write a compelling description for this product..."
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-[#2a2a2a]">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <Tag className="text-admin-accent" size={18} />
-                    Specifications
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Subtitle / Punchline</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.subtitle} 
-                        onChange={e => setFormData({...formData, subtitle: e.target.value})}
-                        placeholder="e.g. Hand-rolled | Natural"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Fragrance</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.fragrance} 
-                        onChange={e => setFormData({...formData, fragrance: e.target.value})}
-                        placeholder="e.g. Sandalwood"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Burning Time</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.burnTime} 
-                        onChange={e => setFormData({...formData, burnTime: e.target.value})}
-                        placeholder="e.g. 40 min per stick"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Weight</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.weight} 
-                        onChange={e => setFormData({...formData, weight: e.target.value})}
-                        placeholder="e.g. 100g"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Material</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.material} 
-                        onChange={e => setFormData({...formData, material: e.target.value})}
-                        placeholder="e.g. Bamboo + Resins"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Quantity</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.quantity} 
-                        onChange={e => setFormData({...formData, quantity: e.target.value})}
-                        placeholder="e.g. 50 sticks"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Usage</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.usage} 
-                        onChange={e => setFormData({...formData, usage: e.target.value})}
-                        placeholder="e.g. Daily Puja"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-300 ml-1">Country of Origin</label>
-                      <input 
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors"
-                        value={formData.country} 
-                        onChange={e => setFormData({...formData, country: e.target.value})}
-                        placeholder="India"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Stock Qty</label>
+                        <input type="number" className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent transition-all" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Sold Count</label>
+                        <div className="relative">
+                          <History className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" size={16} />
+                          <input type="number" className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-admin-accent transition-all" value={formData.salesCount} onChange={e => setFormData({...formData, salesCount: e.target.value})} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#2a2a2a] space-y-5">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Ingredients (comma separated)</label>
-                    <textarea 
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
-                      value={formData.ingredients} 
-                      onChange={e => setFormData({...formData, ingredients: e.target.value})}
-                      placeholder="Natural resins, Essential oils, Bamboo sticks..."
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Benefits (comma separated)</label>
-                    <textarea 
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
-                      value={formData.benefits} 
-                      onChange={e => setFormData({...formData, benefits: e.target.value})}
-                      placeholder="Purifies air, Aids meditation, Long lasting..."
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1">How to Use</label>
-                    <textarea 
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
-                      value={formData.howToUse} 
-                      onChange={e => setFormData({...formData, howToUse: e.target.value})}
-                      placeholder="Light the tip of the stick..."
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Storage Instructions</label>
-                    <textarea 
-                      className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-colors min-h-[80px] resize-y"
-                      value={formData.storage} 
-                      onChange={e => setFormData({...formData, storage: e.target.value})}
-                      placeholder="Store in a cool, dry place..."
-                    />
+                <div className="pt-6 border-t border-[#2a2a2a]">
+                  <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-4 block">Product Image</label>
+                  <div className="border-2 border-dashed border-[#2a2a2a] rounded-2xl p-8 text-center hover:border-admin-accent/50 transition-all cursor-pointer bg-[#141414] relative overflow-hidden group">
+                    <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={e => setImageFile(e.target.files[0])} />
+                    {imageFile || formData.image ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <img src={imageFile ? URL.createObjectURL(imageFile) : formData.image} className="w-32 h-32 object-contain rounded-xl" />
+                        <span className="text-xs text-gray-400">Click to change image</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-3">
+                        <ImageIcon size={48} className="text-gray-700 group-hover:text-admin-accent transition-colors" />
+                        <span className="text-sm font-medium text-gray-400">Upload Product Image</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#2a2a2a]">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <Shield className="text-admin-accent" size={18} />
-                    Comparison Features (Green Checkmarks)
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {(formData.features || []).map((feat, idx) => (
-                      <label key={feat.feature} className="flex items-center gap-3 p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl cursor-pointer hover:border-admin-accent/50 transition-colors">
-                        <input 
-                          type="checkbox"
-                          className="w-5 h-5 accent-admin-accent bg-[#0a0a0a] border-[#2a2a2a] rounded"
-                          checked={feat.ours}
-                          onChange={(e) => {
-                            const newFeatures = [...formData.features];
-                            newFeatures[idx] = { ...newFeatures[idx], ours: e.target.checked };
-                            setFormData({ ...formData, features: newFeatures });
-                          }}
-                        />
-                        <span className="text-gray-300 text-sm font-medium">{feat.feature}</span>
-                      </label>
-                    ))}
-                  </div>
+                <div>
+                  <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Description</label>
+                  <textarea className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent transition-all min-h-[120px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
                 </div>
               </form>
             </div>
             
-            <div className="p-6 border-t border-[#2a2a2a] bg-[#0a0a0a] flex justify-end gap-3">
-              <button 
-                type="button" 
-                className="px-6 py-2.5 rounded-xl font-medium !text-white !bg-[#1a1a1a] hover:!bg-[#2a2a2a] transition-colors border border-transparent hover:border-white/10"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                form="product-form"
-                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-admin-accent to-yellow-600 text-[#050505] font-bold rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                disabled={uploadingImage}
-              >
-                {uploadingImage ? (
-                  <><Loader2 size={18} className="animate-spin" /> Saving...</>
-                ) : (
-                  isEditing ? 'Save Changes' : 'Create Product'
-                )}
+            <div className="p-6 bg-[#050505] border-t border-[#2a2a2a] flex justify-end gap-4">
+              <button onClick={() => setShowModal(false)} className="px-8 py-3 text-sm font-bold text-gray-400 hover:text-white transition-colors">Cancel</button>
+              <button type="submit" form="product-form" className="px-8 py-3 bg-admin-accent text-[#050505] font-black text-xs uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all disabled:opacity-50" disabled={uploadingImage}>
+                {uploadingImage ? 'Processing...' : (isEditing ? 'Update Product' : 'Create Product')}
               </button>
             </div>
           </div>

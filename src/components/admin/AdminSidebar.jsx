@@ -6,7 +6,13 @@ import {
   Package, 
   LogOut,
   X,
-  TrendingUp
+  TrendingUp,
+  Users,
+  Ticket,
+  MessageSquare,
+  Layout,
+  BarChart3,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -28,6 +34,12 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Analytics', path: '/admin/analytics', icon: TrendingUp },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
     { name: 'Products', path: '/admin/products', icon: Package },
+    { name: 'Customers', path: '/admin/customers', icon: Users },
+    { name: 'Coupons', path: '/admin/coupons', icon: Ticket },
+    { name: 'CMS', path: '/admin/cms', icon: Layout },
+    { name: 'Settings', path: '/admin/settings', icon: MessageSquare },
+    { name: 'Reports', path: '/admin/reports', icon: BarChart3 },
+    { name: 'Security', path: '/admin/security', icon: ShieldCheck },
   ];
 
   return (
@@ -48,7 +60,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
         <div className="h-20 flex items-center justify-between px-6 border-b border-[#2a2a2a]">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full border border-admin-accent/30 shadow-[0_0_10px_rgba(212,175,55,0.2)]" />
-            <span className="text-admin-accent font-bold text-xl tracking-wide uppercase">ADMIN PANEL</span>
+            <span className="text-admin-accent font-bold text-sm tracking-widest uppercase">Asmita Gruh Udhyog</span>
           </div>
           <button onClick={toggleSidebar} className="lg:hidden text-gray-400 hover:text-white transition-colors">
             <X size={24} />
@@ -80,10 +92,10 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
         <div className="p-4 border-t border-[#2a2a2a]">
           <button 
             onClick={handleLogout} 
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all duration-300 group"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300 group shadow-lg shadow-red-500/5"
           >
             <LogOut size={20} className="transition-transform group-hover:-translate-x-1" />
-            <span className="font-medium">Logout</span>
+            <span className="font-bold uppercase tracking-widest text-xs">Logout</span>
           </button>
         </div>
       </aside>

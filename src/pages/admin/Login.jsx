@@ -43,7 +43,7 @@ const Login = () => {
           <div className="w-20 h-20 rounded-full border border-admin-accent/30 shadow-[0_0_20px_rgba(212,175,55,0.2)] mb-4 overflow-hidden bg-[#0a0a0a] flex items-center justify-center p-1">
             <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-full" />
           </div>
-          <h1 className="text-3xl font-bold text-white font-['Outfit'] mb-2 tracking-wide text-center">Asmita Admin</h1>
+          <h1 className="text-2xl font-bold text-white font-['Outfit'] mb-2 tracking-wide text-center">Asmita Gruh Udhyog</h1>
           <p className="text-gray-400 text-sm text-center">Enter your credentials to access the dashboard</p>
         </div>
 

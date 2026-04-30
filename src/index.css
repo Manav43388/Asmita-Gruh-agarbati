@@ -283,6 +283,25 @@ h6 {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  z-index: 1;
+}
+
+.premium-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.premium-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  z-index: 3;
+  pointer-events: none;
 }
 
 .product-card:hover .product-image {
@@ -547,11 +566,12 @@ h6 {
   }
 
   .brand-full {
-    display: none;
+    display: inline;
+    font-size: 1rem;
   }
 
   .brand-short {
-    display: inline;
+    display: none;
   }
 
   .navbar {
