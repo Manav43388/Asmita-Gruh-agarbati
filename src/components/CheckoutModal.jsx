@@ -6,8 +6,9 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, where, updateDoc, increment, doc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
+import { Tag, Ticket } from 'lucide-react';
 const STEPS = ['Review Order', 'Shipping Info', 'Confirm'];
 
 export default function CheckoutModal() {
@@ -17,6 +18,11 @@ export default function CheckoutModal() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', address: '', city: '', pincode: '', notes: '' });
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   useEffect(() => {
     if (user && isCheckoutOpen) {
@@ -66,6 +72,60 @@ export default function CheckoutModal() {
     return 'ORD' + Date.now();
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setValidatingCoupon(true);
+    setCouponError('');
+    
+    try {
+      const q = query(
+        collection(db, 'coupons'), 
+        where('code', '==', couponCode.toUpperCase()),
+        where('status', '==', 'Active')
+      );
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        setCouponError('Invalid or inactive coupon code');
+        setDiscount(0);
+        setAppliedCoupon(null);
+        return;
+      }
+
+      const coupon = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+      
+      // Check Expiry
+      if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
+        setCouponError('Coupon has expired');
+        return;
+      }
+
+      // Check Min Purchase
+      if (subtotal < (coupon.minPurchase || 0)) {
+        setCouponError(`Min. purchase for this coupon is ₹${coupon.minPurchase}`);
+        return;
+      }
+
+      let discountAmount = 0;
+      if (coupon.type === 'Percentage') {
+        discountAmount = (subtotal * coupon.value) / 100;
+      } else {
+        discountAmount = coupon.value;
+      }
+
+      setDiscount(discountAmount);
+      setAppliedCoupon(coupon);
+      toast.success('Coupon applied successfully!');
+    } catch (error) {
+      console.error("Coupon error:", error);
+      setCouponError('Error validating coupon');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const finalTotal = subtotal - discount;
+
   const handlePlaceOrder = async () => {
     setLoading(true);
     const newId = generateOrderId();
@@ -81,7 +141,10 @@ export default function CheckoutModal() {
         phone: formData.phone,
         address: fullAddress,
         product: productString,
-        amount: subtotal,
+        amount: finalTotal,
+        discount: discount,
+        couponCode: appliedCoupon?.code || null,
+        subtotal: subtotal,
         status: 'Order placed',
         trackingId: '',
         createdAt: serverTimestamp(),
@@ -91,6 +154,13 @@ export default function CheckoutModal() {
 
       // Save to Firestore
       await addDoc(collection(db, 'orders'), orderData);
+      
+      // Increment coupon usage if applicable
+      if (appliedCoupon) {
+        await updateDoc(doc(db, 'coupons', appliedCoupon.id), {
+          usageCount: increment(1)
+        });
+      }
       
       setStep(2);
     } catch (error) {
@@ -195,18 +265,49 @@ export default function CheckoutModal() {
                   ))}
                 </div>
 
+                <div className="checkout-coupon-section">
+                  <div className={`coupon-input-wrap ${appliedCoupon ? 'applied' : ''}`}>
+                    <Tag size={16} className="coupon-icon" />
+                    <input 
+                      type="text" 
+                      placeholder="Enter Coupon Code" 
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      disabled={appliedCoupon}
+                    />
+                    {appliedCoupon ? (
+                      <button className="remove-coupon" onClick={() => { setAppliedCoupon(null); setDiscount(0); setCouponCode(''); }}>Remove</button>
+                    ) : (
+                      <button 
+                        className="apply-coupon-btn" 
+                        onClick={handleApplyCoupon}
+                        disabled={validatingCoupon || !couponCode.trim()}
+                      >
+                        {validatingCoupon ? '...' : 'Apply'}
+                      </button>
+                    )}
+                  </div>
+                  {couponError && <p className="coupon-error-text">{couponError}</p>}
+                </div>
+
                 <div className="checkout-totals">
                   <div className="total-row">
                     <span>Subtotal</span>
                     <span>₹{subtotal.toLocaleString()}</span>
                   </div>
+                  {discount > 0 && (
+                    <div className="total-row discount-row">
+                      <span className="flex items-center gap-1.5"><Ticket size={14} /> Discount ({appliedCoupon?.code})</span>
+                      <span className="text-emerald-500">- ₹{discount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="total-row">
                     <span>Delivery</span>
                     <span className="free-tag">FREE</span>
                   </div>
                   <div className="total-row grand-total">
                     <span>Total</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
+                    <span>₹{finalTotal.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -322,8 +423,13 @@ export default function CheckoutModal() {
                     <span>Phone</span><span>{formData.phone}</span>
                   </div>
                   <div className="success-summary-row">
-                    <span>Order Total</span><span>₹{subtotal.toLocaleString()}</span>
+                    <span>Order Total</span><span>₹{finalTotal.toLocaleString()}</span>
                   </div>
+                  {discount > 0 && (
+                    <div className="success-summary-row discount">
+                      <span>Discount Saved</span><span className="text-emerald-500">₹{discount.toLocaleString()}</span>
+                    </div>
+                  )}
                 </motion.div>
                 
                 <div className="success-actions">
