@@ -34,10 +34,13 @@ import './index.css';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 
+const Banner = React.lazy(() => import('./components/Banner'));
+
 const Home = () => (
   <div className="content-layer">
-    <div id="home"><Products /></div>
-    <div id="products"><FAQ /></div>
+    <div id="home"><Banner /></div>
+    <div id="products-list"><Products /></div>
+    <div id="faq"><FAQ /></div>
     <div id="reviews"><Reviews /></div>
     <div id="about"><About /></div>
     <div id="contact"><Contact /></div>

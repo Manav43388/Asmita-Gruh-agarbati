@@ -5357,3 +5357,17 @@ h6 {
 .pd-review-item-title { font-weight: 700; color: #fff; margin-top: 0.5rem; font-size: 0.95rem; }
 .pd-review-item { position: relative; overflow: hidden; }
 .pd-review-item.featured { border-left: 3px solid #d4af37; background: rgba(212, 175, 55, 0.02); }
+
+/* Banner Component Styles */
+.banner-section { width: 100%; height: auto; min-height: 200px; margin-bottom: 2rem; overflow: hidden; }
+.banner-container { position: relative; width: 100%; aspect-ratio: 21 / 9; background: #000; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); }
+.banner-slide { width: 100%; height: 100%; }
+.banner-image { width: 100%; height: 100%; object-fit: cover; }
+.banner-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 1rem; cursor: pointer; z-index: 10; transition: all 0.3s; border-radius: 50%; margin: 0 1rem; }
+.banner-nav:hover { background: var(--primary-color); color: black; }
+.banner-nav.prev { left: 0; }
+.banner-nav.next { right: 0; }
+.banner-dots { position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.8rem; z-index: 10; }
+.banner-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.3); border: none; cursor: pointer; transition: all 0.3s; }
+.banner-dot.active { background: var(--primary-color); width: 30px; border-radius: 10px; }
+@media (max-width: 768px) { .banner-container { aspect-ratio: 16 / 9; border-radius: 0; } .banner-dots { bottom: 1rem; } }
