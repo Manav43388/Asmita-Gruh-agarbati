@@ -1,76 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
-
-const REVIEWS = [
-  {
-    id: 1,
-    name: 'Priya Sharma',
-    verified: true,
-    date: '04/18/2026',
-    rating: 5,
-    title: 'Amazing fragrance!',
-    text: 'These agarbattis have the most divine fragrance. My entire home feels like a temple. Perfect for daily puja and meditation.',
-  },
-  {
-    id: 2,
-    name: 'Rahul Patel',
-    verified: true,
-    date: '04/14/2026',
-    rating: 5,
-    title: 'Best Agarbatti Ever',
-    text: 'Pure natural ingredients. No headache or irritation even after long use. Highly recommended for everyone!',
-  },
-  {
-    id: 3,
-    name: 'Kavita Devi',
-    verified: true,
-    date: '04/12/2026',
-    rating: 5,
-    title: 'Sambrani cups are wonderful',
-    text: 'The sambrani cups fill the whole house with a beautiful purifying fragrance. Brilliant product. Will buy again!',
-  },
-  {
-    id: 4,
-    name: 'Amit Verma',
-    verified: true,
-    date: '04/10/2026',
-    rating: 4,
-    title: 'Great quality, fast delivery',
-    text: 'Good packaging and fast delivery. The dhoop sticks are long-lasting and have a strong, pleasant aroma.',
-  },
-  {
-    id: 5,
-    name: 'Sunita Mehta',
-    verified: true,
-    date: '04/08/2026',
-    rating: 5,
-    title: 'Perfect gift!',
-    text: 'Ordered the Puja Gift Hamper for my mother. She absolutely loved it. Very premium packaging and quality.',
-  },
-  {
-    id: 6,
-    name: 'Deepak Joshi',
-    verified: false,
-    date: '04/05/2026',
-    rating: 5,
-    title: '100% Natural — worth it',
-    text: 'Finally found a brand that uses zero chemical fragrance. You can smell the difference immediately. Truly pure.',
-  },
-];
-
-const BREAKDOWN = [
-  { stars: 5, count: 177 },
-  { stars: 4, count: 32 },
-  { stars: 3, count: 1 },
-  { stars: 2, count: 0 },
-  { stars: 1, count: 0 },
-];
-
-const TOTAL_REVIEWS = BREAKDOWN.reduce((s, b) => s + b.count, 0);
-const OVERALL = (
-  BREAKDOWN.reduce((s, b) => s + b.stars * b.count, 0) / TOTAL_REVIEWS
-).toFixed(2);
+import { Star, Loader2 } from 'lucide-react';
+import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 function StarRow({ rating, size = 16 }) {
   return (
@@ -88,10 +20,52 @@ function StarRow({ rating, size = 16 }) {
 }
 
 export default function Reviews() {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const perPage = 3;
-  const pages = Math.ceil(REVIEWS.length / perPage);
-  const visible = REVIEWS.slice(page * perPage, page * perPage + perPage);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, 'reviews'), 
+      where('isApproved', '==', true)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const revs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Sort: Featured first, then newest
+      const sorted = revs.sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        return new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date);
+      });
+      setReviews(sorted);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Calculate breakdown and overall
+  const counts = [5, 4, 3, 2, 1].map(stars => ({
+    stars,
+    count: reviews.filter(r => Math.round(r.rating) === stars).length
+  }));
+
+  const totalReviews = reviews.length;
+  const overall = totalReviews > 0 
+    ? (reviews.reduce((s, r) => s + r.rating, 0) / totalReviews).toFixed(1)
+    : "5.0";
+
+  const pages = Math.ceil(reviews.length / perPage);
+  const visible = reviews.slice(page * perPage, page * perPage + perPage);
+
+  if (loading) {
+    return (
+      <section id="reviews" className="section reviews-section flex items-center justify-center">
+        <Loader2 className="animate-spin text-admin-accent" size={48} />
+      </section>
+    );
+  }
 
   return (
     <section id="reviews" className="section reviews-section">
@@ -105,22 +79,22 @@ export default function Reviews() {
 
         {/* Overall score */}
         <div className="reviews-overall">
-          <span className="reviews-score">{OVERALL}</span>
+          <span className="reviews-score">{overall}</span>
           <div>
-            <StarRow rating={Math.round(OVERALL)} size={22} />
-            <span className="reviews-count">Based on {TOTAL_REVIEWS} reviews</span>
+            <StarRow rating={Math.round(parseFloat(overall))} size={22} />
+            <span className="reviews-count">Based on {totalReviews} reviews</span>
           </div>
         </div>
 
         {/* Breakdown bars */}
         <div className="reviews-breakdown">
-          {BREAKDOWN.map(b => (
+          {counts.map(b => (
             <div key={b.stars} className="breakdown-row">
               <StarRow rating={b.stars} size={13} />
               <div className="breakdown-bar-wrap">
                 <div
                   className="breakdown-bar-fill"
-                  style={{ width: `${(b.count / TOTAL_REVIEWS) * 100}%` }}
+                  style={{ width: totalReviews > 0 ? `${(b.count / totalReviews) * 100}%` : '0%' }}
                 />
               </div>
               <span className="breakdown-num">{b.count}</span>
@@ -161,7 +135,7 @@ export default function Reviews() {
             className="review-card glass-panel"
           >
             <div className="review-card-top">
-              <div className="review-avatar">{r.name[0]}</div>
+              <div className="review-avatar">{r.name ? r.name[0] : 'U'}</div>
               <div>
                 <div className="review-name-row">
                   <span className="review-name">{r.name}</span>
@@ -169,26 +143,34 @@ export default function Reviews() {
                 </div>
                 <StarRow rating={r.rating} size={14} />
               </div>
-              <span className="review-date">{r.date}</span>
+              <span className="review-date">{r.date || new Date(r.createdAt).toLocaleDateString()}</span>
             </div>
             <p className="review-title">{r.title}</p>
             <p className="review-text">{r.text}</p>
           </motion.div>
         ))}
+        {reviews.length === 0 && (
+          <div className="col-span-full py-10 text-center text-gray-500">
+            <p>No reviews yet. Be the first to write one!</p>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="reviews-pagination">
-        {Array.from({ length: pages }).map((_, i) => (
-          <button
-            key={i}
-            className={`page-dot ${i === page ? 'active' : ''}`}
-            onClick={() => setPage(i)}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      {pages > 1 && (
+        <div className="reviews-pagination">
+          {Array.from({ length: pages }).map((_, i) => (
+            <button
+              key={i}
+              className={`page-dot ${i === page ? 'active' : ''}`}
+              onClick={() => setPage(i)}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
+

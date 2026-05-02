@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { db } from '../firebase/config';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 
 /* ─── Per-product rich data ─── */
 const RICH_DATA = {
@@ -169,6 +171,29 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
   const [activeImg, setActiveImg] = useState(0);
   const [wishlist, setWishlist] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [dbReviews, setDbReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!product.id) return;
+    const q = query(
+      collection(db, 'reviews'),
+      where('productId', '==', product.id),
+      where('isApproved', '==', true)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const revs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Sort: Featured first, then newest
+      setDbReviews(revs.sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        return new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date);
+      }));
+      setReviewsLoading(false);
+    });
+    return () => unsubscribe();
+  }, [product.id]);
 
   const rich = RICH_DATA[product.id] || RICH_DATA.default;
   
@@ -228,8 +253,17 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
     setIsCartOpen(true);
   };
 
-  const totalReviews = data.totalReviews;
-  const avgRating = data.avgRating;
+  // Dynamic calculations from DB reviews
+  const totalReviews = dbReviews.length;
+  const avgRating = totalReviews > 0 
+    ? (dbReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews).toFixed(1)
+    : "5.0";
+
+  const ratingBreakdown = [5, 4, 3, 2, 1].reduce((acc, star) => {
+    const count = dbReviews.filter(r => Math.round(r.rating) === star).length;
+    acc[star] = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+    return acc;
+  }, {});
 
   return ReactDOM.createPortal(
     <AnimatePresence>
@@ -521,7 +555,7 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
               </div>
               <div className="pd-rating-bars">
                 {[5, 4, 3, 2, 1].map(star => {
-                  const pct = data.ratingBreakdown[star] || 0;
+                  const pct = ratingBreakdown[star] || 0;
                   return (
                     <div key={star} className="pd-rating-bar-row">
                       <span className="pd-bar-label">{star}★</span>
@@ -547,22 +581,46 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
 
             {/* Review list */}
             <div className="pd-review-list">
-              {data.reviews.map((r, i) => (
-                <div key={i} className="pd-review-item">
+              {dbReviews.length > 0 ? dbReviews.map((r, i) => (
+                <div key={r.id || i} className={`pd-review-item ${r.isFeatured ? 'featured' : ''}`}>
                   <div className="pd-review-top">
-                    <span className="review-avatar">{r.avatar}</span>
+                    {r.customerImage ? (
+                      <img src={r.customerImage} className="review-avatar-img" alt={r.name} />
+                    ) : (
+                      <span className="review-avatar">{r.name ? r.name[0] : 'U'}</span>
+                    )}
                     <div className="pd-review-meta">
-                      <span className="pd-reviewer-name">{r.name}</span>
-                      <span className="pd-review-date">{r.date}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="pd-reviewer-name">{r.name}</span>
+                        {r.isFeatured && <span className="text-[9px] bg-admin-accent/20 text-admin-accent px-1.5 py-0.5 rounded font-bold uppercase">Featured</span>}
+                      </div>
+                      <span className="pd-review-date">{r.date || new Date(r.createdAt).toLocaleDateString()}</span>
                     </div>
                     <Stars rating={r.rating} size={13} />
                   </div>
+                  {r.title && <p className="pd-review-item-title">{r.title}</p>}
                   <p className="pd-review-text">{r.text}</p>
+                  
+                  {r.reviewMedia && (
+                    <div className="mt-3 rounded-lg overflow-hidden border border-white/5 max-w-[200px]">
+                      {r.reviewMedia.match(/\.(mp4|webm|ogg)$/i) ? (
+                        <video src={r.reviewMedia} controls className="w-full h-auto" />
+                      ) : (
+                        <img src={r.reviewMedia} className="w-full h-auto" alt="Review Media" />
+                      )}
+                    </div>
+                  )}
+
                   <div className="pd-verified-row">
-                    <BadgeCheck size={13} color="#22c55e" /> <span>Verified Purchase</span>
+                    <BadgeCheck size={13} color={r.verified ? "#22c55e" : "#555"} /> 
+                    <span style={{ color: r.verified ? '#22c55e' : '#555' }}>{r.verified ? 'Verified Purchase' : 'Review'}</span>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="py-10 text-center text-gray-500">
+                  <p>No reviews yet for this product.</p>
+                </div>
+              )}
             </div>
 
             {/* Sticky bottom padding */}

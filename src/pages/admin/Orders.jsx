@@ -50,6 +50,12 @@ const Orders = () => {
       await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
       await createLog('Admin', `Changed order #${orderId} status to ${newStatus}`, 'Orders');
       toast.success('Status updated');
+      
+      // Automatically trigger WhatsApp notification
+      const updatedOrder = orders.find(o => o.id === orderId);
+      if (updatedOrder) {
+        notifyViaWhatsApp({ ...updatedOrder, status: newStatus });
+      }
     } catch (error) {
       toast.error('Failed to update status');
     }
@@ -59,6 +65,12 @@ const Orders = () => {
     try {
       await updateDoc(doc(db, 'orders', orderId), { trackingId });
       toast.success('Tracking updated');
+      
+      // Automatically trigger WhatsApp notification for tracking update
+      const updatedOrder = orders.find(o => o.id === orderId);
+      if (updatedOrder) {
+        notifyViaWhatsApp({ ...updatedOrder, trackingId });
+      }
     } catch (error) {
       toast.error('Failed to update tracking');
     }
@@ -75,11 +87,35 @@ const Orders = () => {
     }
   };
 
-  const copyWhatsAppOrder = (order) => {
-    const text = `*Order Confirmation - ${whatsappConfig.businessName || 'Asmita Gruh Udhyog'}*%0A%0AHello ${order.name}, your order #${order.orderId || order.id.slice(0, 8)} for ${order.product} has been ${order.status || 'Pending'}.%0A%0ATotal: ₹${order.amount}%0A%0AThank you!`;
-    window.open(`https://wa.me/91${whatsappConfig.whatsappNumber}?text=${text}`);
+  const notifyViaWhatsApp = (order) => {
+    const businessName = whatsappConfig.businessName || 'Asmita Gruh Udhyog';
+    const orderId = order.orderId || order.id.slice(0, 8);
+    const status = order.status || 'Order placed';
+    const trackingId = order.trackingId || '';
+    
+    let msg = `*Order Update - ${businessName}*%0A%0A`;
+    msg += `Hello *${order.name}*,%0A%0A`;
+    msg += `Your order *#${orderId}* has been updated to: *${status}*%0A`;
+    
+    if (trackingId) {
+      msg += `%0A🚚 *Tracking ID:* ${trackingId}%0A`;
+    }
+    
+    msg += `%0A📦 *Order Details:*%0A`;
+    msg += `- Item(s): ${order.product}%0A`;
+    msg += `- Amount: ₹${order.amount}%0A%0A`;
+    
+    msg += `📍 *Track your order:* ${window.location.origin}/track%0A%0A`;
+    msg += `Thank you for choosing ${businessName}!`;
+
+    const phone = order.phone.replace(/\D/g, '');
+    const finalPhone = phone.startsWith('91') ? phone : `91${phone}`;
+    
+    window.open(`https://wa.me/${finalPhone}?text=${msg}`);
     toast.success('Opening WhatsApp');
-  };  const [activeTab, setActiveTab] = useState('New');
+  };
+
+  const [activeTab, setActiveTab] = useState('New');
 
   const tabs = [
     { id: 'All', label: 'All Orders', icon: ShoppingBag },
@@ -266,10 +302,10 @@ const Orders = () => {
                         <ExternalLink size={16} />
                       </button>
                       <button 
-                        onClick={() => copyWhatsAppOrder(order)}
-                        className="p-2 text-gray-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg transition-all" title="Copy for WhatsApp"
+                        onClick={() => notifyViaWhatsApp(order)}
+                        className="p-2 text-gray-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg transition-all" title="Notify Customer"
                       >
-                        <Copy size={16} />
+                        <MessageSquare size={16} />
                       </button>
                       <button 
                         onClick={() => deleteOrder(order.id)}
@@ -369,12 +405,10 @@ const Orders = () => {
                 <Printer size={18} /> Print Invoice
               </button>
               <button 
-                onClick={() => {
-                  window.open(`https://wa.me/91${selectedOrder.phone}?text=${encodeURIComponent("Hello " + selectedOrder.name + ", your order #" + (selectedOrder.orderId || selectedOrder.id) + " has been updated to " + (selectedOrder.status || 'Pending'))}`);
-                }}
+                onClick={() => notifyViaWhatsApp(selectedOrder)}
                 className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 font-bold py-3 rounded-xl border border-emerald-500/20 flex items-center justify-center gap-2 transition-all"
               >
-                <MessageSquare size={18} /> WhatsApp Customer
+                <MessageSquare size={18} /> Notify Customer
               </button>
             </div>
           </div>

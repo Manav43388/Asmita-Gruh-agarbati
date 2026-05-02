@@ -37,6 +37,9 @@ export default function OrderTracking() {
   const [userOrders, setUserOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchOrderId, setSearchOrderId] = useState(localStorage.getItem('last_order_search') || '');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   // Fetch logged-in user's orders from Firestore
   useEffect(() => {
@@ -62,6 +65,41 @@ export default function OrderTracking() {
     return () => unsubscribe();
   }, [user]);
 
+  // Initial search if last_order_search exists
+  useEffect(() => {
+    const savedId = localStorage.getItem('last_order_search');
+    if (savedId && !user) {
+      handleSearch(null, savedId);
+    }
+  }, []);
+
+  const handleSearch = async (e, directId = null) => {
+    if (e) e.preventDefault();
+    const idToSearch = directId || searchOrderId;
+    if (!idToSearch) return;
+
+    setIsSearching(true);
+    setSearchError('');
+    
+    try {
+      const q = query(collection(db, 'orders'), where('orderId', '==', idToSearch));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const orderData = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
+        setSelectedOrder(orderData);
+        localStorage.setItem('last_order_search', idToSearch);
+      } else {
+        setSearchError('Order not found. Please check the ID and try again.');
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      setSearchError('An error occurred while searching.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Sync selected order for real-time status updates
   useEffect(() => {
     if (!selectedOrder?.id) return;
@@ -85,17 +123,46 @@ export default function OrderTracking() {
     );
   }
 
-  if (!user) {
+  if (!user && !selectedOrder) {
     return (
       <div className="tracking-page">
         <div className="tracking-container">
           <div className="auth-required-view glass-panel">
-            <ShieldCheck size={64} className="auth-icon" style={{ color: '#d4af37' }} />
-            <h2>Login to Track Orders</h2>
-            <p>Please login to your account to view and track your orders.</p>
-            <button className="track-btn" onClick={() => window.dispatchEvent(new CustomEvent('open-auth'))} style={{ marginTop: '1.5rem' }}>
-              Login Now
-            </button>
+            <Package size={64} className="auth-icon" style={{ color: '#d4af37' }} />
+            <h2>Track Your Order</h2>
+            <p>Enter your Order ID to track your shipment status.</p>
+            
+            <form onSubmit={handleSearch} className="search-form-guest" style={{ width: '100%', maxWidth: '400px', marginTop: '2rem' }}>
+              <div className="relative group">
+                <input 
+                  type="text" 
+                  placeholder="Enter Order ID (e.g. ORD...)" 
+                  value={searchOrderId}
+                  onChange={(e) => setSearchOrderId(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-5 py-4 focus:outline-none focus:border-[#d4af37] transition-all"
+                />
+                <button 
+                  type="submit"
+                  disabled={isSearching}
+                  className="track-btn"
+                  style={{ marginTop: '1rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                >
+                  {isSearching ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
+                  Track Order
+                </button>
+              </div>
+              {searchError && <p className="text-red-400 text-sm mt-3 text-center">{searchError}</p>}
+            </form>
+
+            <div style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.05)', width: '100%', textAlign: 'center' }}>
+              <p className="text-gray-400 text-sm mb-4">Or sign in to view all your orders</p>
+              <button 
+                className="text-[#d4af37] font-bold flex items-center justify-center gap-2 mx-auto hover:underline" 
+                onClick={() => window.dispatchEvent(new CustomEvent('open-auth'))}
+              >
+                <ShieldCheck size={18} /> Login to Account
+              </button>
+            </div>
           </div>
         </div>
       </div>
