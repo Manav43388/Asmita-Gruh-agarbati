@@ -494,14 +494,14 @@ const ProductEdit = () => {
                         className="admin-input"
                         placeholder="Ingredient name..."
                       />
-                      <button onClick={() => handleListRemove('ingredients', idx)} className="p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                      <button onClick={() => handleListRemove('ingredients', idx)} className="p-3 text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white rounded-xl transition-all border border-red-500/10">
                         <Trash2 size={18} />
                       </button>
                     </div>
                   ))}
                   <button 
                     onClick={() => handleListAdd('ingredients')}
-                    className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-white/5 text-gray-500 hover:text-admin-accent hover:border-admin-accent/30 rounded-xl transition-all mt-2"
+                    className="w-full flex items-center justify-center gap-2 p-3 bg-[#111111] border border-white/5 text-gray-500 hover:text-admin-accent hover:border-admin-accent/30 rounded-xl transition-all mt-2 font-bold text-xs uppercase tracking-widest"
                   >
                     <Plus size={18} /> Add Ingredient
                   </button>
@@ -533,14 +533,14 @@ const ProductEdit = () => {
                         className="admin-input"
                         placeholder="Benefit point..."
                       />
-                      <button onClick={() => handleListRemove('benefits', idx)} className="p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                      <button onClick={() => handleListRemove('benefits', idx)} className="p-3 text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white rounded-xl transition-all border border-red-500/10">
                         <Trash2 size={18} />
                       </button>
                     </div>
                   ))}
                   <button 
                     onClick={() => handleListAdd('benefits')}
-                    className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-white/5 text-gray-500 hover:text-admin-accent hover:border-admin-accent/30 rounded-xl transition-all mt-2"
+                    className="w-full flex items-center justify-center gap-2 p-3 bg-[#111111] border border-white/5 text-gray-500 hover:text-admin-accent hover:border-admin-accent/30 rounded-xl transition-all mt-2 font-bold text-xs uppercase tracking-widest"
                   >
                     <Plus size={18} /> Add Benefit
                   </button>
@@ -637,7 +637,7 @@ const ProductEdit = () => {
                       <input value={spec.value} onChange={(e) => handleSpecUpdate(idx, 'value', e.target.value)} className="admin-input" placeholder="e.g. 45 mins" />
                     </div>
                   </div>
-                  <button onClick={() => handleListRemove('specifications', idx)} className="self-center mt-5 p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                  <button onClick={() => handleListRemove('specifications', idx)} className="self-center mt-5 p-3 text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white rounded-xl transition-all border border-red-500/10">
                     <Trash2 size={20} />
                   </button>
                 </div>
@@ -667,7 +667,7 @@ const ProductEdit = () => {
                       <label className="text-[10px] uppercase font-bold text-gray-600 tracking-wider mb-1 block">Question</label>
                       <input value={faq.question} onChange={(e) => handleFAQUpdate(idx, 'question', e.target.value)} className="admin-input" placeholder="User question..." />
                     </div>
-                    <button onClick={() => handleListRemove('faqs', idx)} className="mt-5 p-3 text-red-500 hover:bg-red-500/10 rounded-xl">
+                    <button onClick={() => handleListRemove('faqs', idx)} className="mt-5 p-3 text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white rounded-xl border border-red-500/10">
                       <Trash2 size={18} />
                     </button>
                   </div>
