@@ -5473,14 +5473,15 @@ h6 {
 }
 
 .pd-spec-header {
-  background: #d97706 !important; /* Orange color from screenshot */
-  color: #fff !important;
+  background: #d4af37 !important; /* Brand Gold */
+  color: #000 !important; /* Dark text for better contrast on gold */
   padding: 14px;
   text-align: center;
   font-family: 'Outfit', sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .pd-spec-row {
