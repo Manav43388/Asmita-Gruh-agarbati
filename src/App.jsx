@@ -19,6 +19,7 @@ const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'));
 const AdminOrders = React.lazy(() => import('./pages/admin/Orders'));
 const AdminProducts = React.lazy(() => import('./pages/admin/Products'));
 const AdminAnalytics = React.lazy(() => import('./pages/admin/Analytics'));
+const AdminProductEdit = React.lazy(() => import('./pages/admin/ProductEdit'));
 const AdminCustomers = React.lazy(() => import('./pages/admin/Customers'));
 const AdminCoupons = React.lazy(() => import('./pages/admin/Coupons'));
 const AdminCMS = React.lazy(() => import('./pages/admin/CMS'));
@@ -79,6 +80,8 @@ function App() {
                         <Route path="analytics" element={<AdminAnalytics />} />
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="products" element={<AdminProducts />} />
+                        <Route path="products/new" element={<AdminProductEdit />} />
+                        <Route path="products/edit/:id" element={<AdminProductEdit />} />
                         <Route path="customers" element={<AdminCustomers />} />
                         <Route path="coupons" element={<AdminCoupons />} />
                         <Route path="cms" element={<AdminCMS />} />
