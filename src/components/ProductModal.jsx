@@ -173,10 +173,17 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
     setIsCartOpen(true);
   };
 
-  const totalReviews = dbReviews.length;
+  // Combine real DB reviews with manual counts if set by admin
+  const realReviewsCount = dbReviews.length;
+  const totalReviews = realReviewsCount + (Number(product.manualReviewCount) || 0);
+  
+  // Calculate average rating: (Sum of real ratings + (manual count * manual rating)) / total count
+  const realRatingsSum = dbReviews.reduce((sum, r) => sum + (r.rating || 0), 0);
+  const manualRatingsSum = (Number(product.manualReviewCount) || 0) * (Number(product.manualRating) || 4.5);
+  
   const avgRating = totalReviews > 0 
-    ? (dbReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews).toFixed(1)
-    : "5.0";
+    ? ((realRatingsSum + manualRatingsSum) / totalReviews).toFixed(1)
+    : (Number(product.manualRating) || "5.0");
 
   const ratingBreakdown = [5, 4, 3, 2, 1].reduce((acc, star) => {
     const count = dbReviews.filter(r => Math.round(r.rating) === star).length;

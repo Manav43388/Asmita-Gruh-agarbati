@@ -855,6 +855,29 @@ const ProductEdit = () => {
             </div>
           </section>
 
+          {/* Reviews & Social Proof */}
+          <section className="premium-card">
+            <div className="flex items-center gap-2 mb-6">
+              <Star className="text-yellow-500" size={18} />
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Reviews & Social Proof</h3>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                <span className="text-xs text-gray-400">Enable Reviews</span>
+                <input type="checkbox" name="reviewsEnabled" checked={formData.reviewsEnabled} onChange={handleInputChange} className="w-4 h-4 text-admin-accent" />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-gray-600 mb-1 block">Manual Rating (0-5)</label>
+                <input name="manualRating" type="number" step="0.1" max="5" value={formData.manualRating} onChange={handleInputChange} className="admin-input" placeholder="4.5" />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-gray-600 mb-1 block">Manual Review Count</label>
+                <input name="manualReviewCount" type="number" value={formData.manualReviewCount} onChange={handleInputChange} className="admin-input" placeholder="0" />
+              </div>
+              <p className="text-[10px] text-gray-500 italic">This will be added to the actual database reviews.</p>
+            </div>
+          </section>
+
           {/* SEO Settings */}
           <section className="premium-card border-2 border-emerald-500/20 bg-emerald-500/5">
             <div className="flex items-center gap-2 mb-6">
