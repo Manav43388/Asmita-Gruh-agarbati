@@ -110,7 +110,15 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
     ingredients: Array.isArray(product.ingredients) && product.ingredients.length > 0 ? product.ingredients : FALLBACK.ingredients,
     benefits: Array.isArray(product.benefits) && product.benefits.length > 0 ? product.benefits : FALLBACK.benefits,
     faqs: Array.isArray(product.faqs) && product.faqs.length > 0 ? product.faqs : FALLBACK.faqs,
-    specifications: Array.isArray(product.specifications) ? product.specifications : [],
+    specifications: Array.isArray(product.specifications) && product.specifications.length > 0 
+      ? product.specifications 
+      : [
+          { name: 'Country of Origin', value: product.country || 'India' },
+          { name: 'Item Form', value: product.material || 'Natural' },
+          { name: 'Item Type', value: product.category || 'Spiritual' },
+          { name: 'Quantity', value: product.quantity || '1 Pack' },
+          { name: 'Burning Time', value: product.burnTime || 'Varies' },
+        ],
     deliveryText: product.deliveryText || FALLBACK.deliveryText,
     offerText: product.offerText || FALLBACK.offerText,
     features: product.features || DEFAULT_FEATURES,
