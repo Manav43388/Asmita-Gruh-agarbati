@@ -5393,40 +5393,52 @@ h6 {
 
 /* Admin UI Components */
 .premium-card {
-  background: rgba(15, 15, 15, 0.6);
-  backdrop-filter: blur(12px);
+  background: #0d0d0d;
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
   padding: 1.5rem;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
 }
 
 .premium-card:hover {
-  border-color: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.15);
+  background: #111111;
 }
 
 .admin-input {
   width: 100%;
-  background: rgba(20, 20, 20, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  padding: 0.75rem 1rem;
-  color: #fff;
+  padding: 0.85rem 1.25rem;
+  color: #efefef;
   font-family: inherit;
   font-size: 0.95rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 .admin-input:focus {
   outline: none;
-  border-color: #d4af37;
-  background: rgba(25, 25, 25, 0.9);
-  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.5);
+  background: #181818;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.05);
 }
 
 .admin-input::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+  color: #4a4a4a;
 }
 
 .scrollbar-hide::-webkit-scrollbar {

@@ -43,7 +43,6 @@ const ProductEdit = () => {
   const [saving, setSaving] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
   
-  // Sections toggle state for Left Side Accordions
   const [expandedSections, setExpandedSections] = useState({
     usage: true,
     ingredients: false,
@@ -91,7 +90,6 @@ const ProductEdit = () => {
     whatsappMessage: ''
   });
 
-  // Fetch product data if editing
   useEffect(() => {
     if (isEdit) {
       const fetchProduct = async () => {
@@ -103,7 +101,6 @@ const ProductEdit = () => {
             setFormData(prev => ({
               ...prev,
               ...data,
-              // Ensure arrays exist
               ingredients: data.ingredients || [],
               benefits: data.benefits || [],
               specifications: data.specifications || [],
@@ -126,7 +123,6 @@ const ProductEdit = () => {
     }
   }, [id, isEdit, navigate]);
 
-  // Fetch all products for related products selection
   useEffect(() => {
     const q = query(collection(db, 'products'), orderBy('name'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -135,7 +131,6 @@ const ProductEdit = () => {
     return () => unsubscribe();
   }, []);
 
-  // Auto-generate slug and meta title
   useEffect(() => {
     if (formData.name && !isEdit) {
       const slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -283,7 +278,7 @@ const ProductEdit = () => {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-40 -mx-6 mb-8 bg-[#030303]/80 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-40 -mx-6 mb-8 bg-[#030303]/90 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/admin/products')}
@@ -375,7 +370,7 @@ const ProductEdit = () => {
             </div>
           </section>
 
-          {/* Rich Text Editor Placeholder (Styled Textarea) */}
+          {/* Product Description */}
           <section className="premium-card">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
@@ -384,7 +379,7 @@ const ProductEdit = () => {
               <h2 className="text-lg font-bold text-white">Product Description</h2>
             </div>
             
-            <div className="border border-white/5 rounded-2xl overflow-hidden bg-[#141414]">
+            <div className="border border-white/5 rounded-2xl overflow-hidden bg-[#0a0a0a]">
               <div className="flex items-center gap-2 p-3 bg-white/5 border-b border-white/5">
                 {['B', 'I', 'U', 'List', 'Link'].map(btn => (
                   <button key={btn} type="button" className="w-8 h-8 flex items-center justify-center text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 rounded transition-all">
@@ -397,7 +392,7 @@ const ProductEdit = () => {
                 value={formData.description}
                 onChange={handleInputChange}
                 className="w-full bg-transparent p-6 text-gray-300 min-h-[300px] focus:outline-none resize-none leading-relaxed"
-                placeholder="Write detailed product story, benefits, and details..."
+                placeholder="Write detailed product story..."
               />
             </div>
           </section>
@@ -409,7 +404,7 @@ const ProductEdit = () => {
             <div className={`premium-card !p-0 overflow-hidden transition-all duration-300 ${expandedSections.usage ? 'ring-1 ring-admin-accent/30' : ''}`}>
               <button 
                 onClick={() => toggleSection('usage')}
-                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left"
+                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left bg-transparent"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400">
@@ -420,7 +415,7 @@ const ProductEdit = () => {
                 {expandedSections.usage ? <ChevronUp size={20} className="text-gray-500" /> : <ChevronDown size={20} className="text-gray-500" />}
               </button>
               {expandedSections.usage && (
-                <div className="px-6 pb-6 animate-in slide-in-from-top-2 duration-300">
+                <div className="px-6 pb-6 animate-in slide-in-from-top-2 duration-300 border-t border-white/5 pt-6 bg-black/20">
                   <textarea 
                     name="howToUse"
                     value={formData.howToUse}
@@ -436,7 +431,7 @@ const ProductEdit = () => {
             <div className={`premium-card !p-0 overflow-hidden transition-all duration-300 ${expandedSections.ingredients ? 'ring-1 ring-admin-accent/30' : ''}`}>
               <button 
                 onClick={() => toggleSection('ingredients')}
-                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left"
+                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left bg-transparent"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
@@ -447,7 +442,7 @@ const ProductEdit = () => {
                 {expandedSections.ingredients ? <ChevronUp size={20} className="text-gray-500" /> : <ChevronDown size={20} className="text-gray-500" />}
               </button>
               {expandedSections.ingredients && (
-                <div className="px-6 pb-6 space-y-3">
+                <div className="px-6 pb-6 space-y-3 border-t border-white/5 pt-6 bg-black/20">
                   {formData.ingredients.map((ing, idx) => (
                     <div key={idx} className="flex gap-2">
                       <input 
@@ -475,7 +470,7 @@ const ProductEdit = () => {
             <div className={`premium-card !p-0 overflow-hidden transition-all duration-300 ${expandedSections.benefits ? 'ring-1 ring-admin-accent/30' : ''}`}>
               <button 
                 onClick={() => toggleSection('benefits')}
-                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left"
+                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left bg-transparent"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
@@ -486,7 +481,7 @@ const ProductEdit = () => {
                 {expandedSections.benefits ? <ChevronUp size={20} className="text-gray-500" /> : <ChevronDown size={20} className="text-gray-500" />}
               </button>
               {expandedSections.benefits && (
-                <div className="px-6 pb-6 space-y-3">
+                <div className="px-6 pb-6 space-y-3 border-t border-white/5 pt-6 bg-black/20">
                   {formData.benefits.map((benefit, idx) => (
                     <div key={idx} className="flex gap-2">
                       <input 
@@ -514,7 +509,7 @@ const ProductEdit = () => {
             <div className={`premium-card !p-0 overflow-hidden transition-all duration-300 ${expandedSections.storage ? 'ring-1 ring-admin-accent/30' : ''}`}>
               <button 
                 onClick={() => toggleSection('storage')}
-                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left"
+                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left bg-transparent"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
@@ -525,7 +520,7 @@ const ProductEdit = () => {
                 {expandedSections.storage ? <ChevronUp size={20} className="text-gray-500" /> : <ChevronDown size={20} className="text-gray-500" />}
               </button>
               {expandedSections.storage && (
-                <div className="px-6 pb-6">
+                <div className="px-6 pb-6 border-t border-white/5 pt-6 bg-black/20">
                   <textarea 
                     name="storageInstructions"
                     value={formData.storageInstructions}
@@ -541,7 +536,7 @@ const ProductEdit = () => {
             <div className={`premium-card !p-0 overflow-hidden transition-all duration-300 ${expandedSections.delivery ? 'ring-1 ring-admin-accent/30' : ''}`}>
               <button 
                 onClick={() => toggleSection('delivery')}
-                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left"
+                className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-all text-left bg-transparent"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-admin-accent/10 flex items-center justify-center text-admin-accent">
@@ -552,7 +547,7 @@ const ProductEdit = () => {
                 {expandedSections.delivery ? <ChevronUp size={20} className="text-gray-500" /> : <ChevronDown size={20} className="text-gray-500" />}
               </button>
               {expandedSections.delivery && (
-                <div className="px-6 pb-6 space-y-4">
+                <div className="px-6 pb-6 space-y-4 border-t border-white/5 pt-6 bg-black/20">
                   <div>
                     <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1 block">Delivery Text</label>
                     <input name="deliveryText" value={formData.deliveryText} onChange={handleInputChange} className="admin-input" />
@@ -590,13 +585,13 @@ const ProductEdit = () => {
                   <div className="flex-1 space-y-3">
                     <div>
                       <label className="text-[10px] uppercase font-bold text-gray-600 tracking-wider mb-1 block">Field Name</label>
-                      <input value={spec.name} onChange={(e) => handleSpecUpdate(idx, 'name', e.target.value)} className="admin-input bg-black/40" placeholder="e.g. Burn Time" />
+                      <input value={spec.name} onChange={(e) => handleSpecUpdate(idx, 'name', e.target.value)} className="admin-input" placeholder="e.g. Burn Time" />
                     </div>
                   </div>
                   <div className="flex-1 space-y-3">
                     <div>
                       <label className="text-[10px] uppercase font-bold text-gray-600 tracking-wider mb-1 block">Value</label>
-                      <input value={spec.value} onChange={(e) => handleSpecUpdate(idx, 'value', e.target.value)} className="admin-input bg-black/40" placeholder="e.g. 45 mins" />
+                      <input value={spec.value} onChange={(e) => handleSpecUpdate(idx, 'value', e.target.value)} className="admin-input" placeholder="e.g. 45 mins" />
                     </div>
                   </div>
                   <button onClick={() => handleListRemove('specifications', idx)} className="self-center mt-5 p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
@@ -670,19 +665,6 @@ const ProductEdit = () => {
                   </option>
                 ))}
               </select>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {formData.relatedProducts.map(pid => {
-                  const p = allProducts.find(item => item.id === pid);
-                  return p ? (
-                    <span key={pid} className="flex items-center gap-1 px-3 py-1 bg-pink-500/10 text-pink-400 text-xs font-bold rounded-full border border-pink-500/20">
-                      {p.name}
-                      <button onClick={() => setFormData(prev => ({ ...prev, relatedProducts: prev.relatedProducts.filter(x => x !== pid) }))} className="hover:text-white">
-                        <Trash2 size={12} />
-                      </button>
-                    </span>
-                  ) : null;
-                })}
-              </div>
             </div>
           </section>
 
@@ -762,10 +744,6 @@ const ProductEdit = () => {
                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Sold Count</span>
                 <span className="text-sm font-black text-white">{formData.salesCount || 0}</span>
               </div>
-              <div className="flex items-center justify-between px-1">
-                <span className="text-xs text-gray-400">Low stock alert</span>
-                <input type="checkbox" name="lowStockAlert" checked={formData.lowStockAlert} onChange={handleInputChange} className="w-4 h-4 text-admin-accent" />
-              </div>
             </div>
           </section>
 
@@ -790,32 +768,6 @@ const ProductEdit = () => {
                   </>
                 )}
                 <input id="image-upload" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-              </div>
-            </div>
-          </section>
-
-          {/* Category & Tags */}
-          <section className="premium-card">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Organization</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-[10px] uppercase font-bold text-gray-600 mb-1 block">Category</label>
-                <select name="category" value={formData.category} onChange={handleInputChange} className="admin-input">
-                  <option value="Incense Sticks">Incense Sticks</option>
-                  <option value="Dhoop Cones">Dhoop Cones</option>
-                  <option value="Essential Oils">Essential Oils</option>
-                  <option value="Gift Boxes">Gift Boxes</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-bold text-gray-600 mb-1 block">Tags (comma separated)</label>
-                <input 
-                  type="text" 
-                  className="admin-input" 
-                  placeholder="organic, premium, handmade"
-                  value={formData.tags.join(', ')}
-                  onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value.split(',').map(t => t.trim()) }))}
-                />
               </div>
             </div>
           </section>
@@ -860,28 +812,6 @@ const ProductEdit = () => {
             </div>
           </section>
 
-          {/* Reviews Control */}
-          <section className="premium-card">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Reviews Control</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                <span className="text-xs text-gray-400">Enable Reviews</span>
-                <input type="checkbox" name="reviewsEnabled" checked={formData.reviewsEnabled} onChange={handleInputChange} className="w-4 h-4 text-admin-accent" />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-bold text-gray-600 mb-1 block">Manual Rating (1-5)</label>
-                <div className="flex items-center gap-2">
-                  <Star className="text-yellow-500" size={16} />
-                  <input name="manualRating" type="number" step="0.1" value={formData.manualRating} onChange={handleInputChange} className="admin-input" />
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-bold text-gray-600 mb-1 block">Override Review Count</label>
-                <input name="manualReviewCount" type="number" value={formData.manualReviewCount} onChange={handleInputChange} className="admin-input" />
-              </div>
-            </div>
-          </section>
-
           {/* SEO Settings */}
           <section className="premium-card border-2 border-emerald-500/20 bg-emerald-500/5">
             <div className="flex items-center gap-2 mb-6">
@@ -891,41 +821,15 @@ const ProductEdit = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-[10px] uppercase font-bold text-emerald-500/50 mb-1 block">URL Slug</label>
-                <input name="slug" value={formData.slug} onChange={handleInputChange} className="admin-input bg-black/40 border-emerald-500/20" />
+                <input name="slug" value={formData.slug} onChange={handleInputChange} className="admin-input" />
               </div>
               <div>
                 <label className="text-[10px] uppercase font-bold text-emerald-500/50 mb-1 block">Meta Title</label>
-                <input name="metaTitle" value={formData.metaTitle} onChange={handleInputChange} className="admin-input bg-black/40 border-emerald-500/20" />
+                <input name="metaTitle" value={formData.metaTitle} onChange={handleInputChange} className="admin-input" />
               </div>
               <div>
                 <label className="text-[10px] uppercase font-bold text-emerald-500/50 mb-1 block">Meta Description</label>
-                <textarea name="metaDescription" value={formData.metaDescription} onChange={handleInputChange} className="admin-input bg-black/40 border-emerald-500/20 min-h-[100px]" />
-              </div>
-            </div>
-          </section>
-
-          {/* WhatsApp Order Settings */}
-          <section className="premium-card border-2 border-emerald-600/30">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-lg bg-emerald-600/20 flex items-center justify-center text-emerald-500">
-                <MessageSquare size={16} />
-              </div>
-              <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-widest">WhatsApp Order</h3>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-emerald-600/5 rounded-xl border border-emerald-600/10">
-                <span className="text-xs text-gray-400">Enable WhatsApp</span>
-                <input type="checkbox" name="whatsappEnabled" checked={formData.whatsappEnabled} onChange={handleInputChange} className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-bold text-emerald-600/50 mb-1 block">Custom Message</label>
-                <textarea 
-                  name="whatsappMessage" 
-                  value={formData.whatsappMessage} 
-                  onChange={handleInputChange} 
-                  className="admin-input bg-black/40 border-emerald-600/10 min-h-[80px]" 
-                  placeholder="I want to order this product: {{name}}"
-                />
+                <textarea name="metaDescription" value={formData.metaDescription} onChange={handleInputChange} className="admin-input min-h-[100px]" />
               </div>
             </div>
           </section>
@@ -933,7 +837,7 @@ const ProductEdit = () => {
         </div>
       </div>
 
-      {/* Save Overlay for mobile/desktop sticky footer if needed */}
+      {/* Save Overlay for mobile */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-64 z-40 bg-[#030303]/90 backdrop-blur-md border-t border-white/5 p-4 lg:hidden">
         <div className="flex gap-4">
           <button onClick={() => handleSave('Draft')} className="flex-1 py-3 font-bold text-gray-400 border border-white/10 rounded-xl">Draft</button>
