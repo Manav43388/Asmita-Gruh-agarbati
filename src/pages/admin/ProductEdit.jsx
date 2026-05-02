@@ -380,9 +380,13 @@ const ProductEdit = () => {
             </div>
             
             <div className="border border-white/5 rounded-2xl overflow-hidden bg-[#0a0a0a]">
-              <div className="flex items-center gap-2 p-3 bg-white/5 border-b border-white/5">
+              <div className="flex items-center gap-2 p-3 bg-white/[0.02] border-b border-white/5">
                 {['B', 'I', 'U', 'List', 'Link'].map(btn => (
-                  <button key={btn} type="button" className="w-8 h-8 flex items-center justify-center text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 rounded transition-all">
+                  <button 
+                    key={btn} 
+                    type="button" 
+                    className="px-3 py-1.5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-admin-accent bg-[#141414] border border-white/5 hover:border-admin-accent/30 rounded-lg transition-all"
+                  >
                     {btn}
                   </button>
                 ))}
