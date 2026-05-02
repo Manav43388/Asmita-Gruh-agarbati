@@ -5371,3 +5371,4 @@ h6 {
 .banner-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.3); border: none; cursor: pointer; transition: all 0.3s; }
 .banner-dot.active { background: var(--primary-color); width: 30px; border-radius: 10px; }
 @media (max-width: 768px) { .banner-container { aspect-ratio: 16 / 9; border-radius: 0; } .banner-dots { bottom: 1rem; } }
+.banner-link { display: block; width: 100%; height: 100%; text-decoration: none; }

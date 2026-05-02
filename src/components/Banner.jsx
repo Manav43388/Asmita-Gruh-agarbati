@@ -42,17 +42,36 @@ export default function Banner() {
             transition={{ duration: 0.8 }}
             className="banner-slide"
           >
-            <img src={banners[currentIndex].image} alt={banners[currentIndex].title || 'Banner'} className="banner-image" />
-            {banners[currentIndex].title && (
-              <div className="banner-overlay">
-                <motion.h2 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  {banners[currentIndex].title}
-                </motion.h2>
-              </div>
+            {banners[currentIndex].link ? (
+              <a href={banners[currentIndex].link} className="banner-link">
+                <img src={banners[currentIndex].image} alt={banners[currentIndex].title || 'Banner'} className="banner-image" />
+                {banners[currentIndex].title && (
+                  <div className="banner-overlay">
+                    <motion.h2 
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      {banners[currentIndex].title}
+                    </motion.h2>
+                  </div>
+                )}
+              </a>
+            ) : (
+              <>
+                <img src={banners[currentIndex].image} alt={banners[currentIndex].title || 'Banner'} className="banner-image" />
+                {banners[currentIndex].title && (
+                  <div className="banner-overlay">
+                    <motion.h2 
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      {banners[currentIndex].title}
+                    </motion.h2>
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         </AnimatePresence>
