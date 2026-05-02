@@ -227,19 +227,24 @@ const ProductEdit = () => {
 
     try {
       setSaving(true);
+      const loadingToast = toast.loading(isEdit ? 'Updating product...' : 'Publishing product...');
+      
       const finalData = { 
         ...formData, 
         status, 
         updatedAt: new Date(),
         price: Number(formData.price),
         discountPrice: formData.discountPrice ? Number(formData.discountPrice) : null,
-        stock: Number(formData.stock)
+        stock: Number(formData.stock),
+        manualReviewCount: Number(formData.manualReviewCount || 0),
+        manualRating: Number(formData.manualRating || 4.5)
       };
 
       if (isEdit) {
-        await updateDoc(doc(db, 'products', id), finalData);
+        const docRef = doc(db, 'products', id);
+        await updateDoc(docRef, finalData);
         await createLog('Admin', `Updated product: ${formData.name}`, 'Products');
-        toast.success('Product updated successfully');
+        toast.success('Product updated successfully', { id: loadingToast });
       } else {
         const docRef = await addDoc(collection(db, 'products'), {
           ...finalData,
@@ -247,12 +252,36 @@ const ProductEdit = () => {
           salesCount: 0
         });
         await createLog('Admin', `Created product: ${formData.name}`, 'Products');
-        toast.success('Product published successfully');
+        toast.success('Product published successfully', { id: loadingToast });
         navigate(`/admin/products/edit/${docRef.id}`);
       }
     } catch (error) {
       console.error(error);
       toast.error('Failed to save product');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
+    
+    try {
+      setSaving(true);
+      const loadingToast = toast.loading('Deleting product...');
+      await updateDoc(doc(db, 'products', id), { status: 'Deleted', visibility: false });
+      // Or actually delete: await deleteDoc(doc(db, 'products', id));
+      // For safety, we usually just mark as deleted or allow full deletion. 
+      // User asked for "Delete Product", so let's do real deletion.
+      const { deleteDoc } = await import('firebase/firestore');
+      await deleteDoc(doc(db, 'products', id));
+      
+      await createLog('Admin', `Deleted product: ${formData.name}`, 'Products');
+      toast.success('Product deleted successfully', { id: loadingToast });
+      navigate('/admin/products');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to delete product');
     } finally {
       setSaving(false);
     }
@@ -297,6 +326,16 @@ const ProductEdit = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          {isEdit && (
+            <button 
+              onClick={handleDelete}
+              disabled={saving}
+              className="p-2.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl transition-all border border-red-500/20 disabled:opacity-50"
+              title="Delete Product"
+            >
+              <Trash2 size={20} />
+            </button>
+          )}
           <button 
             onClick={() => handleSave('Draft')}
             disabled={saving}

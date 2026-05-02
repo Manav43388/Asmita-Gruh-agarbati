@@ -103,11 +103,18 @@ export default function Products() {
                 </div>
               </div>
 
-              <div className="product-footer">
-                <div className="product-price-block">
-                  <span className="product-price">₹{p.price}</span>
-                  <span className="product-unit">{p.unit || 'per pack'}</span>
-                </div>
+                <div className="product-footer">
+                  <div className="product-price-block">
+                    {p.discountPrice ? (
+                      <>
+                        <span className="product-price">₹{p.discountPrice}</span>
+                        <span className="product-original-price line-through text-xs text-gray-500 ml-2">₹{p.price}</span>
+                      </>
+                    ) : (
+                      <span className="product-price">₹{p.price}</span>
+                    )}
+                    <span className="product-unit">{p.unit || 'per pack'}</span>
+                  </div>
 
                 <div className="product-actions">
                   {inCart > 0 ? (
