@@ -339,7 +339,7 @@ const ProductEdit = () => {
           <button 
             onClick={() => handleSave('Draft')}
             disabled={saving}
-            className="px-6 py-2.5 text-sm font-bold text-gray-300 hover:text-white transition-all rounded-xl border border-white/10 hover:bg-white/5 disabled:opacity-50"
+            className="px-6 py-2.5 text-sm font-bold text-gray-400 hover:text-white transition-all rounded-xl border border-white/5 bg-[#111111] hover:bg-[#1a1a1a] disabled:opacity-50"
           >
             Save Draft
           </button>
@@ -906,7 +906,12 @@ const ProductEdit = () => {
       {/* Save Overlay for mobile */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-64 z-40 bg-[#030303]/90 backdrop-blur-md border-t border-white/5 p-4 lg:hidden">
         <div className="flex gap-4">
-          <button onClick={() => handleSave('Draft')} className="flex-1 py-3 font-bold text-gray-400 border border-white/10 rounded-xl">Draft</button>
+          <button 
+            onClick={() => handleSave('Draft')} 
+            className="flex-1 py-3 font-bold text-gray-400 bg-[#111111] border border-white/5 rounded-xl"
+          >
+            Draft
+          </button>
           <button onClick={() => handleSave('Active')} className="flex-[2] py-3 font-bold bg-admin-accent text-black rounded-xl">Publish</button>
         </div>
       </div>
