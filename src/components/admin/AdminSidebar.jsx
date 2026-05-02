@@ -12,7 +12,8 @@ import {
   MessageSquare,
   Layout,
   BarChart3,
-  ShieldCheck
+  ShieldCheck,
+  Globe
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
@@ -47,6 +48,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
   };
 
   const navItems = [
+    { name: 'View Website', path: '/', icon: Globe },
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Analytics', path: '/admin/analytics', icon: TrendingUp },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag, badge: newOrderCount },
