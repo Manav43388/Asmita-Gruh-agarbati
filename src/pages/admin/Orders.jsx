@@ -17,9 +17,10 @@ import {
   Package2
 } from 'lucide-react';
 import { db } from '../../firebase/config';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, runTransaction, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { createLog } from '../../utils/adminLogs';
+import { handleInventoryFromOrder } from '../../utils/inventorySync';
 import PrintableInvoice from '../../components/admin/PrintableInvoice';
 
 const Orders = () => {
@@ -55,58 +56,12 @@ const Orders = () => {
       // Handle Inventory Sync
       if (oldStatus !== 'Cancelled' && newStatus === 'Cancelled') {
         // Restore stock
-        if (orderToUpdate.items && orderToUpdate.items.length > 0) {
-          await runTransaction(db, async (transaction) => {
-            orderToUpdate.items.forEach(item => {
-              if (item.id) {
-                const prodRef = doc(db, 'products', item.id);
-                transaction.update(prodRef, { stock: increment(item.quantity) });
-                
-                const logRef = doc(collection(db, 'inventory_logs'));
-                transaction.set(logRef, {
-                  productId: item.id,
-                  productName: item.title,
-                  type: 'IN',
-                  quantity: item.quantity,
-                  reason: 'Order Cancelled',
-                  orderId: orderId,
-                  timestamp: serverTimestamp()
-                });
-              }
-            });
-            const orderRef = doc(db, 'orders', orderId);
-            transaction.update(orderRef, { status: newStatus });
-          });
-        } else {
-          await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
-        }
+        await handleInventoryFromOrder(orderToUpdate, 'RESTORE');
+        await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
       } else if (oldStatus === 'Cancelled' && newStatus !== 'Cancelled') {
         // Re-deduct stock
-        if (orderToUpdate.items && orderToUpdate.items.length > 0) {
-          await runTransaction(db, async (transaction) => {
-            orderToUpdate.items.forEach(item => {
-              if (item.id) {
-                const prodRef = doc(db, 'products', item.id);
-                transaction.update(prodRef, { stock: increment(-item.quantity) });
-                
-                const logRef = doc(collection(db, 'inventory_logs'));
-                transaction.set(logRef, {
-                  productId: item.id,
-                  productName: item.title,
-                  type: 'OUT',
-                  quantity: item.quantity,
-                  reason: 'Order Restored',
-                  orderId: orderId,
-                  timestamp: serverTimestamp()
-                });
-              }
-            });
-            const orderRef = doc(db, 'orders', orderId);
-            transaction.update(orderRef, { status: newStatus });
-          });
-        } else {
-          await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
-        }
+        await handleInventoryFromOrder(orderToUpdate, 'DEDUCT');
+        await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
       } else {
         await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
       }

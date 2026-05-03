@@ -229,8 +229,16 @@ const ProductEdit = () => {
       setSaving(true);
       const loadingToast = toast.loading(isEdit ? 'Updating product...' : 'Publishing product...');
       
+      let finalSku = formData.sku;
+      if (!finalSku && formData.name) {
+        const prefix = formData.name.substring(0, 3).toUpperCase();
+        const uniqueNumber = Math.floor(1000 + Math.random() * 9000);
+        finalSku = `${prefix}-AGB-${uniqueNumber}`;
+      }
+
       const finalData = { 
         ...formData, 
+        sku: finalSku,
         status, 
         updatedAt: new Date(),
         price: Number(formData.price),

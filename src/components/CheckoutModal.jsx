@@ -182,7 +182,19 @@ export default function CheckoutModal() {
         productSnapshots.forEach((snap, index) => {
           transaction.update(productRefs[index].ref, {
             stock: increment(-productRefs[index].quantity),
-            salesCount: increment(productRefs[index].quantity)
+            salesCount: increment(productRefs[index].quantity),
+            lastStockUpdate: serverTimestamp()
+          });
+
+          const logRef = doc(collection(db, 'inventory_logs'));
+          transaction.set(logRef, {
+            productId: productRefs[index].ref.id,
+            productName: productRefs[index].title,
+            type: 'OUT',
+            quantity: productRefs[index].quantity,
+            reason: 'Order Placed',
+            orderId: newId,
+            timestamp: serverTimestamp()
           });
         });
 

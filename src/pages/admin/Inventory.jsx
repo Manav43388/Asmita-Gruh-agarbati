@@ -7,13 +7,14 @@ import { db } from '../../firebase/config';
 import { collection, onSnapshot, doc, query, orderBy, runTransaction, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { createLog } from '../../utils/adminLogs';
+import { updateStock } from '../../utils/inventorySync';
 
 const Inventory = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All'); // All, Low Stock, Out of Stock
-  const [stockModal, setStockModal] = useState({ isOpen: false, product: null, newStock: 0, newMinStock: 0 });
+  const [stockModal, setStockModal] = useState({ isOpen: false, product: null, addStock: 0, reduceStock: 0, newMinStock: 0 });
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -31,48 +32,31 @@ const Inventory = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleUpdateStock = async (id, newStock, newMinStock, name) => {
-    try {
-      await runTransaction(db, async (transaction) => {
-        const prodRef = doc(db, 'products', id);
-        const prodDoc = await transaction.get(prodRef);
-        if (!prodDoc.exists()) throw new Error('Product not found');
-        
-        const oldStock = prodDoc.data().stock || 0;
-        const diff = Number(newStock) - oldStock;
-        
-        transaction.update(prodRef, { 
-          stock: Number(newStock), 
-          minStock: Number(newMinStock),
-          lastStockUpdate: serverTimestamp()
-        });
-
-        if (diff !== 0) {
-          const logRef = doc(collection(db, 'inventory_logs'));
-          transaction.set(logRef, {
-            productId: id,
-            productName: name,
-            type: diff > 0 ? 'IN' : 'OUT',
-            quantity: Math.abs(diff),
-            reason: 'Manual Adjustment',
-            timestamp: serverTimestamp()
-          });
-        }
-      });
-      
-      await createLog('Admin', `Updated inventory for ${name}`, 'Inventory');
-      toast.success('Stock updated successfully');
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to update stock');
-    }
-  };
-
   const submitStockUpdate = async () => {
     if (!stockModal.product) return;
     const { id, name } = stockModal.product;
-    await handleUpdateStock(id, stockModal.newStock, stockModal.newMinStock, name);
-    setStockModal({ isOpen: false, product: null, newStock: 0, newMinStock: 0 });
+    
+    if (stockModal.addStock === 0 && stockModal.reduceStock === 0 && stockModal.newMinStock === stockModal.product.minStock) {
+      setStockModal({ isOpen: false, product: null, addStock: 0, reduceStock: 0, newMinStock: 0 });
+      return;
+    }
+
+    const loadingToast = toast.loading('Updating stock...');
+    const result = await updateStock({
+      productId: id,
+      productName: name,
+      addQty: stockModal.addStock,
+      reduceQty: stockModal.reduceStock,
+      minStock: stockModal.newMinStock,
+      reason: 'Manual Adjustment'
+    });
+
+    if (result.success) {
+      toast.success('Stock updated successfully', { id: loadingToast });
+      setStockModal({ isOpen: false, product: null, addStock: 0, reduceStock: 0, newMinStock: 0 });
+    } else {
+      toast.error(result.error || 'Failed to update stock', { id: loadingToast });
+    }
   };
 
   const handleFileUpload = (e) => {
@@ -337,7 +321,8 @@ const Inventory = () => {
                                setStockModal({
                                  isOpen: true,
                                  product: p,
-                                 newStock: p.stock,
+                                 addStock: 0,
+                                 reduceStock: 0,
                                  newMinStock: p.minStock
                                });
                             }}
@@ -364,17 +349,17 @@ const Inventory = () => {
       {/* Custom Stock Update Modal */}
       {stockModal.isOpen && stockModal.product && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setStockModal({ isOpen: false, product: null, newStock: 0, newMinStock: 0 })} />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setStockModal({ isOpen: false, product: null, addStock: 0, reduceStock: 0, newMinStock: 0 })} />
           <div className="relative bg-[#0a0a0a] border border-[#2a2a2a] w-full max-w-md rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-[#2a2a2a] flex items-center justify-between bg-gradient-to-r from-admin-accent/10 to-transparent">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-admin-accent/20 flex items-center justify-center text-admin-accent">
                   <Package size={16} />
                 </div>
-                <h3 className="text-lg font-bold text-white">Update Stock</h3>
+                <h3 className="text-lg font-bold text-white">Manage Stock</h3>
               </div>
               <button 
-                onClick={() => setStockModal({ isOpen: false, product: null, newStock: 0, newMinStock: 0 })} 
+                onClick={() => setStockModal({ isOpen: false, product: null, addStock: 0, reduceStock: 0, newMinStock: 0 })} 
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <X size={20} />
@@ -384,30 +369,45 @@ const Inventory = () => {
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Product</p>
                 <p className="text-base font-bold text-white">{stockModal.product.name}</p>
+                <p className="text-sm font-medium text-admin-accent mt-1">Current Stock: {stockModal.product.stock}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Current Stock</label>
+                  <label className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider mb-2 block">➕ Add Stock</label>
                   <input 
                     type="number" 
-                    value={stockModal.newStock}
-                    onChange={(e) => setStockModal(prev => ({ ...prev, newStock: e.target.value }))}
-                    className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-all text-lg font-black"
+                    min="0"
+                    value={stockModal.addStock === 0 ? '' : stockModal.addStock}
+                    onChange={(e) => setStockModal(prev => ({ ...prev, addStock: parseInt(e.target.value) || 0 }))}
+                    className="w-full bg-[#141414] border border-[#2a2a2a] text-emerald-400 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg font-black placeholder:text-gray-600"
+                    placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Min Stock Alert</label>
+                  <label className="text-[10px] uppercase font-bold text-red-500 tracking-wider mb-2 block">➖ Reduce Stock</label>
                   <input 
                     type="number" 
-                    value={stockModal.newMinStock}
-                    onChange={(e) => setStockModal(prev => ({ ...prev, newMinStock: e.target.value }))}
-                    className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent focus:ring-1 focus:ring-admin-accent transition-all text-lg font-black"
+                    min="0"
+                    value={stockModal.reduceStock === 0 ? '' : stockModal.reduceStock}
+                    onChange={(e) => setStockModal(prev => ({ ...prev, reduceStock: parseInt(e.target.value) || 0 }))}
+                    className="w-full bg-[#141414] border border-[#2a2a2a] text-red-400 rounded-xl px-4 py-3 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-lg font-black placeholder:text-gray-600"
+                    placeholder="0"
                   />
                 </div>
               </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-amber-500 tracking-wider mb-2 block">Min Stock Alert</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  value={stockModal.newMinStock}
+                  onChange={(e) => setStockModal(prev => ({ ...prev, newMinStock: parseInt(e.target.value) || 0 }))}
+                  className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-lg font-black"
+                />
+              </div>
               <div className="pt-2 flex gap-3">
                 <button 
-                  onClick={() => setStockModal({ isOpen: false, product: null, newStock: 0, newMinStock: 0 })}
+                  onClick={() => setStockModal({ isOpen: false, product: null, addStock: 0, reduceStock: 0, newMinStock: 0 })}
                   className="flex-1 px-4 py-3 rounded-xl font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
                 >
                   Cancel
