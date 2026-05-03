@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp, getDocs, query, where, updateDoc, increment, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, where, updateDoc, increment, doc, runTransaction } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { Tag, Ticket } from 'lucide-react';
 const STEPS = ['Review Order', 'Shipping Info', 'Confirm'];
@@ -132,40 +132,81 @@ export default function CheckoutModal() {
     setOrderId(newId);
     
     try {
-      const fullAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
-      const productString = cartItems.map(i => `${i.title} (x${i.quantity})`).join(', ');
+      // Use a transaction to update stock for all items
+      await runTransaction(db, async (transaction) => {
+        // 1. Check stock for all items first
+        const productRefs = cartItems.map(item => ({
+          ref: doc(db, 'products', item.id),
+          quantity: item.quantity,
+          title: item.title
+        }));
 
-      const orderData = {
-        orderId: newId,
-        name: formData.name,
-        phone: formData.phone,
-        address: fullAddress,
-        product: productString,
-        amount: finalTotal,
-        discount: discount,
-        couponCode: appliedCoupon?.code || null,
-        subtotal: subtotal,
-        status: 'Order placed',
-        trackingId: '',
-        createdAt: serverTimestamp(),
-        userId: user?.uid || null,
-        userEmail: user?.email || null
-      };
+        const productSnapshots = await Promise.all(
+          productRefs.map(p => transaction.get(p.ref))
+        );
 
-      // Save to Firestore
-      await addDoc(collection(db, 'orders'), orderData);
-      
-      // Increment coupon usage if applicable
-      if (appliedCoupon) {
-        await updateDoc(doc(db, 'coupons', appliedCoupon.id), {
-          usageCount: increment(1)
+        // 2. Validate stock levels
+        productSnapshots.forEach((snap, index) => {
+          if (!snap.exists()) {
+            throw new Error(`Product ${productRefs[index].title} no longer exists.`);
+          }
+          const currentStock = snap.data().stock || 0;
+          if (currentStock < productRefs[index].quantity) {
+            throw new Error(`Insufficient stock for ${productRefs[index].title}. Available: ${currentStock}`);
+          }
         });
-      }
+
+        // 3. Perform updates
+        productSnapshots.forEach((snap, index) => {
+          transaction.update(productRefs[index].ref, {
+            stock: increment(-productRefs[index].quantity),
+            salesCount: increment(productRefs[index].quantity)
+          });
+        });
+
+        // 4. Create Order
+        const fullAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
+        const productString = cartItems.map(i => `${i.title} (x${i.quantity})`).join(', ');
+
+        const orderData = {
+          orderId: newId,
+          name: formData.name,
+          phone: formData.phone,
+          address: fullAddress,
+          product: productString,
+          amount: finalTotal,
+          discount: discount,
+          couponCode: appliedCoupon?.code || null,
+          subtotal: subtotal,
+          status: 'Order placed',
+          trackingId: '',
+          createdAt: serverTimestamp(),
+          userId: user?.uid || null,
+          userEmail: user?.email || null,
+          items: cartItems.map(item => ({
+            id: item.id,
+            title: item.title,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        };
+
+        const orderRef = doc(collection(db, 'orders'));
+        transaction.set(orderRef, orderData);
+
+        // 5. Update coupon if applicable
+        if (appliedCoupon) {
+          const couponRef = doc(db, 'coupons', appliedCoupon.id);
+          transaction.update(couponRef, {
+            usageCount: increment(1)
+          });
+        }
+      });
       
       setStep(2);
     } catch (error) {
       console.error("Error placing order:", error);
-      toast.error("Failed to place order. Please try again.");
+      toast.error(error.message || "Failed to place order. Please try again.");
     } finally {
       setLoading(false);
     }
