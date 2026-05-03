@@ -33,6 +33,26 @@ export default function CheckoutModal() {
       }));
     }
   }, [user, isCheckoutOpen]);
+
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+
+  useEffect(() => {
+    if (isCheckoutOpen) {
+      const fetchCoupons = async () => {
+        try {
+          const q = query(collection(db, 'coupons'), where('status', '==', 'Active'));
+          const snapshot = await getDocs(q);
+          const activeCoupons = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          // Filter out expired coupons
+          const validCoupons = activeCoupons.filter(c => !c.expiryDate || new Date(c.expiryDate) >= new Date());
+          setAvailableCoupons(validCoupons);
+        } catch (error) {
+          console.error("Error fetching coupons:", error);
+        }
+      };
+      fetchCoupons();
+    }
+  }, [isCheckoutOpen]);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -72,15 +92,16 @@ export default function CheckoutModal() {
     return 'ORD' + Date.now();
   };
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+  const handleApplyCoupon = async (codeOverride) => {
+    const codeToUse = typeof codeOverride === 'string' ? codeOverride : couponCode;
+    if (!codeToUse.trim()) return;
     setValidatingCoupon(true);
     setCouponError('');
     
     try {
       const q = query(
         collection(db, 'coupons'), 
-        where('code', '==', couponCode.toUpperCase()),
+        where('code', '==', codeToUse.toUpperCase()),
         where('status', '==', 'Active')
       );
       const snapshot = await getDocs(q);
@@ -115,6 +136,7 @@ export default function CheckoutModal() {
 
       setDiscount(discountAmount);
       setAppliedCoupon(coupon);
+      setCouponCode(coupon.code);
       toast.success('Coupon applied successfully!');
     } catch (error) {
       console.error("Coupon error:", error);
@@ -329,6 +351,26 @@ export default function CheckoutModal() {
                     )}
                   </div>
                   {couponError && <p className="coupon-error-text">{couponError}</p>}
+                  
+                  {!appliedCoupon && availableCoupons.length > 0 && (
+                    <div className="available-coupons mt-4">
+                      <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Available Coupons</div>
+                      <div className="flex flex-col gap-2">
+                        {availableCoupons.map(coupon => (
+                          <div key={coupon.id} className="flex items-center justify-between p-3 rounded-xl border border-[#2a2a2a] bg-[#141414] cursor-pointer hover:border-admin-accent/50 transition-all" onClick={() => handleApplyCoupon(coupon.code)}>
+                            <div className="flex flex-col">
+                              <span className="text-admin-accent font-black tracking-widest text-sm">{coupon.code}</span>
+                              <span className="text-gray-400 text-xs">
+                                {coupon.type === 'Percentage' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`} 
+                                {coupon.minPurchase > 0 ? ` on ₹${coupon.minPurchase}+` : ''}
+                              </span>
+                            </div>
+                            <span className="text-xs font-bold text-white bg-white/10 px-3 py-1.5 rounded-lg">Apply</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="checkout-totals">
