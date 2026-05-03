@@ -53,6 +53,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Analytics', path: '/admin/analytics', icon: TrendingUp },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag, badge: newOrderCount },
+    { name: 'Inventory', path: '/admin/inventory', icon: Database },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Customers', path: '/admin/customers', icon: Users },
     { name: 'Coupons', path: '/admin/coupons', icon: Ticket },

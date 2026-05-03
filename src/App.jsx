@@ -18,6 +18,7 @@ const AdminLogin = React.lazy(() => import('./pages/admin/Login'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'));
 const AdminOrders = React.lazy(() => import('./pages/admin/Orders'));
 const AdminProducts = React.lazy(() => import('./pages/admin/Products'));
+const AdminInventory = React.lazy(() => import('./pages/admin/Inventory'));
 const AdminAnalytics = React.lazy(() => import('./pages/admin/Analytics'));
 const AdminProductEdit = React.lazy(() => import('./pages/admin/ProductEdit'));
 const AdminCustomers = React.lazy(() => import('./pages/admin/Customers'));
@@ -80,6 +81,7 @@ function App() {
                         <Route path="dashboard" element={<AdminDashboard />} />
                         <Route path="analytics" element={<AdminAnalytics />} />
                         <Route path="orders" element={<AdminOrders />} />
+                        <Route path="inventory" element={<AdminInventory />} />
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="products/new" element={<AdminProductEdit />} />
                         <Route path="products/edit/:id" element={<AdminProductEdit />} />
