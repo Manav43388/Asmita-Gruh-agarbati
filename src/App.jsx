@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 // Build trigger: Forcing deployment of branding updates (Asmita Gruh Udhyog)
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 const Scene = React.lazy(() => import('./components/Scene'));
 const Navbar = React.lazy(() => import('./components/Navbar'));
 const Products = React.lazy(() => import('./components/Products'));
@@ -89,6 +89,7 @@ function App() {
                         <Route path="settings" element={<AdminSettings />} />
                         <Route path="reports" element={<AdminReports />} />
                         <Route path="security" element={<AdminSecurity />} />
+                        <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
                       </Route>
                     </Routes>
                   </div>
