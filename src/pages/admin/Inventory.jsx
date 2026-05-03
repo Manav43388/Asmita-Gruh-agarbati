@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Database, Search, Plus, AlertCircle, AlertTriangle, X, Package 
+  Database, Search, Plus, AlertCircle, AlertTriangle, X, Package, Upload
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { db } from '../../firebase/config';
-import { collection, onSnapshot, doc, query, orderBy, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, query, orderBy, runTransaction, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { createLog } from '../../utils/adminLogs';
 
@@ -14,6 +14,7 @@ const Inventory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All'); // All, Low Stock, Out of Stock
   const [stockModal, setStockModal] = useState({ isOpen: false, product: null, newStock: 0, newMinStock: 0 });
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const q = query(collection(db, 'products'), orderBy('name'));
@@ -74,6 +75,89 @@ const Inventory = () => {
     setStockModal({ isOpen: false, product: null, newStock: 0, newMinStock: 0 });
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const csvData = event.target.result;
+      await processCSV(csvData);
+    };
+    reader.readAsText(file);
+  };
+
+  const processCSV = async (csvText) => {
+    try {
+      toast.loading('Processing CSV...', { id: 'csv-import' });
+      const lines = csvText.split('\n').filter(line => line.trim() !== '');
+      if (lines.length < 2) throw new Error('Invalid CSV format (needs headers)');
+
+      const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
+      const skuIndex = headers.indexOf('sku');
+      const stockIndex = headers.indexOf('stock');
+      const minStockIndex = headers.indexOf('minstock');
+
+      if (skuIndex === -1 || stockIndex === -1) {
+        throw new Error('CSV must contain "sku" and "stock" columns');
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      
+      const batch = writeBatch(db);
+
+      for (let i = 1; i < lines.length; i++) {
+        // Basic split (assumes no commas within quotes)
+        const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+        const sku = values[skuIndex];
+        const stock = parseInt(values[stockIndex]);
+        const minStock = minStockIndex !== -1 ? parseInt(values[minStockIndex]) : null;
+
+        if (!sku || isNaN(stock)) continue;
+
+        const product = products.find(p => p.sku === sku);
+        if (product) {
+          const prodRef = doc(db, 'products', product.id);
+          batch.update(prodRef, {
+            stock: stock,
+            ...(minStock !== null && !isNaN(minStock) ? { minStock: minStock } : {}),
+            lastStockUpdate: serverTimestamp()
+          });
+          
+          const diff = stock - (product.stock || 0);
+          if (diff !== 0) {
+            const logRef = doc(collection(db, 'inventory_logs'));
+            batch.set(logRef, {
+              productId: product.id,
+              productName: product.name,
+              type: diff > 0 ? 'IN' : 'OUT',
+              quantity: Math.abs(diff),
+              reason: 'CSV Bulk Import',
+              timestamp: serverTimestamp()
+            });
+          }
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        await batch.commit();
+        await createLog('Admin', `Imported CSV: ${successCount} products updated`, 'Inventory');
+        toast.success(`Import successful: ${successCount} updated. ${errorCount > 0 ? `${errorCount} SKUs not found.` : ''}`, { id: 'csv-import' });
+      } else {
+        toast.error(`No products were updated. ${errorCount} SKUs not found.`, { id: 'csv-import' });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || 'Failed to parse CSV', { id: 'csv-import' });
+    }
+    
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const getStatus = (stock, minStock) => {
     if (stock <= 0) return { label: 'Out of Stock', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20' };
     if (stock <= minStock) return { label: 'Low Stock', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20' };
@@ -113,6 +197,27 @@ const Inventory = () => {
             <Database className="text-admin-accent" size={28} />
           </h1>
           <p className="text-gray-400 text-sm">Real-time stock management & tracking</p>
+        </div>
+        <div className="flex items-center gap-3 w-full lg:w-auto">
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+          />
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10"
+          >
+            <Upload size={18} /> Import CSV
+          </button>
+          <Link 
+            to="/admin/products/new"
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-admin-accent hover:bg-yellow-500 text-[#050505] font-black rounded-xl transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+          >
+            <Plus size={18} /> Add Product
+          </Link>
         </div>
       </div>
 
