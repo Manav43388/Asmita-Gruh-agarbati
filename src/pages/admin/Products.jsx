@@ -83,7 +83,7 @@ const AdminProducts = () => {
             Products
             <Package className="text-admin-accent" size={28} />
           </h1>
-          <p className="text-gray-400">Inventory and catalog management.</p>
+          <p className="text-gray-400">Catalog management.</p>
         </div>
         
         <div className="flex items-center gap-4 w-full sm:w-auto">

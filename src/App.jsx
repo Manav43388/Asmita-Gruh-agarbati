@@ -26,7 +26,6 @@ const AdminCMS = React.lazy(() => import('./pages/admin/CMS'));
 const AdminSettings = React.lazy(() => import('./pages/admin/Settings'));
 const AdminReports = React.lazy(() => import('./pages/admin/Reports'));
 const AdminSecurity = React.lazy(() => import('./pages/admin/Security'));
-const AdminInventory = React.lazy(() => import('./pages/admin/Inventory'));
 
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -81,7 +80,6 @@ function App() {
                         <Route path="dashboard" element={<AdminDashboard />} />
                         <Route path="analytics" element={<AdminAnalytics />} />
                         <Route path="orders" element={<AdminOrders />} />
-                        <Route path="inventory" element={<AdminInventory />} />
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="products/new" element={<AdminProductEdit />} />
                         <Route path="products/edit/:id" element={<AdminProductEdit />} />

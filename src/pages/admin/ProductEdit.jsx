@@ -772,11 +772,11 @@ const ProductEdit = () => {
             </div>
           </section>
 
-          {/* Inventory */}
+          {/* Stock Level */}
           <section className="premium-card">
             <div className="flex items-center gap-2 mb-6">
               <BadgePercent className="text-blue-400" size={18} />
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Inventory</h3>
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Stock Level</h3>
             </div>
             <div className="space-y-4">
               <div>

@@ -91,28 +91,8 @@ const Dashboard = () => {
       setLoading(false);
     });
 
-    // Products listener for inventory stats
-    const productsQ = collection(db, 'products');
-    const unsubscribeProducts = onSnapshot(productsQ, (snapshot) => {
-      let lowStockCount = 0;
-      let outOfStockCount = 0;
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const stock = Number(data.stock || 0);
-        const lowStockThreshold = Number(data.lowStock || 10);
-        if (stock === 0) outOfStockCount++;
-        else if (stock <= lowStockThreshold) lowStockCount++;
-      });
-      setStats(prev => ({ 
-        ...prev, 
-        lowStock: lowStockCount,
-        outOfStock: outOfStockCount 
-      }));
-    });
-
     return () => {
       unsubscribeOrders();
-      unsubscribeProducts();
     };
   }, []);
 
@@ -120,8 +100,6 @@ const Dashboard = () => {
     { label: "Today's Orders", value: stats.todayOrders, icon: ShoppingBag, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
     { label: "Today's Revenue", value: `₹${stats.todayRevenue.toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
     { label: "This Week", value: `₹${stats.weekRevenue.toLocaleString()}`, icon: TrendingUp, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
-    { label: 'Low Stock', value: stats.lowStock, icon: AlertTriangle, color: stats.lowStock > 0 ? 'text-yellow-400' : 'text-gray-400', bg: stats.lowStock > 0 ? 'bg-yellow-400/10' : 'bg-gray-400/10', border: stats.lowStock > 0 ? 'border-yellow-400/20' : 'border-gray-400/20' },
-    { label: 'Out of Stock', value: stats.outOfStock, icon: Undo2, color: stats.outOfStock > 0 ? 'text-red-400' : 'text-gray-400', bg: stats.outOfStock > 0 ? 'bg-red-400/10' : 'bg-gray-400/10', border: stats.outOfStock > 0 ? 'border-red-400/20' : 'border-gray-400/20' },
     { label: 'New Customers', value: stats.newCustomers, icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
     { label: 'Refund/Cancel', value: stats.refundRequests, icon: Undo2, color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
     { label: 'Pending Orders', value: stats.pendingOrders, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
