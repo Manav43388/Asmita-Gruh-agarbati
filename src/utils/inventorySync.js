@@ -29,8 +29,8 @@ export const updateStock = async ({
         throw new Error(`Insufficient stock for ${productName || productId}. Available: ${currentStock}`);
       }
       
-      // Reasonable limit to prevent absurd stock values
-      if (newStock > 1000000) {
+      // Reasonable limit to prevent absurd stock values, but allow reduction if already high
+      if (newStock > 1000000 && newStock > currentStock) {
         throw new Error(`Stock value too large for ${productName || productId}.`);
       }
 
