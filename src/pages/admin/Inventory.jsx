@@ -80,11 +80,15 @@ const Inventory = () => {
   };
 
   const handleUpdateStock = async () => {
-    if (!selectedProduct || updateAmount <= 0) return;
+    const amountNum = parseInt(updateAmount);
+    if (!selectedProduct || isNaN(amountNum) || amountNum <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
     
     setUpdating(true);
     try {
-      const amount = updateType === 'add' ? updateAmount : -updateAmount;
+      const amount = updateType === 'add' ? amountNum : -amountNum;
       const newStock = Number(selectedProduct.stock || 0) + amount;
 
       if (newStock < 0) {
@@ -431,19 +435,24 @@ const Inventory = () => {
                 <label className="text-[10px] text-gray-500 uppercase tracking-widest font-black mb-3 block">Amount to {updateType}</label>
                 <div className="flex items-center gap-4">
                   <button 
-                    onClick={() => setUpdateAmount(Math.max(1, updateAmount - 1))}
+                    onClick={() => setUpdateAmount(prev => Math.max(1, (parseInt(prev) || 0) - 1))}
                     className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
                   >
                     <Minus size={20} />
                   </button>
                   <input 
                     type="number" 
-                    className="flex-1 h-14 bg-black/40 border border-white/10 rounded-xl text-center text-2xl font-bold text-white focus:outline-none focus:border-admin-accent transition-all"
+                    className="flex-1 h-14 bg-black/40 border border-white/10 rounded-xl text-center text-2xl font-bold text-white focus:outline-none focus:border-admin-accent transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     value={updateAmount}
-                    onChange={(e) => setUpdateAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                    onChange={(e) => setUpdateAmount(e.target.value)}
+                    onBlur={() => {
+                      const val = parseInt(updateAmount);
+                      if (isNaN(val) || val < 1) setUpdateAmount(1);
+                      else setUpdateAmount(val);
+                    }}
                   />
                   <button 
-                    onClick={() => setUpdateAmount(updateAmount + 1)}
+                    onClick={() => setUpdateAmount(prev => (parseInt(prev) || 0) + 1)}
                     className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
                   >
                     <Plus size={20} />
@@ -460,8 +469,8 @@ const Inventory = () => {
                   <span className="text-xs text-gray-400">New Expected Stock</span>
                   <span className={`text-lg font-black ${updateType === 'add' ? 'text-emerald-400' : 'text-red-400'}`}>
                     {updateType === 'add' 
-                      ? (selectedProduct?.stock || 0) + updateAmount 
-                      : Math.max(0, (selectedProduct?.stock || 0) - updateAmount)
+                      ? (selectedProduct?.stock || 0) + (parseInt(updateAmount) || 0) 
+                      : Math.max(0, (selectedProduct?.stock || 0) - (parseInt(updateAmount) || 0))
                     }
                   </span>
                 </div>
