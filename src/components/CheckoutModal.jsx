@@ -331,6 +331,7 @@ export default function CheckoutModal() {
     } catch (error) {
       console.error("Order error:", error);
       toast.error(error.message || "Failed to process order");
+      setLoading(false);
     } finally {
       if (paymentMethod !== PAYMENT_METHODS.RAZORPAY) setLoading(false);
     }
