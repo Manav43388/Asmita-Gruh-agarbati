@@ -326,7 +326,7 @@ export default function CheckoutModal() {
         });
 
         toast.success("Order placed successfully (COD)");
-        setStep(2);
+        setStep(3);
       }
     } catch (error) {
       console.error("Order error:", error);
