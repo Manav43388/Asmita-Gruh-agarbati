@@ -5372,7 +5372,7 @@ h6 {
 .search-form-guest input:focus { background: rgba(255, 255, 255, 0.08); box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15); transform: translateY(-2px); }
 
 /* Enhanced Review Styles */
-.review-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-cover: cover; border: 2px solid rgba(212, 175, 55, 0.2); }
+.review-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(212, 175, 55, 0.2); }
 .pd-review-item-title { font-weight: 700; color: #fff; margin-top: 0.5rem; font-size: 0.95rem; }
 .pd-review-item { position: relative; overflow: hidden; }
 .pd-review-item.featured { border-left: 3px solid #d4af37; background: rgba(212, 175, 55, 0.02); }
