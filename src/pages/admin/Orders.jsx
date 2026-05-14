@@ -242,6 +242,7 @@ const Orders = () => {
                 <th className="px-6 py-5">Customer Details</th>
                 <th className="px-6 py-5">Items & Amount</th>
                 <th className="px-6 py-5">Status</th>
+                <th className="px-6 py-5">Payment</th>
                 <th className="px-6 py-5">Tracking</th>
                 <th className="px-6 py-5 text-right">Actions</th>
               </tr>
@@ -295,6 +296,20 @@ const Orders = () => {
                       <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-60 ${getStatusIconColor(order.status)}`}>
                         <Package2 size={14} strokeWidth={2.5} />
                       </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 align-top">
+                    <div className="flex flex-col gap-1">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase text-center border ${
+                        order.paymentStatus === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 
+                        order.paymentStatus === 'Failed' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
+                        'bg-amber-500/10 text-amber-500 border-amber-500/30'
+                      }`}>
+                        {order.paymentStatus || 'Pending'}
+                      </span>
+                      <span className="text-[9px] text-gray-500 font-mono text-center truncate max-w-[100px]" title={order.razorpay_payment_id}>
+                        {order.razorpay_payment_id || 'N/A'}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 align-top">
@@ -410,6 +425,24 @@ const Orders = () => {
                         <p className="text-2xl font-black text-admin-accent">₹{selectedOrder.amount}</p>
                       </div>
                     </div>
+                    {selectedOrder.razorpay_payment_id && (
+                      <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-gray-500">Payment ID</span>
+                          <span className="text-white font-mono">{selectedOrder.razorpay_payment_id}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-gray-500">Razorpay Order</span>
+                          <span className="text-white font-mono">{selectedOrder.razorpay_order_id}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-gray-500">Status</span>
+                          <span className={selectedOrder.paymentStatus === 'Paid' ? 'text-emerald-400 font-bold' : 'text-amber-500 font-bold'}>
+                            {selectedOrder.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

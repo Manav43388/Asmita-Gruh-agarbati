@@ -12,6 +12,8 @@ const Footer = React.lazy(() => import('./components/Footer'));
 const CartDrawer = React.lazy(() => import('./components/CartDrawer'));
 const CheckoutModal = React.lazy(() => import('./components/CheckoutModal'));
 const OrderTracking = React.lazy(() => import('./components/OrderTracking'));
+const PaymentSuccess = React.lazy(() => import('./components/PaymentSuccess'));
+const PaymentFailed = React.lazy(() => import('./components/PaymentFailed'));
 
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const AdminLogin = React.lazy(() => import('./pages/admin/Login'));
@@ -120,6 +122,26 @@ function App() {
                     {/* Global overlays */}
                     <CartDrawer />
                     <CheckoutModal />
+                  </>
+                } />
+
+                <Route path="/payment-success" element={
+                  <>
+                    <Navbar />
+                    <div className="content-layer">
+                      <PaymentSuccess />
+                      <Footer />
+                    </div>
+                  </>
+                } />
+
+                <Route path="/payment-failed" element={
+                  <>
+                    <Navbar />
+                    <div className="content-layer">
+                      <PaymentFailed />
+                      <Footer />
+                    </div>
                   </>
                 } />
               </Routes>

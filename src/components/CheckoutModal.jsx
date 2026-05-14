@@ -8,8 +8,10 @@ import { useOrders } from '../context/OrderContext';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp, getDocs, query, where, updateDoc, increment, doc, runTransaction } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
-import { Tag, Ticket } from 'lucide-react';
-const STEPS = ['Review Order', 'Shipping Info', 'Confirm'];
+import { Tag, Ticket, CreditCard, Wallet, Banknote } from 'lucide-react';
+import { loadRazorpaySDK, createRazorpayOrder, openRazorpayCheckout, verifyPaymentSignature, PAYMENT_STATUS, PAYMENT_METHODS } from '../utils/razorpay';
+import { useNavigate } from 'react-router-dom';
+const STEPS = ['Review Order', 'Shipping Info', 'Payment'];
 
 export default function CheckoutModal() {
   const { cartItems, isCheckoutOpen, setIsCheckoutOpen, subtotal, clearCart } = useCart();
@@ -23,6 +25,8 @@ export default function CheckoutModal() {
   const [discount, setDiscount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.RAZORPAY);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user && isCheckoutOpen) {
@@ -154,95 +158,181 @@ export default function CheckoutModal() {
     setOrderId(newId);
     
     try {
-      // Use a transaction to update stock for all items
-      await runTransaction(db, async (transaction) => {
-        // 1. Check stock for all items first
-        const productRefs = cartItems.map(item => ({
-          ref: doc(db, 'products', item.id),
-          quantity: item.quantity,
-          title: item.title
-        }));
+      // 1. Validate stock before proceeding
+      const cartRefCheck = cartItems.map(item => ({
+        ref: doc(db, 'products', item.id),
+        quantity: item.quantity,
+        title: item.title
+      }));
 
-        const productSnapshots = await Promise.all(
-          productRefs.map(p => transaction.get(p.ref))
-        );
-
-        // 2. Validate stock levels
-        productSnapshots.forEach((snap, index) => {
-          if (!snap.exists()) {
-            throw new Error(`Product ${productRefs[index].title} no longer exists.`);
-          }
-          const currentStock = snap.data().stock || 0;
-          if (currentStock < productRefs[index].quantity) {
-            throw new Error(`Insufficient stock for ${productRefs[index].title}. Available: ${currentStock}`);
-          }
-        });
-
-        // 3. Perform updates
-        productSnapshots.forEach((snap, index) => {
-          transaction.update(productRefs[index].ref, {
-            stock: increment(-productRefs[index].quantity),
-            salesCount: increment(productRefs[index].quantity),
-            lastStockUpdate: serverTimestamp()
-          });
-
-          const logRef = doc(collection(db, 'inventory_logs'));
-          transaction.set(logRef, {
-            productId: productRefs[index].ref.id,
-            productName: productRefs[index].title,
-            type: 'OUT',
-            quantity: productRefs[index].quantity,
-            reason: 'Order Placed',
-            orderId: newId,
-            timestamp: serverTimestamp()
-          });
-        });
-
-        // 4. Create Order
-        const fullAddress = `${formData.address}, ${formData.city} - ${formData.pincode}`;
-        const productString = cartItems.map(i => `${i.title} (x${i.quantity})`).join(', ');
-
-        const orderData = {
-          orderId: newId,
-          name: formData.name,
-          phone: formData.phone,
-          address: fullAddress,
-          product: productString,
-          amount: finalTotal,
-          discount: discount,
-          couponCode: appliedCoupon?.code || null,
-          subtotal: subtotal,
-          status: 'Order placed',
-          trackingId: '',
-          createdAt: serverTimestamp(),
-          userId: user?.uid || null,
-          userEmail: user?.email || null,
-          items: cartItems.map(item => ({
-            id: item.id,
-            title: item.title,
-            quantity: item.quantity,
-            price: item.price
-          }))
-        };
-
-        const orderRef = doc(collection(db, 'orders'));
-        transaction.set(orderRef, orderData);
-
-        // 5. Update coupon if applicable
-        if (appliedCoupon) {
-          const couponRef = doc(db, 'coupons', appliedCoupon.id);
-          transaction.update(couponRef, {
-            usageCount: increment(1)
-          });
+      const cartSnapshots = await Promise.all(cartRefCheck.map(p => getDocs(query(collection(db, 'products'), where('__name__', '==', p.ref.id)))));
+      
+      cartSnapshots.forEach((snap, index) => {
+        if (snap.empty) throw new Error(`Product ${cartRefCheck[index].title} no longer exists.`);
+        const stock = snap.docs[0].data().stock || 0;
+        if (stock < cartRefCheck[index].quantity) {
+          throw new Error(`Insufficient stock for ${cartRefCheck[index].title}. Available: ${stock}`);
         }
       });
-      
-      setStep(2);
+
+      if (paymentMethod === PAYMENT_METHODS.RAZORPAY) {
+        // RAZORPAY FLOW
+        const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
+        
+        if (!RAZORPAY_KEY_ID) {
+          throw new Error("Online payment is currently being set up. Please use Cash on Delivery for now.");
+        }
+
+        await loadRazorpaySDK();
+        
+        const rzpOrder = await createRazorpayOrder(finalTotal, newId, {
+          name: formData.name,
+          phone: formData.phone
+        });
+
+        openRazorpayCheckout({
+          order: rzpOrder,
+          customerInfo: {
+            ...formData,
+            orderId: newId,
+            amount: finalTotal
+          },
+          onSuccess: async (response) => {
+            setLoading(true);
+            try {
+              // Verify signature
+              const verification = await verifyPaymentSignature(response);
+              if (!verification.success) throw new Error("Payment verification failed");
+
+              // Process Order and Inventory
+              await runTransaction(db, async (transaction) => {
+                // Update stock
+                for (const item of cartItems) {
+                  const prodRef = doc(db, 'products', item.id);
+                  const prodSnap = await transaction.get(prodRef);
+                  transaction.update(prodRef, {
+                    stock: increment(-item.quantity),
+                    salesCount: increment(item.quantity)
+                  });
+                  
+                  const logRef = doc(collection(db, 'inventory_logs'));
+                  transaction.set(logRef, {
+                    productId: item.id,
+                    productName: item.title,
+                    type: 'OUT',
+                    quantity: item.quantity,
+                    reason: 'Order Placed (Razorpay)',
+                    orderId: newId,
+                    timestamp: serverTimestamp()
+                  });
+                }
+
+                // Create Order
+                const orderData = {
+                  orderId: newId,
+                  ...formData,
+                  amount: finalTotal,
+                  discount,
+                  subtotal,
+                  paymentMethod: PAYMENT_METHODS.RAZORPAY,
+                  paymentStatus: PAYMENT_STATUS.PAID,
+                  status: 'Confirmed',
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  createdAt: serverTimestamp(),
+                  items: cartItems
+                };
+                transaction.set(doc(collection(db, 'orders')), orderData);
+
+                // Add to Payments collection
+                const paymentData = {
+                  paymentId: response.razorpay_payment_id,
+                  orderId: newId,
+                  ...formData,
+                  amount: finalTotal,
+                  currency: 'INR',
+                  paymentMethod: 'Razorpay',
+                  razorpay_order_id: response.razorpay_order_id,
+                  paymentStatus: 'Paid',
+                  createdAt: serverTimestamp()
+                };
+                transaction.set(doc(collection(db, 'payments')), paymentData);
+              });
+
+              toast.success("Payment successful!");
+              clearCart();
+              navigate('/payment-success', { 
+                state: { 
+                  orderId: newId, 
+                  paymentId: response.razorpay_payment_id,
+                  amount: finalTotal,
+                  customerName: formData.name,
+                  customerPhone: formData.phone,
+                  paymentMethod: 'Razorpay'
+                } 
+              });
+              handleClose();
+            } catch (err) {
+              console.error(err);
+              toast.error("Error finalizing order: " + err.message);
+              navigate('/payment-failed', { state: { orderId: newId, errorMessage: err.message } });
+            } finally {
+              setLoading(false);
+            }
+          },
+          onFailure: (err) => {
+            console.error("Payment failed", err);
+            toast.error("Payment failed or cancelled");
+            navigate('/payment-failed', { state: { orderId: newId, errorCode: err.code, errorMessage: err.description } });
+          },
+          onDismiss: () => {
+            setLoading(false);
+          }
+        });
+      } else {
+        // COD FLOW
+        await runTransaction(db, async (transaction) => {
+          for (const item of cartItems) {
+            const prodRef = doc(db, 'products', item.id);
+            transaction.update(prodRef, {
+              stock: increment(-item.quantity),
+              salesCount: increment(item.quantity)
+            });
+            const logRef = doc(collection(db, 'inventory_logs'));
+            transaction.set(logRef, {
+              productId: item.id,
+              productName: item.title,
+              type: 'OUT',
+              quantity: item.quantity,
+              reason: 'Order Placed (COD)',
+              orderId: newId,
+              timestamp: serverTimestamp()
+            });
+          }
+
+          const orderData = {
+            orderId: newId,
+            ...formData,
+            amount: finalTotal,
+            discount,
+            subtotal,
+            paymentMethod: PAYMENT_METHODS.COD,
+            paymentStatus: PAYMENT_STATUS.PENDING,
+            status: 'Order placed',
+            createdAt: serverTimestamp(),
+            items: cartItems
+          };
+          transaction.set(doc(collection(db, 'orders')), orderData);
+        });
+
+        toast.success("Order placed successfully (COD)");
+        setStep(2);
+      }
     } catch (error) {
-      console.error("Error placing order:", error);
-      toast.error(error.message || "Failed to place order. Please try again.");
+      console.error("Order error:", error);
+      toast.error(error.message || "Failed to process order");
     } finally {
-      setLoading(false);
+      if (paymentMethod !== PAYMENT_METHODS.RAZORPAY) setLoading(false);
     }
   };
 
@@ -470,14 +560,83 @@ export default function CheckoutModal() {
 
                 <div className="checkout-form-actions">
                   <button className="checkout-back-btn" onClick={goBack}>Back</button>
-                  <button className="checkout-next-btn" onClick={handlePlaceOrder}>
-                    <CheckCircle size={18} /> Confirm Order
+                  <button className="checkout-next-btn" onClick={() => setStep(s => s + 1)}>
+                    Select Payment <ChevronRight size={18} />
                   </button>
                 </div>
               </motion.div>
             )}
 
             {step === 2 && (
+              <motion.div
+                key="step2-payment"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.25 }}
+                className="checkout-step-content"
+              >
+                <div className="checkout-step-header">
+                  <CreditCard size={24} style={{ color: 'var(--primary-color)' }} />
+                  <h3>Payment Method</h3>
+                </div>
+
+                <div className="payment-options flex flex-col gap-4 my-6">
+                  <div 
+                    className={`payment-option-card ${paymentMethod === PAYMENT_METHODS.RAZORPAY ? 'active' : ''}`}
+                    onClick={() => setPaymentMethod(PAYMENT_METHODS.RAZORPAY)}
+                  >
+                    <div className="option-icon bg-blue-500/10 text-blue-400">
+                      <CreditCard size={20} />
+                    </div>
+                    <div className="option-info">
+                      <span className="option-title">Online Payment</span>
+                      <span className="option-desc">UPI, Card, Net Banking, Wallets</span>
+                    </div>
+                    <div className="option-radio">
+                      <div className="radio-inner" />
+                    </div>
+                  </div>
+
+                  <div 
+                    className={`payment-option-card ${paymentMethod === PAYMENT_METHODS.COD ? 'active' : ''}`}
+                    onClick={() => setPaymentMethod(PAYMENT_METHODS.COD)}
+                  >
+                    <div className="option-icon bg-amber-500/10 text-amber-500">
+                      <Banknote size={20} />
+                    </div>
+                    <div className="option-info">
+                      <span className="option-title">Cash on Delivery</span>
+                      <span className="option-desc">Pay when your order arrives</span>
+                    </div>
+                    <div className="option-radio">
+                      <div className="radio-inner" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="checkout-form-actions">
+                  <button className="checkout-back-btn" onClick={goBack} disabled={loading}>Back</button>
+                  <button 
+                    className="checkout-next-btn" 
+                    onClick={handlePlaceOrder}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <RefreshCw className="animate-spin" size={18} /> Processing...
+                      </span>
+                    ) : (
+                      <>Pay ₹{finalTotal.toLocaleString()} <ChevronRight size={18} /></>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
               <motion.div
                 key="step2"
                 custom={direction}

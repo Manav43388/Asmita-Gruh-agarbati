@@ -55,14 +55,20 @@ const Dashboard = () => {
         const amount = Number(data.amount || 0);
         const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
         const createdTime = createdAt.getTime();
+        const isPaid = data.paymentStatus === 'Paid' || data.status === 'Delivered';
 
-        revenue += amount;
-        if (createdTime >= today) {
-          tRevenue += amount;
-          tOrders++;
+        if (isPaid) {
+          revenue += amount;
+          if (createdTime >= today) {
+            tRevenue += amount;
+          }
+          if (createdTime >= lastWeek) {
+            wRevenue += amount;
+          }
         }
-        if (createdTime >= lastWeek) {
-          wRevenue += amount;
+
+        if (createdTime >= today) {
+          tOrders++;
         }
 
         if (data.status === 'Pending' || data.status === 'Order placed') pending++;
