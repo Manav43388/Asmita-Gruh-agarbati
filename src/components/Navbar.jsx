@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Menu, X, User, Search, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingCart, Menu, X, User, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -7,8 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 
 const NAV_LINKS = [
-  { href: '#hero-section', label: 'Home' },
-  { href: '#home', label: 'Products' },
+  { href: '#home', label: 'Home' },
+  { href: '#products', label: 'Products' },
   { href: '#about', label: 'About Us' },
   { href: '#contact', label: 'Contact' },
 ];
@@ -20,13 +20,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const handleNavClick = (href) => {
     setMenuOpen(false);
@@ -44,158 +37,121 @@ export default function Navbar() {
 
   return (
     <>
-      <motion.nav
-        className={`navbar-premium ${scrolled ? 'navbar-scrolled' : ''}`}
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="navbar-inner">
-          <div className="nav-brand-premium" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <div className="nav-logo-glow">
-              <img src="/logo.png" alt="Asmita Gruh Udhyog Logo" className="nav-logo-img-premium" />
-            </div>
-            <div className="nav-brand-text">
-              <span className="brand-name-full">ASMITA GRUH UDHYOG</span>
-              <span className="brand-name-short">ASMITA</span>
-              <span className="brand-tagline">Premium Incense</span>
-            </div>
-          </div>
+      <nav className="navbar glass-panel" style={{ border: 'none' }}>
+        <div className="nav-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <img src="/logo.png" alt="Asmita Gruh Udhyog Logo" className="nav-logo-img" />
+          <span className="brand-full">ASMITA GRUH UDHYOG</span>
+          <span className="brand-short">ASMITA</span>
+        </div>
 
-          {/* Desktop Links */}
-          <ul className="nav-links-premium desktop-nav">
-            {NAV_LINKS.map(link => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
+        {/* Desktop Links */}
+        <ul className="nav-links desktop-nav">
+          {NAV_LINKS.map(link => (
+            <li key={link.href}>
+              <a href={link.href} onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}>
+                {link.label}
+              </a>
+            </li>
+          ))}
+          <li>
+            <Link to="/track" className={location.pathname === '/track' ? 'active-link' : ''}>
+              Track Order
+            </Link>
+          </li>
+          {user?.isAdmin && (
             <li>
-              <Link to="/track" className={location.pathname === '/track' ? 'active-link' : ''}>
-                Track Order
+              <Link to="/admin/dashboard" className="admin-link-nav">
+                Admin Panel
               </Link>
             </li>
-            {user?.isAdmin && (
-              <li>
-                <Link to="/admin/dashboard" className="admin-link-nav">
-                  Admin Panel
-                </Link>
-              </li>
-            )}
-          </ul>
+          )}
+        </ul>
 
-          <div className="nav-actions-premium">
-            {/* Auth Button */}
-            {user ? (
-              <motion.div
-                className="nav-avatar-premium"
-                onClick={() => setIsAuthOpen(true)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
-              </motion.div>
-            ) : (
-              <motion.button
-                className="nav-login-premium"
-                onClick={() => setIsAuthOpen(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <User size={16} />
-                <span>Login</span>
-              </motion.button>
-            )}
-
-            {/* Cart Button */}
-            <motion.button
-              className="nav-cart-premium"
-              onClick={() => setIsCartOpen(true)}
-              id="open-cart-btn"
-              aria-label="Open cart"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <ShoppingCart size={20} />
-              <AnimatePresence>
-                {totalItems > 0 && (
-                  <motion.span
-                    key="badge"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="nav-cart-badge-premium"
-                  >
-                    {totalItems}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.button>
-
-            {/* Hamburger Button (Mobile) */}
-            <button
-              className="hamburger-premium"
-              onClick={() => setMenuOpen(o => !o)}
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? <X size={22} /> : <Menu size={22} />}
+        <div className="nav-actions">
+          {/* Auth Button */}
+          {user ? (
+            <div className="nav-user-avatar" onClick={() => setIsAuthOpen(true)}>
+              {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <button className="nav-login-btn" onClick={() => setIsAuthOpen(true)}>
+              <User size={18} />
+              <span>Login</span>
             </button>
-          </div>
+          )}
+
+          {/* Cart Button */}
+          <button
+            className="nav-cart-btn"
+            onClick={() => setIsCartOpen(true)}
+            id="open-cart-btn"
+            aria-label="Open cart"
+          >
+            <ShoppingCart size={22} />
+            <AnimatePresence>
+              {totalItems > 0 && (
+                <motion.span
+                  key="badge"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="nav-cart-badge"
+                >
+                  {totalItems}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+
+          {/* Hamburger Button (Mobile) */}
+          <button
+            className="hamburger-btn"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* Mobile Dropdown Menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -10, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mobile-menu-premium"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="mobile-menu glass-panel"
           >
-            <div className="mobile-menu-inner">
+            <div className="mobile-menu-links">
               {NAV_LINKS.map(link => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="mobile-nav-link-premium"
+                  className="mobile-nav-link"
                   onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
                 >
                   {link.label}
-                  <ChevronRight size={16} />
                 </a>
               ))}
-              <Link to="/track" className="mobile-nav-link-premium" onClick={() => setMenuOpen(false)}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Search size={16} /> Track Your Order
-                </span>
-                <ChevronRight size={16} />
+              <Link to="/track" className="mobile-nav-link track-link" onClick={() => setMenuOpen(false)}>
+                <Search size={18} /> Track Your Order
               </Link>
-              <div className="mobile-menu-divider-premium" />
+              <div className="mobile-menu-divider" />
               {user ? (
-                <button
-                  className="mobile-nav-link-premium"
+                <button 
+                  className="mobile-nav-link profile-link" 
                   onClick={() => { setIsAuthOpen(true); setMenuOpen(false); }}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <User size={16} /> Profile ({user.displayName || 'User'})
-                  </span>
-                  <ChevronRight size={16} />
+                  <User size={18} /> Profile ({user.displayName || 'User'})
                 </button>
               ) : (
-                <button
-                  className="mobile-nav-link-premium"
+                <button 
+                  className="mobile-nav-link login-link" 
                   onClick={() => { setIsAuthOpen(true); setMenuOpen(false); }}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <User size={16} /> Login / Sign Up
-                  </span>
-                  <ChevronRight size={16} />
+                  <User size={18} /> Login / Sign Up
                 </button>
               )}
             </div>

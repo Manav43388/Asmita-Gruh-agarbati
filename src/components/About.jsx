@@ -34,17 +34,17 @@ const values = [
 
 export default function About() {
   return (
-    <section id="about" className="section about-section-premium">
+    <section id="about" className="section about-section">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7 }}
-        className="section-header-premium"
+        className="about-header"
       >
-        <span className="section-label-premium">Our Story</span>
-        <h2 className="section-title-premium">About Asmita Gruh Udhyog</h2>
-        <p className="section-desc-premium" style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <span className="about-label">Our Story</span>
+        <h2 className="section-title" style={{ marginBottom: '1rem' }}>About Asmita Gruh Udhyog</h2>
+        <p className="about-subtitle">
           Born in the heart of Gujarat, Asmita Gruh Udhyog has been crafting premium, handmade agarbatti
           and dhoop for over 15 years. Our journey began with a simple belief — that fragrance has the power
           to elevate the spirit, purify the mind, and bring peace to every home.
@@ -52,24 +52,24 @@ export default function About() {
       </motion.div>
 
       {/* Stats Row */}
-      <div className="about-stats-premium">
+      <div className="about-stats">
         {stats.map((s, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.85 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.1, duration: 0.5 }}
             viewport={{ once: true }}
-            className="stat-card-premium"
+            className="stat-card glass-panel"
           >
-            <span className="stat-value-premium">{s.value}</span>
-            <span className="stat-label-premium">{s.label}</span>
+            <span className="stat-value">{s.value}</span>
+            <span className="stat-label">{s.label}</span>
           </motion.div>
         ))}
       </div>
 
       {/* Values Grid */}
-      <div className="values-grid-premium">
+      <div className="values-grid">
         {values.map((v, i) => (
           <motion.div
             key={i}
@@ -77,12 +77,11 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.12, duration: 0.6 }}
             viewport={{ once: true }}
-            className="value-card-premium"
-            whileHover={{ y: -6 }}
+            className="value-card glass-panel"
           >
-            <div className="value-icon-premium">{v.icon}</div>
-            <h3 className="value-title-premium">{v.title}</h3>
-            <p className="value-desc-premium">{v.desc}</p>
+            <div className="value-icon">{v.icon}</div>
+            <h3 className="value-title">{v.title}</h3>
+            <p className="value-desc">{v.desc}</p>
           </motion.div>
         ))}
       </div>
@@ -93,14 +92,14 @@ export default function About() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="brand-quote-premium"
+        className="brand-quote glass-panel"
       >
-        <span className="quote-mark-premium">"</span>
+        <span className="quote-mark">"</span>
         <p>
           Fragrance is a bridge between the earthly and the divine. At Asmita, we craft that bridge with love,
           purity, and devotion — one stick at a time.
         </p>
-        <span className="quote-author-premium">— Asmita Gruh Udhyog</span>
+        <span className="quote-author">— Asmita Gruh Udhyog</span>
       </motion.div>
     </section>
   );

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Star, Loader2 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import ReviewModal from './ReviewModal';
 
 function StarRow({ rating, size = 16 }) {
   return (
@@ -24,7 +23,6 @@ export default function Reviews() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const perPage = 3;
 
   useEffect(() => {
@@ -106,12 +104,14 @@ export default function Reviews() {
 
         {/* CTA buttons */}
         <div className="reviews-cta">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="review-write-btn focus:outline-none"
+          <a
+            href="https://wa.me/916352291433?text=Hi%2C%20I%20want%20to%20write%20a%20review%20for%20your%20product."
+            target="_blank"
+            rel="noreferrer"
+            className="review-write-btn"
           >
             ✍️ Write a review
-          </button>
+          </a>
           <a
             href="https://wa.me/916352291433?text=Hi%2C%20I%20have%20a%20question%20about%20your%20products."
             target="_blank"
@@ -170,8 +170,6 @@ export default function Reviews() {
           ))}
         </div>
       )}
-
-      <ReviewModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );
 }
