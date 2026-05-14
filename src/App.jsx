@@ -3,7 +3,9 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 const Scene = React.lazy(() => import('./components/Scene'));
 const Navbar = React.lazy(() => import('./components/Navbar'));
+const Hero = React.lazy(() => import('./components/Hero'));
 const Products = React.lazy(() => import('./components/Products'));
+const TrustSection = React.lazy(() => import('./components/TrustSection'));
 const FAQ = React.lazy(() => import('./components/FAQ'));
 const Reviews = React.lazy(() => import('./components/Reviews'));
 const About = React.lazy(() => import('./components/About'));
@@ -12,6 +14,7 @@ const Footer = React.lazy(() => import('./components/Footer'));
 const CartDrawer = React.lazy(() => import('./components/CartDrawer'));
 const CheckoutModal = React.lazy(() => import('./components/CheckoutModal'));
 const OrderTracking = React.lazy(() => import('./components/OrderTracking'));
+const WhatsAppFloat = React.lazy(() => import('./components/WhatsAppFloat'));
 
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const AdminLogin = React.lazy(() => import('./pages/admin/Login'));
@@ -39,7 +42,9 @@ import { Loader2 } from 'lucide-react';
 
 const Home = () => (
   <div className="content-layer">
+    <Hero />
     <div id="home"><Products /></div>
+    <TrustSection />
     <div id="products"><FAQ /></div>
     <div id="reviews"><Reviews /></div>
     <div id="about"><About /></div>
@@ -60,9 +65,10 @@ function App() {
             </Suspense>
 
             <Suspense fallback={
-              <div className="admin-page-container">
-                <div className="admin-stat-icon" style={{ background: 'transparent' }}>
+              <div className="premium-loader">
+                <div className="loader-inner">
                   <Loader2 className="animate-spin" size={48} color="#d4af37" />
+                  <span>Loading experience...</span>
                 </div>
               </div>
             }>
@@ -101,12 +107,11 @@ function App() {
                 <Route path="/" element={
                   <>
                     <Navbar />
-                    <div className="content-layer">
-                      <Home />
-                    </div>
+                    <Home />
                     {/* Global overlays */}
                     <CartDrawer />
                     <CheckoutModal />
+                    <WhatsAppFloat />
                   </>
                 } />
                 
@@ -120,6 +125,7 @@ function App() {
                     {/* Global overlays */}
                     <CartDrawer />
                     <CheckoutModal />
+                    <WhatsAppFloat />
                   </>
                 } />
               </Routes>
