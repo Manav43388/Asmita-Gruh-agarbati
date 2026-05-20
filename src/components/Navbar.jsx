@@ -39,7 +39,7 @@ export default function Navbar() {
     <>
       <nav className="navbar glass-panel" style={{ border: 'none' }}>
         <div className="nav-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <img src="/logo.png" alt="Asmita Gruh Udhyog Logo" className="nav-logo-img" />
+          <img src="/logo.png" alt="Asmita Gruh Udhyog Logo" className="nav-logo-img" width="48" height="48" fetchPriority="high" />
           <span className="brand-full">ASMITA GRUH UDHYOG</span>
           <span className="brand-short">ASMITA</span>
         </div>

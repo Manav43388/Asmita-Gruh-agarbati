@@ -2,20 +2,88 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- SEO Best Practices -->
+
+    <!-- ═══════════════════════════════════════════════════
+         DNS PREFETCH & PRECONNECT — Eliminate connection setup latency
+         for critical third-party origins (Firebase, Fonts, Razorpay).
+         This shaves 100-300ms off each external resource fetch.
+         ═══════════════════════════════════════════════════ -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+    <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+
+    <!-- ═══════════════════════════════════════════════════
+         GOOGLE FONTS — Loaded with display=swap so text renders
+         immediately with fallback fonts, then swaps in custom fonts
+         once downloaded. Prevents render-blocking / FOIT.
+         ═══════════════════════════════════════════════════ -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;700;800&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;700;800&display=swap" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;700;800&display=swap" />
+    </noscript>
+
+    <!-- ═══════════════════════════════════════════════════
+         FAVICON & THEME
+         ═══════════════════════════════════════════════════ -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- ═══════════════════════════════════════════════════
+         SEO — Title, Description, Keywords, Open Graph, Twitter Cards
+         ═══════════════════════════════════════════════════ -->
     <title>Asmita Gruh Udhyog | Premium Agarbatti & Incense Shop</title>
     <meta name="description" content="Experience the divine fragrance of Asmita Gruh Udhyog's premium, hand-crafted agarbatti, dhoop, and spiritual products. Bringing peace and a calm aura to your life." />
-    <!-- Meta Keywords (optional but good for basic coverage) -->
     <meta name="keywords" content="Agarbatti, Incense Sticks, Dhoop, Sambrani, Asmita Gruh Udhyog, Spiritual Products, Camphor, Attar" />
-    <!-- Open Graph for Social Media -->
-    <meta property="og:title" content="Asmita Gruh Udhyog - Premium Agarbatti" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Asmita Gruh Udhyog — Premium Agarbatti" />
     <meta property="og:description" content="Explore our premium range of handcrafted incense and spiritual fragrances." />
+    <meta property="og:url" content="https://asmita-gruh-udhyog.vercel.app/" />
+    <meta property="og:site_name" content="Asmita Gruh Udhyog" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Asmita Gruh Udhyog — Premium Agarbatti" />
+    <meta name="twitter:description" content="Experience the divine fragrance of hand-crafted agarbatti, dhoop, and spiritual products." />
+
+    <!-- ═══════════════════════════════════════════════════
+         CRITICAL INLINE CSS — Above-the-fold paint styles so the
+         user sees content instantly instead of a blank white page.
+         This eliminates the Flash of Unstyled Content (FOUC) and
+         dramatically improves LCP (Largest Contentful Paint).
+         ═══════════════════════════════════════════════════ -->
+    <style>
+      /* Critical above-the-fold CSS for instant first paint */
+      *{margin:0;padding:0;box-sizing:border-box}
+      :root{--primary-color:#ecc244;--bg-darker:#050505;--text-light:#fefefe;--text-muted:#a0a0a0}
+      body{font-family:'Inter',system-ui,-apple-system,sans-serif;background-color:#050505;color:#fefefe;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+      h1,h2,h3,h4,h5,h6{font-family:'Outfit','Inter',system-ui,sans-serif}
+      #root{width:100vw;min-height:100vh;position:relative}
+
+      /* Loading spinner for initial app load */
+      .app-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;background:#050505;gap:1.5rem}
+      .app-loader-ring{width:48px;height:48px;border:3px solid rgba(236,194,68,0.15);border-top-color:#ecc244;border-radius:50%;animation:spin .8s linear infinite}
+      .app-loader-text{color:#a0a0a0;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;font-family:'Inter',system-ui,sans-serif}
+      @keyframes spin{to{transform:rotate(360deg)}}
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Loading indicator visible during JS bundle download/parse -->
+    <div id="root">
+      <div class="app-loader" id="initial-loader">
+        <div class="app-loader-ring"></div>
+        <div class="app-loader-text">Loading Asmita Gruh Udhyog…</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

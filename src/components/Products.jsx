@@ -94,7 +94,15 @@ export default function Products() {
                 onClick={() => setSelectedProduct(p)}
               >
                 <div className="product-image-container premium-frame">
-                  <img src={p.image} alt={p.title} className="product-image" />
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    className="product-image"
+                    loading="lazy"
+                    decoding="async"
+                    width="260"
+                    height="240"
+                  />
                 </div>
 
                 <div className="product-info">

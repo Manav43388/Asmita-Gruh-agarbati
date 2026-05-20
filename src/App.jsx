@@ -1,6 +1,11 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 // Build trigger: Forcing deployment of branding updates (Asmita Gruh Udhyog)
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
+// ─── PERFORMANCE: Lazy-load ALL heavy components ───
+// React.lazy + Suspense ensures these chunks are only downloaded
+// when the component is first rendered, dramatically reducing
+// the initial JavaScript payload for faster LCP.
 const Scene = React.lazy(() => import('./components/Scene'));
 const Navbar = React.lazy(() => import('./components/Navbar'));
 const Products = React.lazy(() => import('./components/Products'));
@@ -39,6 +44,39 @@ import './index.css';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 
+// ─── PERFORMANCE: Detect if device can handle WebGL 3D scene ───
+// Mobile devices with low-end GPUs get destroyed by Three.js,
+// causing jank, battery drain, and terrible PageSpeed scores.
+// We skip the 3D scene entirely on mobile for a massive LCP win.
+function useCanRender3D() {
+  const [canRender, setCanRender] = useState(false);
+
+  useEffect(() => {
+    // Skip 3D on mobile/tablet (screen width < 1024px)
+    const isLargeScreen = window.innerWidth >= 1024;
+
+    // Check for WebGL support
+    let hasWebGL = false;
+    try {
+      const canvas = document.createElement('canvas');
+      hasWebGL = !!(
+        canvas.getContext('webgl2') ||
+        canvas.getContext('webgl') ||
+        canvas.getContext('experimental-webgl')
+      );
+    } catch (e) {
+      hasWebGL = false;
+    }
+
+    // Check for reduced motion preference (accessibility)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    setCanRender(isLargeScreen && hasWebGL && !prefersReducedMotion);
+  }, []);
+
+  return canRender;
+}
+
 const Home = () => (
   <div className="content-layer">
     <div id="home"><Products /></div>
@@ -51,15 +89,31 @@ const Home = () => (
 );
 
 function App() {
+  const canRender3D = useCanRender3D();
+
+  // ─── PERFORMANCE: Remove the initial loader once React hydrates ───
+  useEffect(() => {
+    const loader = document.getElementById('initial-loader');
+    if (loader) {
+      loader.style.transition = 'opacity 0.3s ease';
+      loader.style.opacity = '0';
+      setTimeout(() => loader.remove(), 300);
+    }
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
         <OrderProvider>
           <CartProvider>
             <Toaster position="top-right" />
-            <Suspense fallback={null}>
-              <Scene />
-            </Suspense>
+
+            {/* ─── 3D SCENE: Only rendered on capable desktop devices ─── */}
+            {canRender3D && (
+              <Suspense fallback={null}>
+                <Scene />
+              </Suspense>
+            )}
 
             <Suspense fallback={
               <div className="admin-page-container">

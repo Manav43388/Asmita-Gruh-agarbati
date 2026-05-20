@@ -169,7 +169,7 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
           <div className="pd-scroll">
             <div className="pd-gallery">
               <div className="pd-main-img-wrap">
-                <img src={data.image} alt={data.title} className="pd-main-img" />
+                <img src={data.image} alt={data.title} className="pd-main-img" loading="lazy" decoding="async" />
                 {data.tag && <span className="product-tag pd-tag">{data.tag}</span>}
                 {discountPct > 0 && <span className="pd-discount-badge">-{discountPct}% OFF</span>}
                 <button className={`pd-wishlist-btn ${wishlist ? 'active' : ''}`} onClick={() => setWishlist(w => !w)}>
