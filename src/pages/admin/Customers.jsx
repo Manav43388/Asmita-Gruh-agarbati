@@ -158,13 +158,13 @@ const Customers = () => {
                     <div className="flex items-center justify-end gap-2">
                       <button 
                         onClick={() => setSelectedCustomer(customer)}
-                        className="p-2 text-gray-400 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-all" title="History"
+                        className="p-2 text-admin-accent/70 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-all" title="History"
                       >
                         <History size={18} />
                       </button>
                       <button 
                         onClick={() => window.open(`https://wa.me/91${customer.phone}`)}
-                        className="p-2 text-gray-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg transition-all" title="WhatsApp"
+                        className="p-2 text-admin-accent/70 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-all" title="WhatsApp"
                       >
                         <MessageSquare size={18} />
                       </button>

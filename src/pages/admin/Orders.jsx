@@ -330,19 +330,19 @@ const Orders = () => {
                     <div className="flex items-center justify-end gap-1">
                       <button 
                         onClick={() => setSelectedOrder(order)}
-                        className="p-2 text-gray-400 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-all" title="View Details"
+                        className="p-2 text-admin-accent/70 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-all" title="View Details"
                       >
                         <ExternalLink size={16} />
                       </button>
                       <button 
                         onClick={() => notifyViaWhatsApp(order)}
-                        className="p-2 text-gray-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg transition-all" title="Notify Customer"
+                        className="p-2 text-admin-accent/70 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-all" title="Notify Customer"
                       >
                         <MessageSquare size={16} />
                       </button>
                       <button 
                         onClick={() => deleteOrder(order.id)}
-                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all" title="Delete"
+                        className="p-2 text-red-400/60 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all" title="Delete"
                       >
                         <Trash2 size={16} />
                       </button>
