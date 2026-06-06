@@ -342,7 +342,7 @@ const Orders = () => {
                       </button>
                       <button 
                         onClick={() => deleteOrder(order.id)}
-                        className="p-2 text-red-400/60 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all" title="Delete"
+                        className="p-2 text-admin-accent/70 hover:text-admin-accent hover:bg-admin-accent/10 rounded-lg transition-all" title="Delete"
                       >
                         <Trash2 size={16} />
                       </button>
