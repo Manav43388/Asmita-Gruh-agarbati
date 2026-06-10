@@ -112,7 +112,6 @@ export default function Products() {
 
                 <div className="product-info" style={{ cursor: 'pointer' }}>
                   <h3>{p.title}</h3>
-                  <p>{p.desc}</p>
                 </div>
               </div>
 
