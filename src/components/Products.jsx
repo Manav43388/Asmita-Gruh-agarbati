@@ -92,8 +92,9 @@ export default function Products() {
               <div
                 className="product-clickable"
                 onClick={() => setSelectedProduct(p)}
+                style={{ cursor: 'pointer' }}
               >
-                <div className="product-image-container premium-frame">
+                <div className="product-image-container premium-frame" style={{ cursor: 'pointer', overflow: 'hidden' }}>
                   <img
                     src={p.image}
                     alt={p.title}
@@ -102,10 +103,14 @@ export default function Products() {
                     decoding="async"
                     width="260"
                     height="240"
+                    style={{ cursor: 'pointer', transition: 'transform 0.3s ease' }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                    onClick={() => setSelectedProduct(p)}
                   />
                 </div>
 
-                <div className="product-info">
+                <div className="product-info" style={{ cursor: 'pointer' }}>
                   <h3>{p.title}</h3>
                   <p>{p.desc}</p>
                 </div>
