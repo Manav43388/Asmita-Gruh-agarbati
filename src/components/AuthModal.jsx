@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, LogIn, UserPlus, Mail, Lock, User, ArrowRight, Loader2, LogOut } from 'lucide-react';
+import { X, LogIn, UserPlus, Mail, Lock, User, ArrowRight, Loader2, LogOut, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthModal({ isOpen, onClose }) {
-  const { login, signup, user, logout } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const { login, signup, user, logout, resetPassword } = useAuth();
+  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'forgot'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resetSent, setResetSent] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
   const handleChange = (e) => {
@@ -21,12 +22,16 @@ export default function AuthModal({ isOpen, onClose }) {
     setError('');
 
     try {
-      if (isLogin) {
+      if (mode === 'login') {
         await login(formData.email, formData.password);
-      } else {
+        onClose();
+      } else if (mode === 'signup') {
         await signup(formData.email, formData.password, formData.name);
+        onClose();
+      } else if (mode === 'forgot') {
+        await resetPassword(formData.email);
+        setResetSent(true);
       }
-      onClose();
     } catch (err) {
       console.error("Auth Error:", err.code, err.message);
       if (err.code === 'auth/invalid-credential') {
@@ -35,12 +40,22 @@ export default function AuthModal({ isOpen, onClose }) {
         setError('This email is already registered. Please login instead.');
       } else if (err.code === 'auth/weak-password') {
         setError('Password should be at least 6 characters.');
+      } else if (err.code === 'auth/user-not-found') {
+        setError('No account found with this email address.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address.');
       } else {
         setError(err.message || 'Something went wrong');
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setError('');
+    setResetSent(false);
   };
 
   if (!isOpen) return null;
@@ -85,70 +100,159 @@ export default function AuthModal({ isOpen, onClose }) {
             </div>
           ) : (
             <div className="auth-content">
-              <div className="auth-header">
-                <div className="auth-icon-wrap">
-                  {isLogin ? <LogIn size={32} /> : <UserPlus size={32} />}
-                </div>
-                <h3>{isLogin ? 'Welcome Back' : 'Create Account'}</h3>
-                <p>{isLogin ? 'Login to access your orders and profile' : 'Join us for a premium fragrance experience'}</p>
-              </div>
 
-              <form onSubmit={handleSubmit} className="auth-form">
-                {!isLogin && (
-                  <div className="form-group">
-                    <label><User size={14} /> Full Name</label>
-                    <input 
-                      name="name" 
-                      type="text" 
-                      placeholder="Enter your name" 
-                      value={formData.name} 
-                      onChange={handleChange} 
-                      required 
-                    />
+              {/* ── Forgot Password view ── */}
+              {mode === 'forgot' ? (
+                <>
+                  <div className="auth-header">
+                    <div className="auth-icon-wrap">
+                      <KeyRound size={32} />
+                    </div>
+                    <h3>Reset Password</h3>
+                    <p>Enter your email and we'll send you a reset link</p>
                   </div>
-                )}
-                <div className="form-group">
-                  <label><Mail size={14} /> Email Address</label>
-                  <input 
-                    name="email" 
-                    type="email" 
-                    placeholder="example@mail.com" 
-                    value={formData.email} 
-                    onChange={handleChange} 
-                    required 
-                  />
-                </div>
-                <div className="form-group">
-                  <label><Lock size={14} /> Password</label>
-                  <input 
-                    name="password" 
-                    type="password" 
-                    placeholder="••••••••" 
-                    value={formData.password} 
-                    onChange={handleChange} 
-                    required 
-                  />
-                </div>
 
-                {error && <div className="auth-error">{error}</div>}
+                  {resetSent ? (
+                    <div style={{ textAlign: 'center', padding: '12px 0 8px' }}>
+                      <div style={{
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: 'rgba(212,175,55,0.12)',
+                        border: '1px solid rgba(212,175,55,0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 16px'
+                      }}>
+                        <Mail size={24} style={{ color: '#d4af37' }} />
+                      </div>
+                      <p style={{ color: '#ccc', fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>
+                        A reset link was sent to <strong style={{ color: '#d4af37' }}>{formData.email}</strong>.
+                        <br />Check your inbox (and spam folder).
+                      </p>
+                      <button
+                        className="checkout-next-btn auth-submit"
+                        onClick={() => switchMode('login')}
+                      >
+                        <ArrowLeft size={16} /> Back to Login
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} className="auth-form">
+                      <div className="form-group">
+                        <label><Mail size={14} /> Email Address</label>
+                        <input
+                          name="email"
+                          type="email"
+                          placeholder="example@mail.com"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                          autoFocus
+                        />
+                      </div>
 
-                <button type="submit" className="checkout-next-btn auth-submit" disabled={loading}>
-                  {loading ? <Loader2 className="animate-spin" size={18} /> : (
-                    <>
-                      {isLogin ? 'Login' : 'Sign Up'} <ArrowRight size={18} />
-                    </>
+                      {error && <div className="auth-error">{error}</div>}
+
+                      <button type="submit" className="checkout-next-btn auth-submit" disabled={loading}>
+                        {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                          <><Mail size={16} /> Send Reset Link</>
+                        )}
+                      </button>
+
+                      <div className="auth-footer" style={{ marginTop: 12 }}>
+                        <p>
+                          Remember your password?
+                          <button onClick={() => switchMode('login')} className="auth-toggle-btn">
+                            Login
+                          </button>
+                        </p>
+                      </div>
+                    </form>
                   )}
-                </button>
-              </form>
+                </>
+              ) : (
+                /* ── Login / Signup view ── */
+                <>
+                  <div className="auth-header">
+                    <div className="auth-icon-wrap">
+                      {mode === 'login' ? <LogIn size={32} /> : <UserPlus size={32} />}
+                    </div>
+                    <h3>{mode === 'login' ? 'Welcome Back' : 'Create Account'}</h3>
+                    <p>{mode === 'login' ? 'Login to access your orders and profile' : 'Join us for a premium fragrance experience'}</p>
+                  </div>
 
-              <div className="auth-footer">
-                <p>
-                  {isLogin ? "Don't have an account?" : "Already have an account?"}
-                  <button onClick={() => setIsLogin(!isLogin)} className="auth-toggle-btn">
-                    {isLogin ? 'Sign Up' : 'Login'}
-                  </button>
-                </p>
-              </div>
+                  <form onSubmit={handleSubmit} className="auth-form">
+                    {mode === 'signup' && (
+                      <div className="form-group">
+                        <label><User size={14} /> Full Name</label>
+                        <input
+                          name="name"
+                          type="text"
+                          placeholder="Enter your name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    )}
+                    <div className="form-group">
+                      <label><Mail size={14} /> Email Address</label>
+                      <input
+                        name="email"
+                        type="email"
+                        placeholder="example@mail.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <label style={{ margin: 0 }}><Lock size={14} /> Password</label>
+                        {mode === 'login' && (
+                          <button
+                            type="button"
+                            onClick={() => switchMode('forgot')}
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: '#d4af37', fontSize: 12, fontWeight: 600,
+                              padding: 0, textDecoration: 'underline', textUnderlineOffset: 2
+                            }}
+                          >
+                            Forgot password?
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        name="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    {error && <div className="auth-error">{error}</div>}
+
+                    <button type="submit" className="checkout-next-btn auth-submit" disabled={loading}>
+                      {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                        <>
+                          {mode === 'login' ? 'Login' : 'Sign Up'} <ArrowRight size={18} />
+                        </>
+                      )}
+                    </button>
+                  </form>
+
+                  <div className="auth-footer">
+                    <p>
+                      {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
+                      <button onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')} className="auth-toggle-btn">
+                        {mode === 'login' ? 'Sign Up' : 'Login'}
+                      </button>
+                    </p>
+                  </div>
+                </>
+              )}
+
             </div>
           )}
         </motion.div>

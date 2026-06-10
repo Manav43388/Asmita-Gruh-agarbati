@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
-  updateProfile 
+  updateProfile,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         // Check if user is admin
         const adminDoc = await getDoc(doc(db, 'adminUsers', firebaseUser.email));
         const adminStatus = adminDoc.exists();
-        
+
         setUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email,
@@ -64,6 +65,10 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     return signOut(auth);
+  };
+
+  const resetPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
   };
 
   return (
