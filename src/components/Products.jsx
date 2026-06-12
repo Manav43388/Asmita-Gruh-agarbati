@@ -69,9 +69,26 @@ export default function Products() {
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="divine-header"
+        className="divine-header flex flex-col items-center w-full"
       >
-        <h2 className="divine-title">Fragrances For Divine Experiences</h2>
+        <h2 className="divine-title text-center" style={{ marginBottom: '1.5rem' }}>Fragrances For Divine Experiences</h2>
+        
+        {/* Category Filter */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12 w-full max-w-4xl px-4">
+          {CATEGORIES.map(category => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`px-5 py-2.5 rounded-full text-sm transition-all duration-300 ${
+                activeCategory === category 
+                  ? 'bg-[#ecc244] text-black shadow-[0_0_15px_rgba(236,194,68,0.3)] scale-105 font-bold border border-[#ecc244]'
+                  : 'bg-[#151515] text-gray-400 hover:bg-[#222] hover:text-[#ecc244] border border-white/10 font-medium'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
       </motion.div>
 
       <div className="products-grid">
