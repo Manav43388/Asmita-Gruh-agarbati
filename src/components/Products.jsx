@@ -110,8 +110,16 @@ export default function Products() {
                   />
                 </div>
 
-                <div className="product-info" style={{ cursor: 'pointer' }}>
-                  <h3>{p.title}</h3>
+                <div className="product-info flex-1 flex flex-col px-5 py-4" style={{ cursor: 'pointer' }}>
+                  <h3 className="mb-2">{p.title}</h3>
+                  <p className="text-sm text-gray-400 line-clamp-2 mb-3 leading-relaxed flex-1" title={p.desc}>
+                    {p.desc}
+                  </p>
+                  {p.stock <= 5 && p.stock > 0 && (
+                    <p className="text-orange-500 text-sm font-medium mt-auto">
+                      🔥 Only {p.stock} left!
+                    </p>
+                  )}
                 </div>
               </div>
 
