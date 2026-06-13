@@ -237,7 +237,7 @@ export default function ContactPage() {
           </h3>
           <div className="contact-map-container">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d238132.3124!2d72.6520!3d21.1702!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be0509d3dfea0f3%3A0x2c8e1b8e9e8b7a0!2sSurat%2C%20Gujarat!5e0!3m2!1sen!2sin!4v1"
+              src="https://maps.google.com/maps?q=Surat,%20Gujarat&t=&z=12&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0, borderRadius: '16px' }}
