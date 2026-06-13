@@ -14,7 +14,8 @@ import {
   BarChart3,
   ShieldCheck,
   Globe,
-  Database
+  Database,
+  Inbox
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
@@ -24,6 +25,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [newOrderCount, setNewOrderCount] = useState(0);
+  const [newInquiryCount, setNewInquiryCount] = useState(0);
 
   useEffect(() => {
     // Listen for new/pending orders
@@ -34,6 +36,20 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setNewOrderCount(snapshot.size);
+    });
+    
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Listen for new inquiries
+    const q = query(
+      collection(db, 'inquiries'), 
+      where('status', '==', 'New')
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setNewInquiryCount(snapshot.size);
     });
     
     return () => unsubscribe();
@@ -57,6 +73,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Customers', path: '/admin/customers', icon: Users },
     { name: 'Coupons', path: '/admin/coupons', icon: Ticket },
+    { name: 'Inquiries', path: '/admin/inquiries', icon: Inbox, badge: newInquiryCount },
     { name: 'CMS', path: '/admin/cms', icon: Layout },
     { name: 'Settings', path: '/admin/settings', icon: MessageSquare },
     { name: 'Reports', path: '/admin/reports', icon: BarChart3 },

@@ -1,47 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Check, Star, Plus, Minus } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingCart, Check, Star, Plus, Minus, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { useProducts } from '../context/ProductsContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 import ProductModal from './ProductModal';
-import { db } from '../firebase/config';
-import { collection, onSnapshot } from 'firebase/firestore';
 
 const CATEGORIES = ['All', 'Incense Sticks', 'Dhoop Sticks', 'Puja Items', 'Idol Cloth', 'Other Spiritual Products'];
 
 export default function Products() {
   const { addToCart, cartItems, setIsCartOpen, setIsCheckoutOpen, updateQuantity, removeFromCart } = useCart();
+  const { products, loading } = useProducts();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { user } = useAuth();
   const [addedIds, setAddedIds] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
-      if (!snapshot.empty) {
-        const productsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            title: data.name || data.title || 'New Product',
-            desc: data.description || data.desc || 'No description available',
-            image: data.image || data.imageUrl || '/agarbatti.png',
-            price: data.price || 0,
-            unit: data.unit || 'per pack',
-            category: data.category || 'Incense Sticks',
-            stock: data.stock || 10,
-            tag: data.tag || null,
-            ...data
-          };
-        });
-        setProducts(productsData);
-      } else {
-        setProducts([]);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -59,6 +34,11 @@ export default function Products() {
   const getCartQty = (id) => {
     const item = cartItems.find(i => i.id === id);
     return item ? item.quantity : 0;
+  };
+
+  const handleWishlistToggle = (e, product) => {
+    e.stopPropagation();
+    toggleWishlist(product);
   };
 
   const filtered = activeCategory === 'All' ? products : products.filter(p => p.category === activeCategory);
@@ -94,6 +74,7 @@ export default function Products() {
       <div className="products-grid">
         {filtered.map((p, index) => {
           const inCart = getCartQty(p.id);
+          const wishlisted = isInWishlist(p.id);
 
           return (
             <motion.div
@@ -125,6 +106,18 @@ export default function Products() {
                     onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                     onClick={() => setSelectedProduct(p)}
                   />
+                  {/* Wishlist Heart Overlay */}
+                  <button
+                    className={`product-wishlist-btn ${wishlisted ? 'active' : ''}`}
+                    onClick={(e) => handleWishlistToggle(e, p)}
+                    aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <Heart
+                      size={18}
+                      fill={wishlisted ? '#e74c3c' : 'transparent'}
+                      stroke={wishlisted ? '#e74c3c' : 'currentColor'}
+                    />
+                  </button>
                 </div>
 
                 <div className="product-info flex-1 flex flex-col px-5 py-4" style={{ cursor: 'pointer' }}>

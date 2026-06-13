@@ -8,8 +8,11 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import RelatedProducts from './RelatedProducts';
 
 /* ─── Base fallback data for consistency ─── */
 const FALLBACK = {
@@ -81,48 +84,63 @@ function AccordionItem({ title, children, defaultOpen = false }) {
 
 export default function ProductModal({ product, onClose, allProducts = [] }) {
   const { addToCart, cartItems, updateQuantity, removeFromCart, setIsCartOpen } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { user } = useAuth();
   const [qty, setQty] = useState(1);
-  const [wishlist, setWishlist] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [dbReviews, setDbReviews] = useState([]);
+  const [currentProduct, setCurrentProduct] = useState(product);
+
+  // Reset when product prop changes
+  useEffect(() => {
+    setCurrentProduct(product);
+    setQty(1);
+    setAddedToCart(false);
+  }, [product]);
+
+  const wishlisted = isInWishlist(currentProduct.id);
+
+  const handleWishlistToggle = () => {
+    toggleWishlist(currentProduct);
+  };
 
   useEffect(() => {
-    if (!product.id) return;
-    const q = query(collection(db, 'reviews'), where('productId', '==', product.id), where('isApproved', '==', true));
+    if (!currentProduct.id) return;
+    const q = query(collection(db, 'reviews'), where('productId', '==', currentProduct.id), where('isApproved', '==', true));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const revs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setDbReviews(revs.sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)));
     });
     return () => unsubscribe();
-  }, [product.id]);
+  }, [currentProduct.id]);
 
   // ROBUST DATA MAPPING
   const data = {
-    title: product.name || product.title || 'Product',
-    subtitle: product.shortDescription || product.subtitle || FALLBACK.subtitle,
-    description: product.description || product.desc || FALLBACK.description,
-    price: Number(product.discountPrice) || Number(product.price) || 0,
-    originalPrice: product.discountPrice ? Number(product.price) : (Number(product.price) * 1.2),
-    image: product.image || product.imageUrl,
-    tag: product.isBestseller ? 'Bestseller' : (product.isTrending ? 'Trending' : (product.isNew ? 'New' : product.tag)),
-    howToUse: product.howToUse || FALLBACK.howToUse,
-    storage: product.storageInstructions || FALLBACK.storage,
-    ingredients: Array.isArray(product.ingredients) && product.ingredients.length > 0 ? product.ingredients : FALLBACK.ingredients,
-    benefits: Array.isArray(product.benefits) && product.benefits.length > 0 ? product.benefits : FALLBACK.benefits,
-    faqs: Array.isArray(product.faqs) && product.faqs.length > 0 ? product.faqs : FALLBACK.faqs,
-    specifications: Array.isArray(product.specifications) && product.specifications.length > 0 
-      ? product.specifications 
+    title: currentProduct.name || currentProduct.title || 'Product',
+    subtitle: currentProduct.shortDescription || currentProduct.subtitle || FALLBACK.subtitle,
+    description: currentProduct.description || currentProduct.desc || FALLBACK.description,
+    price: Number(currentProduct.discountPrice) || Number(currentProduct.price) || 0,
+    originalPrice: currentProduct.discountPrice ? Number(currentProduct.price) : (Number(currentProduct.price) * 1.2),
+    image: currentProduct.image || currentProduct.imageUrl,
+    tag: currentProduct.isBestseller ? 'Bestseller' : (currentProduct.isTrending ? 'Trending' : (currentProduct.isNew ? 'New' : currentProduct.tag)),
+    howToUse: currentProduct.howToUse || FALLBACK.howToUse,
+    storage: currentProduct.storageInstructions || FALLBACK.storage,
+    ingredients: Array.isArray(currentProduct.ingredients) && currentProduct.ingredients.length > 0 ? currentProduct.ingredients : FALLBACK.ingredients,
+    benefits: Array.isArray(currentProduct.benefits) && currentProduct.benefits.length > 0 ? currentProduct.benefits : FALLBACK.benefits,
+    faqs: Array.isArray(currentProduct.faqs) && currentProduct.faqs.length > 0 ? currentProduct.faqs : FALLBACK.faqs,
+    specifications: Array.isArray(currentProduct.specifications) && currentProduct.specifications.length > 0 
+      ? currentProduct.specifications 
       : [
-          { name: 'Country of Origin', value: product.country || 'India' },
-          { name: 'Item Form', value: product.material || 'Natural' },
-          { name: 'Item Type', value: product.category || 'Spiritual' },
-          { name: 'Quantity', value: product.quantity || '1 Pack' },
-          { name: 'Burning Time', value: product.burnTime || 'Varies' },
+          { name: 'Country of Origin', value: currentProduct.country || 'India' },
+          { name: 'Item Form', value: currentProduct.material || 'Natural' },
+          { name: 'Item Type', value: currentProduct.category || 'Spiritual' },
+          { name: 'Quantity', value: currentProduct.quantity || '1 Pack' },
+          { name: 'Burning Time', value: currentProduct.burnTime || 'Varies' },
         ],
-    deliveryText: product.deliveryText || FALLBACK.deliveryText,
-    offerText: product.offerText || FALLBACK.offerText,
-    features: product.features || DEFAULT_FEATURES,
-    stock: Number(product.stock) || 0
+    deliveryText: currentProduct.deliveryText || FALLBACK.deliveryText,
+    offerText: currentProduct.offerText || FALLBACK.offerText,
+    features: currentProduct.features || DEFAULT_FEATURES,
+    stock: Number(currentProduct.stock) || 0
   };
 
   const savings = Math.max(0, data.originalPrice - data.price);
@@ -134,24 +152,31 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
   }, []);
 
   const handleAddToCart = () => {
-    for (let i = 0; i < qty; i++) addToCart({ ...product, price: data.price });
+    for (let i = 0; i < qty; i++) addToCart({ ...currentProduct, price: data.price });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleBuyNow = () => {
-    for (let i = 0; i < qty; i++) addToCart({ ...product, price: data.price });
+    for (let i = 0; i < qty; i++) addToCart({ ...currentProduct, price: data.price });
     onClose();
     setIsCartOpen(true);
   };
 
-  const totalReviews = dbReviews.length + (Number(product.manualReviewCount) || 0);
+  const totalReviews = dbReviews.length + (Number(currentProduct.manualReviewCount) || 0);
   const avgRating = totalReviews > 0 
-    ? ((dbReviews.reduce((sum, r) => sum + (r.rating || 0), 0) + (Number(product.manualReviewCount || 0) * Number(product.manualRating || 4.5))) / totalReviews).toFixed(1)
-    : (Number(product.manualRating) || "5.0");
+    ? ((dbReviews.reduce((sum, r) => sum + (r.rating || 0), 0) + (Number(currentProduct.manualReviewCount || 0) * Number(currentProduct.manualRating || 4.5))) / totalReviews).toFixed(1)
+    : (Number(currentProduct.manualRating) || "5.0");
 
-  const related = allProducts.filter(p => p.id !== product.id && p.category === product.category).slice(0, 3);
-  const anyRelated = related.length > 0 ? related : allProducts.filter(p => p.id !== product.id).slice(0, 3);
+  // Handle switching to a related product
+  const handleRelatedProductSelect = (newProduct) => {
+    setCurrentProduct(newProduct);
+    setQty(1);
+    setAddedToCart(false);
+    // Scroll to top of modal
+    const scrollEl = document.querySelector('.pd-scroll');
+    if (scrollEl) scrollEl.scrollTop = 0;
+  };
 
   return ReactDOM.createPortal(
     <AnimatePresence>
@@ -172,8 +197,8 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
                 <img src={data.image} alt={data.title} className="pd-main-img" loading="lazy" decoding="async" />
                 {data.tag && <span className="product-tag pd-tag">{data.tag}</span>}
                 {discountPct > 0 && <span className="pd-discount-badge">-{discountPct}% OFF</span>}
-                <button className={`pd-wishlist-btn ${wishlist ? 'active' : ''}`} onClick={() => setWishlist(w => !w)}>
-                  <Heart size={18} fill={wishlist ? '#e74c3c' : 'transparent'} stroke={wishlist ? '#e74c3c' : 'currentColor'} />
+                <button className={`pd-wishlist-btn ${wishlisted ? 'active' : ''}`} onClick={handleWishlistToggle}>
+                  <Heart size={18} fill={wishlisted ? '#e74c3c' : 'transparent'} stroke={wishlisted ? '#e74c3c' : 'currentColor'} />
                 </button>
               </div>
             </div>
@@ -341,27 +366,13 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
                 </>
               )}
 
-              {anyRelated.length > 0 && (
-                <>
-                  <div className="pd-section-title">You May Also Like</div>
-                  <div className="pd-related-row">
-                    {anyRelated.map(rp => (
-                      <div key={rp.id} className="pd-related-card">
-                        <div className="pd-related-img-wrap">
-                          <img src={rp.image || rp.imageUrl} alt={rp.name || rp.title} />
-                        </div>
-                        <div className="pd-related-info">
-                          <div className="pd-related-name">{rp.name || rp.title}</div>
-                          <div className="pd-related-prices">
-                            <span className="pd-related-price">₹{rp.discountPrice || rp.price}</span>
-                            {rp.discountPrice && <span className="pd-related-orig">₹{rp.price}</span>}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+              {/* Related Products — Enhanced component */}
+              <RelatedProducts
+                currentProduct={currentProduct}
+                allProducts={allProducts}
+                onProductSelect={handleRelatedProductSelect}
+              />
+
               <div style={{ height: '2rem' }} />
             </div>
           </div>

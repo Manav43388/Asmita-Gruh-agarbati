@@ -125,6 +125,12 @@ export default function CheckoutModal() {
         return;
       }
 
+      // Check Usage Limit
+      if (coupon.usageLimit && coupon.usageLimit > 0 && (coupon.usageCount || 0) >= coupon.usageLimit) {
+        setCouponError('Coupon usage limit has been reached');
+        return;
+      }
+
       // Check Min Purchase
       if (subtotal < (coupon.minPurchase || 0)) {
         setCouponError(`Min. purchase for this coupon is ₹${coupon.minPurchase}`);
@@ -134,14 +140,21 @@ export default function CheckoutModal() {
       let discountAmount = 0;
       if (coupon.type === 'Percentage') {
         discountAmount = (subtotal * coupon.value) / 100;
+        // Cap at maxDiscount if set
+        if (coupon.maxDiscount && coupon.maxDiscount > 0) {
+          discountAmount = Math.min(discountAmount, coupon.maxDiscount);
+        }
       } else {
         discountAmount = coupon.value;
       }
 
+      // Ensure discount doesn't exceed subtotal
+      discountAmount = Math.min(discountAmount, subtotal);
+
       setDiscount(discountAmount);
       setAppliedCoupon(coupon);
       setCouponCode(coupon.code);
-      toast.success('Coupon applied successfully!');
+      toast.success(`Coupon applied! You save ₹${Math.round(discountAmount)}`);
     } catch (error) {
       console.error("Coupon error:", error);
       setCouponError('Error validating coupon');
@@ -240,7 +253,8 @@ export default function CheckoutModal() {
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
                   createdAt: serverTimestamp(),
-                  items: cartItems
+                  items: cartItems,
+                  couponCode: appliedCoupon?.code || null
                 };
                 transaction.set(doc(collection(db, 'orders')), orderData);
 
@@ -257,6 +271,14 @@ export default function CheckoutModal() {
                   createdAt: serverTimestamp()
                 };
                 transaction.set(doc(collection(db, 'payments')), paymentData);
+
+                // Increment coupon usage count
+                if (appliedCoupon?.id) {
+                  const couponRef = doc(db, 'coupons', appliedCoupon.id);
+                  transaction.update(couponRef, {
+                    usageCount: increment(1)
+                  });
+                }
               });
 
               toast.success("Payment successful!");
@@ -320,9 +342,18 @@ export default function CheckoutModal() {
             paymentStatus: PAYMENT_STATUS.PENDING,
             status: 'Order placed',
             createdAt: serverTimestamp(),
-            items: cartItems
+            items: cartItems,
+            couponCode: appliedCoupon?.code || null
           };
           transaction.set(doc(collection(db, 'orders')), orderData);
+
+          // Increment coupon usage count
+          if (appliedCoupon?.id) {
+            const couponRef = doc(db, 'coupons', appliedCoupon.id);
+            transaction.update(couponRef, {
+              usageCount: increment(1)
+            });
+          }
         });
 
         toast.success("Order placed successfully (COD)");

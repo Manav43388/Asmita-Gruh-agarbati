@@ -32,7 +32,9 @@ const Coupons = () => {
     minPurchase: '0',
     expiryDate: '',
     status: 'Active',
-    usageCount: 0
+    usageCount: 0,
+    usageLimit: '0',
+    maxDiscount: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -55,6 +57,8 @@ const Coupons = () => {
         code: formData.code.toUpperCase(),
         value: Number(formData.value),
         minPurchase: Number(formData.minPurchase || 0),
+        usageLimit: Number(formData.usageLimit || 0),
+        maxDiscount: formData.maxDiscount ? Number(formData.maxDiscount) : null,
         updatedAt: new Date()
       };
 
@@ -153,18 +157,39 @@ const Coupons = () => {
                 <span className="text-gray-500 text-xs font-bold mb-1 uppercase tracking-wider">OFF</span>
               </div>
               <p className="text-sm text-gray-400">Min. Purchase: <span className="text-white font-bold">₹{coupon.minPurchase}</span></p>
+              {coupon.maxDiscount && coupon.type === 'Percentage' && (
+                <p className="text-sm text-gray-400 mt-1">Max Discount: <span className="text-white font-bold">₹{coupon.maxDiscount}</span></p>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6 pt-6 border-t border-white/5">
+            <div className="grid grid-cols-2 gap-4 mb-4 pt-6 border-t border-white/5">
               <div className="flex items-center gap-2 text-gray-500">
                 <Clock size={14} />
                 <span className="text-xs font-medium">Expires: {coupon.expiryDate || 'No Limit'}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-500 justify-end">
                 <Zap size={14} />
-                <span className="text-xs font-medium">{coupon.usageCount} Used</span>
+                <span className="text-xs font-medium">{coupon.usageCount || 0}{coupon.usageLimit > 0 ? ` / ${coupon.usageLimit}` : ''} Used</span>
               </div>
             </div>
+
+            {/* Usage Progress Bar */}
+            {coupon.usageLimit > 0 && (
+              <div className="mb-6">
+                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, ((coupon.usageCount || 0) / coupon.usageLimit) * 100)}%`,
+                      background: ((coupon.usageCount || 0) / coupon.usageLimit) >= 1 ? '#ef4444' : 'linear-gradient(to right, #d4af37, #ecc244)'
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] text-gray-500 mt-1 text-right">
+                  {((coupon.usageCount || 0) >= coupon.usageLimit) ? '🚫 Limit reached' : `${coupon.usageLimit - (coupon.usageCount || 0)} remaining`}
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center gap-2">
               <button 
@@ -235,6 +260,17 @@ const Coupons = () => {
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Usage Limit (0 = Unlimited)</label>
+                  <input type="number" className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent transition-all" placeholder="0" value={formData.usageLimit} onChange={e => setFormData({...formData, usageLimit: e.target.value})} />
+                </div>
+                <div>
+                  <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Max Discount (₹) {formData.type === 'Percentage' ? '' : '— N/A'}</label>
+                  <input type="number" className="w-full bg-[#141414] border border-[#2a2a2a] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-admin-accent transition-all" placeholder="No cap" value={formData.maxDiscount} onChange={e => setFormData({...formData, maxDiscount: e.target.value})} disabled={formData.type !== 'Percentage'} />
                 </div>
               </div>
 

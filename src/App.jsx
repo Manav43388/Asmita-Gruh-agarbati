@@ -19,6 +19,8 @@ const CheckoutModal = React.lazy(() => import('./components/CheckoutModal'));
 const OrderTracking = React.lazy(() => import('./components/OrderTracking'));
 const PaymentSuccess = React.lazy(() => import('./components/PaymentSuccess'));
 const PaymentFailed = React.lazy(() => import('./components/PaymentFailed'));
+const WishlistPage = React.lazy(() => import('./components/WishlistPage'));
+const ContactPage = React.lazy(() => import('./components/ContactPage'));
 
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const AdminLogin = React.lazy(() => import('./pages/admin/Login'));
@@ -34,12 +36,15 @@ const AdminCMS = React.lazy(() => import('./pages/admin/CMS'));
 const AdminSettings = React.lazy(() => import('./pages/admin/Settings'));
 const AdminReports = React.lazy(() => import('./pages/admin/Reports'));
 const AdminSecurity = React.lazy(() => import('./pages/admin/Security'));
+const AdminInquiries = React.lazy(() => import('./pages/admin/Inquiries'));
 
 
 import ProtectedRoute from './components/ProtectedRoute';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { OrderProvider } from './context/OrderContext';
+import { ProductsProvider } from './context/ProductsContext';
+import { WishlistProvider } from './context/WishlistContext';
 import './index.css';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
@@ -106,101 +111,130 @@ function App() {
       <AuthProvider>
         <OrderProvider>
           <CartProvider>
-            <Toaster position="top-right" />
+            <ProductsProvider>
+              <WishlistProvider>
+                <Toaster position="top-right" />
 
-            {/* ─── 3D SCENE: Only rendered on capable desktop devices ─── */}
-            {canRender3D && (
-              <Suspense fallback={null}>
-                <Scene />
-              </Suspense>
-            )}
+                {/* ─── 3D SCENE: Only rendered on capable desktop devices ─── */}
+                {canRender3D && (
+                  <Suspense fallback={null}>
+                    <Scene />
+                  </Suspense>
+                )}
 
-            <Suspense fallback={
-              <div className="admin-page-container">
-                <div className="admin-stat-icon" style={{ background: 'transparent' }}>
-                  <Loader2 className="animate-spin" size={48} color="#d4af37" />
-                </div>
-              </div>
-            }>
-              <Routes>
-                {/* Admin Routes wrapped to stay above background */}
-                <Route path="/admin/*" element={
-                  <div style={{ position: 'relative', zIndex: 100 }}>
-                    <Routes>
-                      <Route path="login" element={<AdminLogin />} />
-                      <Route element={
-                        <ProtectedRoute adminOnly>
-                          <AdminLayout />
-                        </ProtectedRoute>
-                      }>
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="dashboard" element={<AdminDashboard />} />
-                        <Route path="analytics" element={<AdminAnalytics />} />
-                        <Route path="orders" element={<AdminOrders />} />
-                        <Route path="inventory" element={<AdminInventory />} />
-                        <Route path="products" element={<AdminProducts />} />
-                        <Route path="products/new" element={<AdminProductEdit />} />
-                        <Route path="products/edit/:id" element={<AdminProductEdit />} />
-                        <Route path="customers" element={<AdminCustomers />} />
-                        <Route path="coupons" element={<AdminCoupons />} />
-                        <Route path="cms" element={<AdminCMS />} />
-                        <Route path="settings" element={<AdminSettings />} />
-                        <Route path="reports" element={<AdminReports />} />
-                        <Route path="security" element={<AdminSecurity />} />
-                        <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-                      </Route>
-                    </Routes>
+                <Suspense fallback={
+                  <div className="admin-page-container">
+                    <div className="admin-stat-icon" style={{ background: 'transparent' }}>
+                      <Loader2 className="animate-spin" size={48} color="#d4af37" />
+                    </div>
                   </div>
-                } />
+                }>
+                  <Routes>
+                    {/* Admin Routes wrapped to stay above background */}
+                    <Route path="/admin/*" element={
+                      <div style={{ position: 'relative', zIndex: 100 }}>
+                        <Routes>
+                          <Route path="login" element={<AdminLogin />} />
+                          <Route element={
+                            <ProtectedRoute adminOnly>
+                              <AdminLayout />
+                            </ProtectedRoute>
+                          }>
+                            <Route index element={<AdminDashboard />} />
+                            <Route path="dashboard" element={<AdminDashboard />} />
+                            <Route path="analytics" element={<AdminAnalytics />} />
+                            <Route path="orders" element={<AdminOrders />} />
+                            <Route path="inventory" element={<AdminInventory />} />
+                            <Route path="products" element={<AdminProducts />} />
+                            <Route path="products/new" element={<AdminProductEdit />} />
+                            <Route path="products/edit/:id" element={<AdminProductEdit />} />
+                            <Route path="customers" element={<AdminCustomers />} />
+                            <Route path="coupons" element={<AdminCoupons />} />
+                            <Route path="inquiries" element={<AdminInquiries />} />
+                            <Route path="cms" element={<AdminCMS />} />
+                            <Route path="settings" element={<AdminSettings />} />
+                            <Route path="reports" element={<AdminReports />} />
+                            <Route path="security" element={<AdminSecurity />} />
+                            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+                          </Route>
+                        </Routes>
+                      </div>
+                    } />
 
-                {/* Public Routes */}
-                <Route path="/" element={
-                  <>
-                    <Navbar />
-                    <div className="content-layer">
-                      <Home />
-                    </div>
-                    {/* Global overlays */}
-                    <CartDrawer />
-                    <CheckoutModal />
-                  </>
-                } />
-                
-                <Route path="/track" element={
-                  <>
-                    <Navbar />
-                    <div className="content-layer">
-                      <OrderTracking />
-                      <Footer />
-                    </div>
-                    {/* Global overlays */}
-                    <CartDrawer />
-                    <CheckoutModal />
-                  </>
-                } />
+                    {/* Public Routes */}
+                    <Route path="/" element={
+                      <>
+                        <Navbar />
+                        <div className="content-layer">
+                          <Home />
+                        </div>
+                        {/* Global overlays */}
+                        <CartDrawer />
+                        <CheckoutModal />
+                      </>
+                    } />
+                    
+                    <Route path="/track" element={
+                      <>
+                        <Navbar />
+                        <div className="content-layer">
+                          <OrderTracking />
+                          <Footer />
+                        </div>
+                        {/* Global overlays */}
+                        <CartDrawer />
+                        <CheckoutModal />
+                      </>
+                    } />
 
-                <Route path="/payment-success" element={
-                  <>
-                    <Navbar />
-                    <div className="content-layer">
-                      <PaymentSuccess />
-                      <Footer />
-                    </div>
-                  </>
-                } />
+                    <Route path="/wishlist" element={
+                      <>
+                        <Navbar />
+                        <div className="content-layer">
+                          <WishlistPage />
+                          <Footer />
+                        </div>
+                        <CartDrawer />
+                        <CheckoutModal />
+                      </>
+                    } />
 
-                <Route path="/payment-failed" element={
-                  <>
-                    <Navbar />
-                    <div className="content-layer">
-                      <PaymentFailed />
-                      <Footer />
-                    </div>
-                  </>
-                } />
-              </Routes>
-            </Suspense>
+                    <Route path="/contact" element={
+                      <>
+                        <Navbar />
+                        <div className="content-layer">
+                          <ContactPage />
+                          <Footer />
+                        </div>
+                        <CartDrawer />
+                        <CheckoutModal />
+                      </>
+                    } />
 
+                    <Route path="/payment-success" element={
+                      <>
+                        <Navbar />
+                        <div className="content-layer">
+                          <PaymentSuccess />
+                          <Footer />
+                        </div>
+                      </>
+                    } />
+
+                    <Route path="/payment-failed" element={
+                      <>
+                        <Navbar />
+                        <div className="content-layer">
+                          <PaymentFailed />
+                          <Footer />
+                        </div>
+                      </>
+                    } />
+                  </Routes>
+                </Suspense>
+
+              </WishlistProvider>
+            </ProductsProvider>
           </CartProvider>
         </OrderProvider>
       </AuthProvider>
