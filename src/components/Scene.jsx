@@ -93,10 +93,7 @@ export default function Scene() {
         <FloatingDhoopCone position={[2, 5, -8]} rotation={[0.2, 0.5, 0.1]} scale={0.7} />
         <FloatingDhoopCone position={[-3, -5, -9]} rotation={[-0.3, 0.1, -0.2]} scale={0.8} />
 
-        {/* Larger Foreground Elements */}
-        <FloatingAgarbatti position={[-3, 0, -2]} rotation={[0, 0, 0.2]} scale={1.2} />
-        <FloatingAgarbatti position={[3, 1, -3]} rotation={[0, 0, -0.4]} scale={1.1} />
-        <FloatingDhoopCone position={[0, -2.5, -3]} rotation={[0.1, 0, 0.1]} scale={1.3} />
+
 
 
         {/* Controls - autoRotate gently */}

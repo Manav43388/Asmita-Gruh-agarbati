@@ -1,6 +1,8 @@
 import React, { Suspense, useState, useEffect } from 'react';
 // Build trigger: Forcing deployment of branding updates (Asmita Gruh Udhyog)
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import SEO from './components/SEO';
+import { OrganizationSchema, WebSiteSchema, LocalBusinessSchema, BreadcrumbSchema } from './components/StructuredData';
 
 // ─── PERFORMANCE: Lazy-load ALL heavy components ───
 // React.lazy + Suspense ensures these chunks are only downloaded
@@ -84,6 +86,15 @@ function useCanRender3D() {
 
 const Home = () => (
   <div className="content-layer">
+    <SEO 
+      title="Buy Premium Agarbatti & Pooja Products Online" 
+      description="Asmita Gruh Udhyog offers premium handcrafted agarbatti, pooja products, and long-lasting fragrances for homes, temples, retailers, and wholesale buyers across India."
+      canonicalUrl="/"
+      keywords="Premium Agarbatti, Incense Sticks, Pooja Products, Dhoop, Wholesale Agarbatti, Asmita Gruh Udhyog"
+    />
+    <OrganizationSchema />
+    <WebSiteSchema />
+    <LocalBusinessSchema />
     <div id="home"><Products /></div>
     <div id="products"><FAQ /></div>
     <div id="reviews"><Reviews /></div>
@@ -133,6 +144,7 @@ function App() {
                     {/* Admin Routes wrapped to stay above background */}
                     <Route path="/admin/*" element={
                       <div style={{ position: 'relative', zIndex: 100 }}>
+                        <SEO title="Admin Panel" description="Secure Admin Dashboard" noindex={true} />
                         <Routes>
                           <Route path="login" element={<AdminLogin />} />
                           <Route element={
@@ -176,6 +188,8 @@ function App() {
                     
                     <Route path="/track" element={
                       <>
+                        <SEO title="Track Your Order" description="Easily track your Asmita Gruh Udhyog order status online. Enter your order details to get real-time shipping updates for your premium agarbatti and pooja products." canonicalUrl="/track" />
+                        <BreadcrumbSchema items={[{ name: 'Home', path: '/' }, { name: 'Track Order', path: '/track' }]} />
                         <Navbar />
                         <div className="content-layer">
                           <OrderTracking />
@@ -189,6 +203,8 @@ function App() {
 
                     <Route path="/wishlist" element={
                       <>
+                        <SEO title="Your Wishlist" description="Save your favorite Asmita Gruh Udhyog incense sticks, dhoop, and spiritual products to your wishlist. Shop premium fragrances later for a divine home experience." canonicalUrl="/wishlist" />
+                        <BreadcrumbSchema items={[{ name: 'Home', path: '/' }, { name: 'Wishlist', path: '/wishlist' }]} />
                         <Navbar />
                         <div className="content-layer">
                           <WishlistPage />
@@ -201,6 +217,8 @@ function App() {
 
                     <Route path="/contact" element={
                       <>
+                        <SEO title="Contact Us" description="Contact Asmita Gruh Udhyog for retail, wholesale, or bulk orders of premium agarbatti. Reach out to us for inquiries regarding our natural pooja products today." canonicalUrl="/contact" />
+                        <BreadcrumbSchema items={[{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }]} />
                         <Navbar />
                         <div className="content-layer">
                           <ContactPage />
@@ -213,6 +231,7 @@ function App() {
 
                     <Route path="/payment-success" element={
                       <>
+                        <SEO title="Payment Successful" description="Your payment was successful." noindex={true} />
                         <Navbar />
                         <div className="content-layer">
                           <PaymentSuccess />
@@ -223,6 +242,7 @@ function App() {
 
                     <Route path="/payment-failed" element={
                       <>
+                        <SEO title="Payment Failed" description="There was an issue processing your payment." noindex={true} />
                         <Navbar />
                         <div className="content-layer">
                           <PaymentFailed />

@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.token.email));
+    }
+    
+    // Public read for everything (since product images are needed)
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if isAdmin();
+    }
+    
+    // Allow users to upload their own avatars or specific files if needed,
+    // but in this eCommerce app, generally only admins upload images.
+  }
+}

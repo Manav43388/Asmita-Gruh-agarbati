@@ -51,7 +51,7 @@ export default function Products() {
         viewport={{ once: true }}
         className="divine-header flex flex-col items-center w-full"
       >
-        <h2 className="divine-title text-center" style={{ marginBottom: '1.5rem' }}>Fragrances For Divine Experiences</h2>
+        <h1 className="divine-title text-center" style={{ marginBottom: '1.5rem' }}>Fragrances For Divine Experiences</h1>
         
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3 mb-12 w-full max-w-4xl px-4">

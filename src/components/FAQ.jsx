@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { FAQSchema } from './StructuredData';
 
 const FAQS = [
   {
@@ -32,8 +33,11 @@ const FAQS = [
 export default function FAQ() {
   const [open, setOpen] = useState(null);
 
+  const schemaData = FAQS.map(item => ({ question: item.q, answer: item.a }));
+
   return (
     <section id="faq" className="section faq-section">
+      <FAQSchema faqs={schemaData} />
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}

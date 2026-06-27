@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import RelatedProducts from './RelatedProducts';
+import { ProductSchema } from './StructuredData';
 
 /* ─── Base fallback data for consistency ─── */
 const FALLBACK = {
@@ -180,6 +181,7 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
 
   return ReactDOM.createPortal(
     <AnimatePresence>
+      <ProductSchema product={{ id: currentProduct.id, name: data.title, image: data.image, description: data.description, price: data.price, stock: data.stock, rating: avgRating, reviews: totalReviews }} />
       <motion.div className="pd-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
       <div className="pd-sheet-wrapper" onClick={onClose}>
         <motion.div
@@ -205,7 +207,7 @@ export default function ProductModal({ product, onClose, allProducts = [] }) {
 
             <div className="pd-body">
               <div className="pd-subtitle">{data.subtitle}</div>
-              <h1 className="pd-title">{data.title}</h1>
+              <h2 className="pd-title">{data.title}</h2>
 
               <div className="pd-rating-row">
                 <Stars rating={avgRating} size={15} />
