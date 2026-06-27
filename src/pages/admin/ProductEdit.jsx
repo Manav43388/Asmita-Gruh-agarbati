@@ -414,6 +414,36 @@ const ProductEdit = () => {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div>
+                  <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Category</label>
+                  <select
+                    name="category"
+                    value={formData.category || 'Incense Sticks'}
+                    onChange={handleInputChange}
+                    className="admin-input appearance-none"
+                    required
+                  >
+                    <option value="Incense Sticks">Incense Sticks</option>
+                    <option value="Dhoop Sticks">Dhoop Sticks</option>
+                    <option value="Puja Items">Puja Items</option>
+                    <option value="Idol Cloth">Idol Cloth</option>
+                    <option value="Other Spiritual Products">Other Spiritual Products</option>
+                    <option value="General">General</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] uppercase font-bold text-gray-500 tracking-wider mb-2 block">Tags (Comma Separated)</label>
+                  <input 
+                    type="text"
+                    name="tags"
+                    value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) }))}
+                    className="admin-input"
+                    placeholder="e.g. Premium, Floral, New"
+                  />
+                </div>
+              </div>
             </div>
           </section>
 

@@ -20,7 +20,7 @@ export function ProductsProvider({ children }) {
             image: data.image || data.imageUrl || '/agarbatti.png',
             price: data.price || 0,
             unit: data.unit || 'per pack',
-            category: data.category || 'Incense Sticks',
+            category: (data.category && data.category !== 'General') ? data.category : 'Incense Sticks',
             stock: data.stock || 10,
             tag: data.tag || null,
             ...data
