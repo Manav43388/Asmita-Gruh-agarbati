@@ -871,25 +871,37 @@ const ProductEdit = () => {
 
           {/* Product Image */}
           <section className="premium-card">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Product Image</h3>
-            <div className="relative group">
-              <div className="aspect-square w-full rounded-2xl bg-white/5 border-2 border-dashed border-white/10 overflow-hidden flex flex-col items-center justify-center gap-3 hover:border-admin-accent/50 transition-all">
-                {formData.image ? (
-                  <>
-                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                      <button onClick={() => document.getElementById('image-upload').click()} className="p-3 bg-white/10 rounded-full hover:bg-white/20">
-                        <Upload size={24} className="text-white" />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon size={40} className="text-gray-700" />
-                    <button onClick={() => document.getElementById('image-upload').click()} className="text-xs font-bold text-admin-accent uppercase tracking-widest hover:underline">Upload Image</button>
-                  </>
-                )}
-                <input id="image-upload" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Product Image (Upload or URL)</h3>
+            <div className="space-y-4">
+              <div className="relative group">
+                <div className="aspect-square w-full rounded-2xl bg-white/5 border-2 border-dashed border-white/10 overflow-hidden flex flex-col items-center justify-center gap-3 hover:border-admin-accent/50 transition-all">
+                  {formData.image ? (
+                    <>
+                      <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                        <button onClick={() => document.getElementById('image-upload').click()} className="p-3 bg-white/10 rounded-full hover:bg-white/20">
+                          <Upload size={24} className="text-white" />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon size={40} className="text-gray-700" />
+                      <button onClick={() => document.getElementById('image-upload').click()} className="text-xs font-bold text-admin-accent uppercase tracking-widest hover:underline">Upload Image</button>
+                    </>
+                  )}
+                  <input id="image-upload" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                </div>
+              </div>
+              <div className="pt-2">
+                <label className="text-[10px] uppercase font-bold text-gray-600 mb-2 block">Or enter Image URL / Local path</label>
+                <input 
+                  type="text" 
+                  value={formData.image} 
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })} 
+                  className="admin-input" 
+                  placeholder="e.g. /agarbatti.png or https://..." 
+                />
               </div>
             </div>
           </section>
