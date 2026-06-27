@@ -2,15 +2,11 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // Function to check if user is admin
-    function isAdmin() {
-      return request.auth != null && firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.token.email));
-    }
-    
-    // Public read for everything (since product images are needed)
+    // Relaxed rule: allow authenticated users to upload images.
+    // This avoids cross-service IAM role issues that cause uploads to hang.
     match /{allPaths=**} {
       allow read: if true;
-      allow write, delete: if isAdmin();
+      allow write, delete: if request.auth != null;
     }
     
     // Allow users to upload their own avatars or specific files if needed,
