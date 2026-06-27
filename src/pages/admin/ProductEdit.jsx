@@ -154,7 +154,7 @@ const ProductEdit = () => {
     }));
   };
 
-  const compressImage = (file) => {
+  const compressImageToBase64 = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -163,8 +163,9 @@ const ProductEdit = () => {
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
+          // Aggressive compression for Firestore (max 1MB doc size limit)
+          const MAX_WIDTH = 600;
+          const MAX_HEIGHT = 600;
           let width = img.width;
           let height = img.height;
 
@@ -184,9 +185,9 @@ const ProductEdit = () => {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
-          canvas.toBlob((blob) => {
-            resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
-          }, 'image/jpeg', 0.8);
+          // Convert directly to base64 string
+          const base64String = canvas.toDataURL('image/jpeg', 0.6);
+          resolve(base64String);
         };
       };
     });
@@ -198,17 +199,14 @@ const ProductEdit = () => {
 
     try {
       setSaving(true);
-      toast.loading('Compressing & uploading image...', { id: 'img-upload' });
+      toast.loading('Processing image...', { id: 'img-upload' });
       
-      const compressedFile = await compressImage(file);
+      const base64Image = await compressImageToBase64(file);
       
-      const storageRef = ref(storage, `products/${Date.now()}_${compressedFile.name}`);
-      await uploadBytes(storageRef, compressedFile);
-      const url = await getDownloadURL(storageRef);
-      setFormData(prev => ({ ...prev, image: url }));
-      toast.success('Image uploaded', { id: 'img-upload' });
+      setFormData(prev => ({ ...prev, image: base64Image }));
+      toast.success('Image processed successfully', { id: 'img-upload' });
     } catch (error) {
-      toast.error('Image upload failed', { id: 'img-upload' });
+      toast.error('Image processing failed', { id: 'img-upload' });
     } finally {
       setSaving(false);
     }
